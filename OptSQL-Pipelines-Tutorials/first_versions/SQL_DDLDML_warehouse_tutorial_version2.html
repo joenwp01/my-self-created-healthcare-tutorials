@@ -1,0 +1,1129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SQL Warehouse Materializations — Live SQLite Tutorial</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #08090d;
+    --surface: #11141c;
+    --surface-raised: #181d28;
+    --surface-inset: #0c0e14;
+    --border: #252d3d;
+    --border-accent: #3d4b65;
+    --text: #dfe6f0;
+    --text-muted: #8693a8;
+    --text-dim: #556077;
+    --accent: #e8b34a;
+    --accent-glow: rgba(232,179,74,0.08);
+    --green: #3fb950;
+    --green-bg: rgba(63,185,80,0.08);
+    --red: #f85149;
+    --red-bg: rgba(248,81,73,0.08);
+    --orange: #d29922;
+    --orange-bg: rgba(210,153,34,0.08);
+    --c-ddl: #f0883e;
+    --c-ddl-glow: rgba(240,136,62,0.08);
+    --c-cte: #7ee787;
+    --c-cte-glow: rgba(126,231,135,0.07);
+    --c-win: #d2a8ff;
+    --c-win-glow: rgba(210,168,255,0.07);
+    --c-par: #79c0ff;
+    --c-par-glow: rgba(121,192,255,0.07);
+    --keyword: #ff7b72;
+    --string: #a5d6ff;
+    --comment: #4a5568;
+    --clause: #ffa657;
+    --radius: 8px;
+    --mono: 'IBM Plex Mono', monospace;
+    --serif: 'Source Serif 4', Georgia, serif;
+    --sans: 'DM Sans', system-ui, sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:16px;line-height:1.7;min-height:100vh}
+
+  /* ── Topbar ── */
+  .topbar{position:sticky;top:0;z-index:100;background:rgba(8,9,13,0.9);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);padding:12px 24px;display:flex;align-items:center;gap:16px}
+  .topbar-logo{font-family:var(--mono);font-weight:600;font-size:14px;letter-spacing:.5px;background:linear-gradient(90deg,var(--c-ddl),var(--c-cte),var(--c-win),var(--c-par));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+  .topbar-progress{flex:1;height:4px;background:var(--surface-raised);border-radius:2px;overflow:hidden}
+  .topbar-progress-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--c-ddl),var(--c-cte),var(--c-win),var(--c-par));border-radius:2px;transition:width .5s ease}
+  .topbar-score{font-family:var(--mono);font-size:13px;color:var(--text-muted)}
+  .topbar-db{font-family:var(--mono);font-size:11px;padding:3px 10px;border-radius:20px;border:1px solid var(--border)}
+  .topbar-db.loading{color:var(--orange);border-color:rgba(210,153,34,.3)}
+  .topbar-db.ready{color:var(--green);border-color:rgba(63,185,80,.3)}
+  .topbar-db.error{color:var(--red);border-color:rgba(248,81,73,.3)}
+
+  .container{max-width:940px;margin:0 auto;padding:0 24px 120px}
+
+  /* ── Hero ── */
+  .hero{padding:80px 0 50px;text-align:center;position:relative}
+  .hero::before{content:'';position:absolute;top:-20px;left:50%;transform:translateX(-50%);width:700px;height:350px;background:radial-gradient(ellipse at 25% 50%,rgba(240,136,62,.04) 0%,transparent 50%),radial-gradient(ellipse at 50% 40%,rgba(126,231,135,.03) 0%,transparent 50%),radial-gradient(ellipse at 75% 50%,rgba(210,168,255,.03) 0%,transparent 50%);pointer-events:none}
+  .hero h1{font-family:var(--serif);font-size:clamp(1.7rem,4.5vw,2.6rem);font-weight:700;line-height:1.25;margin-bottom:16px}
+  .hero h1 .d{color:var(--c-ddl)} .hero h1 .g{color:var(--c-cte)} .hero h1 .p{color:var(--c-win)} .hero h1 .b{color:var(--c-par)}
+  .hero p{color:var(--text-muted);font-size:17px;max-width:640px;margin:0 auto 24px}
+  .legend{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:28px}
+  .legend-pill{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:11px;padding:4px 12px;border-radius:20px;border:1px solid}
+  .legend-pill.ddl{color:var(--c-ddl);border-color:rgba(240,136,62,.3);background:var(--c-ddl-glow)}
+  .legend-pill.cte{color:var(--c-cte);border-color:rgba(126,231,135,.3);background:var(--c-cte-glow)}
+  .legend-pill.win{color:var(--c-win);border-color:rgba(210,168,255,.3);background:var(--c-win-glow)}
+  .legend-pill.par{color:var(--c-par);border-color:rgba(121,192,255,.3);background:var(--c-par-glow)}
+  .legend-dot{width:7px;height:7px;border-radius:50%}
+  .legend-pill.ddl .legend-dot{background:var(--c-ddl)} .legend-pill.cte .legend-dot{background:var(--c-cte)}
+  .legend-pill.win .legend-dot{background:var(--c-win)} .legend-pill.par .legend-dot{background:var(--c-par)}
+  .hero-badge{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:12px;color:var(--text-dim);margin-bottom:28px;padding:6px 14px;background:var(--surface);border:1px solid var(--border);border-radius:20px}
+  .hero-badge svg{width:14px;height:14px}
+  .hero-cta{display:inline-flex;align-items:center;gap:8px;background:var(--accent);color:#000;font-weight:600;font-size:15px;padding:12px 28px;border-radius:6px;border:none;cursor:pointer;transition:transform .15s,box-shadow .15s}
+  .hero-cta:hover{transform:translateY(-1px);box-shadow:0 4px 20px rgba(232,179,74,.3)}
+
+  /* ── Sections ── */
+  .section{margin-top:64px}
+  .section-label{font-family:var(--mono);font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin-bottom:8px}
+  .section h2{font-family:var(--serif);font-size:1.5rem;font-weight:700;margin-bottom:16px}
+  .section p,.section li{color:var(--text-muted);line-height:1.8}
+  .section ul{padding-left:20px;margin:12px 0}
+  .section li{margin-bottom:6px}
+  .section li::marker{color:var(--accent)}
+
+  /* ── Callouts ── */
+  .callout{border-left:3px solid;border-radius:0 var(--radius) var(--radius) 0;padding:16px 20px;margin:20px 0;font-size:14px;color:var(--text-muted)}
+  .callout strong{display:block;margin-bottom:4px}
+  .callout.ddl{background:var(--c-ddl-glow);border-left-color:var(--c-ddl)} .callout.ddl strong{color:var(--c-ddl)}
+  .callout.cte{background:var(--c-cte-glow);border-left-color:var(--c-cte)} .callout.cte strong{color:var(--c-cte)}
+  .callout.win{background:var(--c-win-glow);border-left-color:var(--c-win)} .callout.win strong{color:var(--c-win)}
+  .callout.par{background:var(--c-par-glow);border-left-color:var(--c-par)} .callout.par strong{color:var(--c-par)}
+  .callout.warn{background:var(--orange-bg);border-left-color:var(--orange)} .callout.warn strong{color:var(--orange)}
+  .callout.neutral{background:var(--accent-glow);border-left-color:var(--accent)} .callout.neutral strong{color:var(--accent)}
+
+  /* ── Code block ── */
+  .code-block{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px 22px;margin:18px 0;overflow-x:auto;font-family:var(--mono);font-size:13px;line-height:1.85;position:relative}
+  .code-block .label{position:absolute;top:8px;right:12px;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text-dim)}
+  .kw{color:var(--keyword);font-weight:500} .str{color:var(--string)} .cmt{color:var(--comment);font-style:italic}
+  .fn{color:var(--c-win);font-weight:500} .ct{color:var(--c-cte);font-weight:500} .pm{color:var(--c-par);font-weight:500}
+  .dl{color:var(--c-ddl);font-weight:500} .cl{color:var(--clause)}
+
+  /* ── Exercise ── */
+  .exercise{background:var(--surface);border:1px solid var(--border);border-radius:12px;margin-top:52px;overflow:hidden;transition:border-color .3s}
+  .exercise.solved{border-color:var(--green)}
+  .exercise-header{display:flex;align-items:center;gap:12px;padding:20px 24px;border-bottom:1px solid var(--border);background:var(--surface-raised);flex-wrap:wrap}
+  .exercise-num{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:13px;font-weight:600;background:var(--accent-glow);color:var(--accent);border:1px solid rgba(232,179,74,.3);flex-shrink:0;transition:all .3s}
+  .exercise.solved .exercise-num{background:var(--green-bg);color:var(--green);border-color:rgba(63,185,80,.3)}
+  .exercise-title{font-weight:600;font-size:15px;flex:1;min-width:180px}
+  .exercise-diff{font-family:var(--mono);font-size:11px;letter-spacing:.5px;padding:3px 10px;border-radius:20px;flex-shrink:0}
+  .diff-easy{background:var(--green-bg);color:var(--green)} .diff-med{background:var(--orange-bg);color:var(--orange)} .diff-hard{background:var(--red-bg);color:var(--red)}
+  .tech-tags{display:flex;gap:6px;flex-wrap:wrap;width:100%;margin-top:4px}
+  .tech-tag{font-family:var(--mono);font-size:10px;letter-spacing:.5px;text-transform:uppercase;padding:2px 8px;border-radius:3px}
+  .tech-tag.ddl{background:var(--c-ddl-glow);color:var(--c-ddl);border:1px solid rgba(240,136,62,.2)}
+  .tech-tag.cte{background:var(--c-cte-glow);color:var(--c-cte);border:1px solid rgba(126,231,135,.2)}
+  .tech-tag.win{background:var(--c-win-glow);color:var(--c-win);border:1px solid rgba(210,168,255,.2)}
+  .tech-tag.par{background:var(--c-par-glow);color:var(--c-par);border:1px solid rgba(121,192,255,.2)}
+
+  .exercise-body{padding:24px}
+  .exercise-body>p{color:var(--text-muted);margin-bottom:16px;font-size:15px}
+
+  /* ── Intro box ── */
+  .intro-box{background:var(--surface-raised);border:1px solid var(--border);border-radius:var(--radius);padding:18px 22px;margin-bottom:22px}
+  .intro-box h4{font-family:var(--serif);font-size:14px;font-weight:600;color:var(--accent);margin-bottom:8px;display:flex;align-items:center;gap:8px}
+  .intro-box h4 .icon{font-size:16px}
+  .intro-box p{font-size:14px;color:var(--text-muted);line-height:1.7}
+
+  .schema-box{background:rgba(232,179,74,.04);border:1px solid rgba(232,179,74,.12);border-radius:var(--radius);padding:14px 18px;margin-bottom:20px;font-family:var(--mono);font-size:13px;line-height:1.6;color:var(--accent)}
+  .schema-box .tname{color:var(--clause);font-weight:600}
+  .schema-box .cols{color:var(--text-muted)}
+
+  /* ── Help tooltips ── */
+  .help-btn{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:var(--surface-raised);border:1px solid var(--border);color:var(--text-dim);font-family:var(--mono);font-size:10px;font-weight:700;cursor:pointer;vertical-align:middle;margin-left:4px;transition:all .15s;position:relative}
+  .help-btn:hover{color:var(--accent);border-color:var(--accent);background:var(--accent-glow)}
+  .help-tip{display:none;position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);background:var(--surface-raised);border:1px solid var(--border);border-radius:6px;padding:10px 14px;font-family:var(--sans);font-size:12px;font-weight:400;color:var(--text-muted);line-height:1.5;white-space:normal;width:260px;z-index:50;box-shadow:0 8px 24px rgba(0,0,0,.4);pointer-events:none}
+  .help-tip::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:6px solid transparent;border-top-color:var(--border)}
+  .help-btn.active .help-tip{display:block}
+
+  /* ── Fill-in code area ── */
+  .fill-code{background:var(--surface-inset);border:1px solid var(--border);border-radius:var(--radius);padding:20px 24px;font-family:var(--mono);font-size:13px;line-height:2.6;margin-bottom:12px;white-space:pre-wrap;word-break:break-word;overflow-x:auto}
+  .fill-code .blank-wrap{display:inline-block;position:relative;vertical-align:baseline;margin:0 1px;padding-bottom:14px}
+  .fill-code input{background:var(--surface-raised);border:1px dashed var(--border-accent);border-radius:4px;color:var(--accent);font-family:var(--mono);font-size:13px;padding:2px 8px;height:24px;outline:none;transition:border-color .2s,box-shadow .2s;vertical-align:baseline}
+  .fill-code input:focus{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-glow)}
+  .fill-code input.correct{border-color:var(--green);color:var(--green);background:var(--green-bg)}
+  .fill-code input.wrong{border-color:var(--red);color:var(--red);background:var(--red-bg);animation:shake .3s}
+  .fill-code input.t-ddl{border-color:rgba(240,136,62,.45);color:var(--c-ddl)} .fill-code input.t-ddl:focus{box-shadow:0 0 0 2px var(--c-ddl-glow);border-color:var(--c-ddl)}
+  .fill-code input.t-cte{border-color:rgba(126,231,135,.45);color:var(--c-cte)} .fill-code input.t-cte:focus{box-shadow:0 0 0 2px var(--c-cte-glow);border-color:var(--c-cte)}
+  .fill-code input.t-win{border-color:rgba(210,168,255,.45);color:var(--c-win)} .fill-code input.t-win:focus{box-shadow:0 0 0 2px var(--c-win-glow);border-color:var(--c-win)}
+  .fill-code input.t-par{border-color:rgba(121,192,255,.45);color:var(--c-par)} .fill-code input.t-par:focus{box-shadow:0 0 0 2px var(--c-par-glow);border-color:var(--c-par)}
+  @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+  .blank-label{position:absolute;left:0;right:0;bottom:-1px;font-size:9px;letter-spacing:.5px;color:var(--text-dim);text-align:center;white-space:nowrap;overflow:visible;line-height:1;display:flex;align-items:center;justify-content:center;gap:2px}
+
+  /* ── Buttons ── */
+  .exercise-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}
+  .btn{font-family:var(--sans);font-size:13px;font-weight:600;padding:8px 18px;border-radius:6px;border:1px solid var(--border);cursor:pointer;transition:all .15s}
+  .btn-check{background:var(--accent);color:#000;border-color:var(--accent)} .btn-check:hover{box-shadow:0 2px 12px rgba(232,179,74,.35)}
+  .btn-run{background:var(--green);color:#000;border-color:var(--green)} .btn-run:hover{box-shadow:0 2px 12px rgba(63,185,80,.35)} .btn-run:disabled{opacity:.4;cursor:not-allowed;box-shadow:none}
+  .btn-hint{background:transparent;color:var(--orange);border-color:rgba(210,153,34,.3)} .btn-hint:hover{background:var(--orange-bg)}
+  .btn-reveal{background:transparent;color:var(--red);border-color:rgba(248,81,73,.3)} .btn-reveal:hover{background:var(--red-bg)}
+  .btn-reset{background:transparent;color:var(--text-muted);border-color:var(--border)} .btn-reset:hover{background:var(--surface-raised)}
+
+  /* ── Hint / feedback ── */
+  .hint-area{margin-top:14px;padding:12px 16px;border-radius:var(--radius);font-size:14px;display:none}
+  .hint-area.visible{display:block}
+  .hint-area.hint{background:var(--orange-bg);color:var(--orange)} .hint-area.success{background:var(--green-bg);color:var(--green)} .hint-area.error{background:var(--red-bg);color:var(--red)}
+
+  /* ── Results table ── */
+  .results-area{margin-top:16px;display:none}
+  .results-area.visible{display:block}
+  .results-header{font-family:var(--mono);font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--green);margin-bottom:8px;display:flex;align-items:center;gap:6px}
+  .results-header .rows{color:var(--text-dim);text-transform:none;letter-spacing:0}
+  .results-table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:var(--radius)}
+  .results-table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:12px}
+  .results-table th{background:var(--surface-raised);color:var(--text-muted);font-weight:600;text-align:left;padding:8px 14px;border-bottom:1px solid var(--border);white-space:nowrap}
+  .results-table td{padding:7px 14px;border-bottom:1px solid rgba(37,45,61,.5);color:var(--text);white-space:nowrap}
+  .results-table tr:last-child td{border-bottom:none}
+  .results-table tr:hover td{background:rgba(232,179,74,.03)}
+  .results-msg{font-size:13px;color:var(--text-muted);padding:12px;font-style:italic}
+
+  /* ── NOTE footnote box ── */
+  .note-box{background:var(--surface-raised);border:1px solid var(--border);border-radius:var(--radius);padding:20px 24px;margin-top:20px}
+  .note-box h4{font-family:var(--mono);font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+  .note-box h4::before{content:'';display:inline-block;width:3px;height:14px;background:var(--accent);border-radius:2px}
+  .note-section{margin-bottom:14px}
+  .note-section:last-child{margin-bottom:0}
+  .note-section-title{font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.5px;margin-bottom:6px}
+  .note-section-title.hints{color:var(--orange)}
+  .note-section-title.consider{color:var(--c-par)}
+  .note-section ul{padding-left:16px;margin:0}
+  .note-section li{font-size:13px;color:var(--text-muted);line-height:1.65;margin-bottom:4px}
+  .note-section li::marker{color:var(--text-dim)}
+
+  /* ── Explanation ── */
+  .explanation{margin-top:16px;border-top:1px solid var(--border);padding-top:16px;display:none}
+  .explanation.visible{display:block}
+  .explanation p{color:var(--text-muted);font-size:14px;margin-bottom:8px;line-height:1.75}
+  .explanation code{background:var(--surface-raised);padding:1px 6px;border-radius:3px;font-family:var(--mono);font-size:12px;color:var(--accent)}
+  .explanation code.ddl{color:var(--c-ddl)} .explanation code.cte{color:var(--c-cte)} .explanation code.win{color:var(--c-win)} .explanation code.par{color:var(--c-par)}
+
+  .footer{text-align:center;padding:60px 0 40px;color:var(--text-dim);font-size:13px}
+  @media(max-width:640px){.container{padding:0 16px 80px}.code-block,.fill-code{padding:14px 16px;font-size:11px}.exercise-body{padding:16px}.fill-code input{font-size:11px;height:22px}.fill-code .blank-wrap{padding-bottom:12px}}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-logo">SQL::WAREHOUSE</div>
+  <div class="topbar-progress"><div class="topbar-progress-fill" id="progressFill"></div></div>
+  <div class="topbar-score" id="scoreLabel">0 / 5</div>
+  <div class="topbar-db loading" id="dbStatus">SQLite Loading…</div>
+</div>
+
+<div class="container">
+
+<!-- ══════════════════════════════════════════ -->
+<!--  HERO                                     -->
+<!-- ══════════════════════════════════════════ -->
+<div class="hero">
+  <h1><span class="d">DDL/DML</span> + <span class="g">CTEs</span> + <span class="p">Windows</span> + <span class="b">Params</span></h1>
+  <p>Build data warehouse materializations by combining all four SQL techniques in a <strong style="color:var(--text)">live SQLite database</strong> running in your browser via WebAssembly. Fill in the blanks, then execute your query and see real results.</p>
+
+  <div class="legend">
+    <span class="legend-pill ddl"><span class="legend-dot"></span>DDL / DML</span>
+    <span class="legend-pill cte"><span class="legend-dot"></span>CTE</span>
+    <span class="legend-pill win"><span class="legend-dot"></span>Window Fn</span>
+    <span class="legend-pill par"><span class="legend-dot"></span>Parameter</span>
+  </div>
+
+  <div class="hero-badge">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 12h8M12 8v8"/></svg>
+    Powered by sql.js (SQLite 3 compiled to WebAssembly)
+  </div>
+  <br><br>
+  <button class="hero-cta" onclick="document.getElementById('overview').scrollIntoView()">Start Learning &darr;</button>
+</div>
+
+<!-- ══════════════════════════════════════════ -->
+<!--  OVERVIEW                                 -->
+<!-- ══════════════════════════════════════════ -->
+<div class="section" id="overview">
+  <div class="section-label">Overview</div>
+  <h2>Why Materialize Query Results?</h2>
+  <p>In a data warehouse, you often need to <strong style="color:var(--text)">persist the results</strong> of complex analytical queries into physical tables. This is called <em>materialization</em> — taking a logical transformation and writing it to disk so downstream consumers (dashboards, APIs, other queries) can read it efficiently without re-running the computation.</p>
+
+  <div class="callout ddl">
+    <strong>DDL (Data Definition Language)</strong>
+    Commands that define structure: <code style="font-family:var(--mono);color:var(--c-ddl)">CREATE TABLE</code>, <code style="font-family:var(--mono);color:var(--c-ddl)">DROP TABLE</code>, <code style="font-family:var(--mono);color:var(--c-ddl)">ALTER TABLE</code>. These build the target tables that hold materialized results.
+  </div>
+  <div class="callout ddl">
+    <strong>DML (Data Manipulation Language)</strong>
+    Commands that move data: <code style="font-family:var(--mono);color:var(--c-ddl)">INSERT INTO</code>, <code style="font-family:var(--mono);color:var(--c-ddl)">UPDATE</code>, <code style="font-family:var(--mono);color:var(--c-ddl)">DELETE</code>. Combined with SELECT queries, these populate and refresh your materialized tables.
+  </div>
+  <div class="callout cte">
+    <strong>CTEs (WITH … AS)</strong>
+    Break transformation logic into readable, named steps. Perfect for multi-stage warehouse ETL inside a single statement.
+  </div>
+  <div class="callout win">
+    <strong>Window Functions (fn OVER(…))</strong>
+    Compute rankings, running totals, period comparisons, and percentiles — the analytical backbone of warehouse reporting layers.
+  </div>
+  <div class="callout par">
+    <strong>Parameterized Queries (? placeholders)</strong>
+    SQLite uses <code style="font-family:var(--mono);color:var(--c-par)">?</code> positional placeholders. Even in warehouse scripts, parameterizing date ranges and filters prevents injection and enables reusable refresh logic.
+  </div>
+
+  <p style="margin-top:20px">Here's the general pattern you'll practice:</p>
+
+  <div class="code-block">
+    <span class="label">Materialization Pattern</span>
+<span class="cmt">-- 1. DDL: Ensure the target table exists</span>
+<span class="dl">CREATE TABLE IF NOT EXISTS</span> mart_table (...);
+
+<span class="cmt">-- 2. DML + CTE + Window + Parameters: Transform &amp; load</span>
+<span class="dl">INSERT INTO</span> mart_table
+<span class="ct">WITH</span> <span class="ct">step_one</span> <span class="ct">AS</span> (
+    <span class="kw">SELECT</span> ... <span class="kw">FROM</span> source <span class="kw">WHERE</span> date_col >= <span class="pm">?</span>   <span class="cmt">-- parameterized</span>
+),
+<span class="ct">step_two</span> <span class="ct">AS</span> (
+    <span class="kw">SELECT</span> ..., <span class="fn">RANK</span>() <span class="fn">OVER</span>(...) <span class="kw">AS</span> rnk   <span class="cmt">-- window function</span>
+    <span class="kw">FROM</span> <span class="ct">step_one</span>
+)
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> <span class="ct">step_two</span>;
+  </div>
+
+  <div class="callout neutral">
+    <strong>Live execution:</strong> Every exercise has a <strong style="color:var(--green)">▶ Run Query</strong> button. Once you fill in all blanks correctly, click it to execute against a real SQLite database seeded with sample data. You'll see the actual query results rendered as a table.
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════ -->
+<!--  SEED DATA PREVIEW                        -->
+<!-- ══════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-label">Sample Data</div>
+  <h2>Your Warehouse Source Tables</h2>
+  <p>The SQLite database is pre-loaded with two source tables simulating a small e-commerce warehouse. All exercises build materialized tables from these sources.</p>
+
+  <div class="schema-box">
+    <span class="tname">raw_sales</span> <span class="cols">(id INTEGER PK, customer_id INT, product TEXT, category TEXT, amount REAL, quantity INT, sale_date TEXT, region TEXT)</span>
+    <br>— 30 rows of transaction data across 3 regions, 4 categories, spanning 2024-01 to 2024-06
+  </div>
+  <div class="schema-box">
+    <span class="tname">raw_customers</span> <span class="cols">(id INTEGER PK, name TEXT, email TEXT, signup_date TEXT, tier TEXT)</span>
+    <br>— 10 customers across Gold / Silver / Bronze tiers
+  </div>
+
+  <div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap">
+    <button class="btn btn-reset" onclick="previewTable('raw_sales')">Preview raw_sales</button>
+    <button class="btn btn-reset" onclick="previewTable('raw_customers')">Preview raw_customers</button>
+  </div>
+  <div id="preview-area" class="results-area" style="margin-top:12px"></div>
+</div>
+
+<!-- ══════════════════════════════════════════ -->
+<!--  EXERCISES                                -->
+<!-- ══════════════════════════════════════════ -->
+<div class="section" id="exercises">
+  <div class="section-label">Exercises</div>
+  <h2>Build &amp; Execute</h2>
+  <p>Fill in the blanks, check your answers, then run the query live. Each exercise includes an <strong style="color:var(--accent)">Introduction</strong> and a <strong style="color:var(--accent)">NOTE</strong> section with hints and points to consider.</p>
+</div>
+
+<div id="exerciseContainer"></div>
+
+<div class="footer">
+  SQL Warehouse Materialization Tutorial &middot; Structure &middot; Analyze &middot; Persist &middot; Secure
+</div>
+
+</div>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!--  SQL.JS + ENGINE                                      -->
+<!-- ══════════════════════════════════════════════════════ -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.3/sql-wasm.js"></script>
+<script>
+// ═══════════════════════════════════════════
+//  DATABASE INITIALIZATION
+// ═══════════════════════════════════════════
+let db = null;
+const dbStatusEl = document.getElementById('dbStatus');
+
+async function initDB() {
+  try {
+    const SQL = await initSqlJs({
+      locateFile: f => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.3/${f}`
+    });
+    db = new SQL.Database();
+    seedDatabase();
+    dbStatusEl.className = 'topbar-db ready';
+    dbStatusEl.textContent = 'SQLite Ready';
+  } catch (e) {
+    dbStatusEl.className = 'topbar-db error';
+    dbStatusEl.textContent = 'DB Error';
+    console.error('sql.js init failed:', e);
+  }
+}
+
+function seedDatabase() {
+  db.run(`
+    CREATE TABLE raw_sales (
+      id INTEGER PRIMARY KEY, customer_id INTEGER, product TEXT,
+      category TEXT, amount REAL, quantity INTEGER, sale_date TEXT, region TEXT
+    );
+    CREATE TABLE raw_customers (
+      id INTEGER PRIMARY KEY, name TEXT, email TEXT, signup_date TEXT, tier TEXT
+    );
+  `);
+  const customers = [
+    [1,'Alice Chen','alice@example.com','2023-03-15','Gold'],
+    [2,'Bob Martinez','bob@example.com','2023-06-22','Silver'],
+    [3,'Carol Davis','carol@example.com','2023-01-10','Gold'],
+    [4,'Dan Wilson','dan@example.com','2023-09-05','Bronze'],
+    [5,'Eve Johnson','eve@example.com','2023-04-18','Silver'],
+    [6,'Frank Lee','frank@example.com','2023-07-30','Gold'],
+    [7,'Grace Kim','grace@example.com','2023-11-12','Bronze'],
+    [8,'Hank Brown','hank@example.com','2023-02-28','Silver'],
+    [9,'Iris Patel','iris@example.com','2023-08-20','Gold'],
+    [10,'Jack Taylor','jack@example.com','2023-05-04','Bronze']
+  ];
+  customers.forEach(c => db.run('INSERT INTO raw_customers VALUES(?,?,?,?,?)', c));
+
+  const sales = [
+    [1,1,'Laptop','Electronics',1200,1,'2024-01-15','West'],[2,2,'Headphones','Electronics',85,2,'2024-01-18','East'],
+    [3,3,'Desk Chair','Furniture',340,1,'2024-01-22','West'],[4,1,'Monitor','Electronics',450,1,'2024-02-03','West'],
+    [5,5,'Notebook','Office',12,10,'2024-02-10','Central'],[6,4,'Bookshelf','Furniture',180,2,'2024-02-14','East'],
+    [7,6,'Keyboard','Electronics',95,3,'2024-02-20','West'],[8,2,'Pen Set','Office',24,5,'2024-03-01','East'],
+    [9,7,'Standing Desk','Furniture',520,1,'2024-03-05','Central'],[10,3,'Webcam','Electronics',65,2,'2024-03-12','West'],
+    [11,8,'Printer Paper','Office',35,8,'2024-03-18','East'],[12,9,'Ergonomic Mouse','Electronics',70,2,'2024-03-22','West'],
+    [13,1,'Filing Cabinet','Furniture',210,1,'2024-04-02','West'],[14,10,'Stapler','Office',15,3,'2024-04-08','Central'],
+    [15,5,'Tablet','Electronics',380,1,'2024-04-15','Central'],[16,6,'Desk Lamp','Furniture',55,4,'2024-04-20','West'],
+    [17,3,'USB Hub','Electronics',32,3,'2024-04-28','West'],[18,4,'Whiteboard','Office',90,1,'2024-05-05','East'],
+    [19,8,'Monitor Arm','Furniture',130,2,'2024-05-12','East'],[20,2,'SSD Drive','Electronics',110,1,'2024-05-18','East'],
+    [21,9,'Planner','Office',28,4,'2024-05-22','West'],[22,7,'Chair Mat','Furniture',45,2,'2024-05-30','Central'],
+    [23,1,'Docking Station','Electronics',175,1,'2024-06-03','West'],[24,10,'Binder Set','Office',18,6,'2024-06-08','Central'],
+    [25,6,'Webcam Pro','Electronics',120,1,'2024-06-12','West'],[26,3,'Standing Mat','Furniture',60,1,'2024-06-18','West'],
+    [27,5,'Wireless Mouse','Electronics',45,2,'2024-06-22','Central'],[28,4,'Desk Organizer','Office',22,3,'2024-06-25','East'],
+    [29,8,'Cable Management','Office',30,2,'2024-06-28','East'],[30,9,'Laptop Stand','Furniture',85,1,'2024-06-30','West']
+  ];
+  sales.forEach(s => db.run('INSERT INTO raw_sales VALUES(?,?,?,?,?,?,?,?)', s));
+}
+
+function runSQL(sql, params) {
+  if (!db) return { error: 'Database not initialized.' };
+  try {
+    // Split multi-statement SQL and run each
+    const stmts = sql.split(';').map(s => s.trim()).filter(s => s.length > 0);
+    let lastResult = null;
+    for (const stmt of stmts) {
+      if (params && stmt === stmts[stmts.length - 1]) {
+        // Bind params only to the last statement (the SELECT)
+        lastResult = db.exec(stmt, params);
+      } else {
+        db.run(stmt);
+        // If it's not a SELECT, try to get results from the last statement
+        lastResult = null;
+      }
+    }
+    // If last statement was DDL/DML with no result, try fetching from target
+    if (!lastResult || lastResult.length === 0) {
+      // Extract table name from INSERT/CREATE for a preview
+      const match = sql.match(/(?:INSERT\s+(?:OR\s+REPLACE\s+)?INTO|CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?)(\w+)/i);
+      if (match) {
+        try { lastResult = db.exec(`SELECT * FROM ${match[1]} LIMIT 25`); } catch(e) {}
+      }
+    }
+    return { data: lastResult };
+  } catch (e) {
+    return { error: e.message };
+  }
+}
+
+function previewTable(name) {
+  if (!db) return;
+  const result = db.exec(`SELECT * FROM ${name} LIMIT 15`);
+  const area = document.getElementById('preview-area');
+  area.className = 'results-area visible';
+  if (result.length > 0) {
+    area.innerHTML = `<div class="results-header">${name} <span class="rows">(first 15 rows)</span></div>` + renderTable(result[0]);
+  }
+}
+
+function renderTable(res) {
+  let h = '<div class="results-table-wrap"><table class="results-table"><thead><tr>';
+  res.columns.forEach(c => h += `<th>${c}</th>`);
+  h += '</tr></thead><tbody>';
+  res.values.forEach(row => {
+    h += '<tr>';
+    row.forEach(v => h += `<td>${v === null ? '<i style="color:var(--text-dim)">NULL</i>' : v}</td>`);
+    h += '</tr>';
+  });
+  h += '</tbody></table></div>';
+  return h;
+}
+
+// ═══════════════════════════════════════════
+//  EXERCISE DATA — 5 exercises
+// ═══════════════════════════════════════════
+const exercises = [
+
+// ────────────────────────────
+// 1. BASIC: Create & populate a category summary
+// ────────────────────────────
+{
+  id: 1,
+  title: "Create & Populate a Category Summary Table",
+  difficulty: "easy",
+  techs: ["ddl","cte","par"],
+  schema: { table: "raw_sales", cols: "id, customer_id, product, category, amount, quantity, sale_date, region" },
+  intro: "Your first materialization: create a physical summary table that stores total revenue and order count per product category, filtered to orders on or after a parameterized date. This is the most fundamental warehouse pattern — aggregate source data into a reporting table.",
+  description: "Complete the DDL to create the target table, build a CTE that aggregates by category with a date filter using a <code>?</code> parameter placeholder, then INSERT the results.",
+  codeLines: [
+    '-- Step 1: DDL — create the target table',
+    '{0} category_summary (',
+    '    category TEXT PRIMARY KEY,',
+    '    total_revenue REAL,',
+    '    order_count INTEGER',
+    ');',
+    '',
+    '-- Step 2: DML + CTE — populate it',
+    '{1} category_summary',
+    '{2} cat_agg {3} (',
+    '    SELECT category,',
+    '        SUM(amount * quantity) AS total_revenue,',
+    '        {4}(*) AS order_count',
+    '    FROM raw_sales',
+    '    WHERE sale_date >= {5}',
+    '    GROUP BY category',
+    ')',
+    'SELECT * FROM cat_agg;'
+  ],
+  blanks: [
+    { answer:"CREATE TABLE",     tech:"ddl", hint:"DDL command to define a new table.",                      label:"DDL create" },
+    { answer:"INSERT INTO",      tech:"ddl", hint:"DML command that adds rows to an existing table.",        label:"DML insert" },
+    { answer:"WITH",             tech:"cte", hint:"Keyword that begins a CTE block.",                        label:"CTE keyword" },
+    { answer:"AS",               tech:"cte", hint:"Connects the CTE name to its definition.",                label:"CTE connector" },
+    { answer:"COUNT",            tech:"cte", hint:"Aggregate function that counts rows.",                    label:"aggregate fn" },
+    { answer:"?",                tech:"par", hint:"SQLite positional placeholder for parameter binding.",    label:"parameter" }
+  ],
+  // The actual executable SQL (with blanks filled) + params
+  runnableSQL: `DROP TABLE IF EXISTS category_summary;
+CREATE TABLE category_summary (category TEXT PRIMARY KEY, total_revenue REAL, order_count INTEGER);
+INSERT INTO category_summary
+WITH cat_agg AS (
+  SELECT category, SUM(amount * quantity) AS total_revenue, COUNT(*) AS order_count
+  FROM raw_sales WHERE sale_date >= ?
+  GROUP BY category
+) SELECT * FROM cat_agg;`,
+  runParams: ['2024-01-01'],
+  explanation: "<code class='ddl'>CREATE TABLE</code> defines the physical target. <code class='ddl'>INSERT INTO</code> combined with a <code class='cte'>WITH...AS</code> CTE lets you transform data in a named step before writing. The <code class='par'>?</code> placeholder binds the date at execution time — never concatenated into the SQL string.",
+  notes: {
+    hints: [
+      "In SQLite, <code>CREATE TABLE</code> does not use <code>IF NOT EXISTS</code> by default — but you can add it for idempotency.",
+      "The CTE name (<code>cat_agg</code>) is arbitrary — choose descriptive names in production.",
+      "<code>SUM(amount * quantity)</code> computes line-item revenue; this is a common warehouse calculation."
+    ],
+    consider: [
+      "What happens if you run this twice? The INSERT would fail on the PRIMARY KEY constraint. In production, you'd use <code>INSERT OR REPLACE</code> or truncate first.",
+      "Parameterizing the date filter means the same script can refresh with different cutoffs without rewriting SQL.",
+      "This pattern (DDL + CTE + INSERT) is the foundation of dbt-style materializations."
+    ]
+  },
+  helps: {
+    0: "CREATE TABLE is DDL — it defines the structure. The data comes later via INSERT.",
+    5: "In SQLite, use ? as the parameter placeholder. The actual value is supplied separately at execution time via a parameter array."
+  }
+},
+
+// ────────────────────────────
+// 2. BASIC: CREATE TABLE AS SELECT with window function
+// ────────────────────────────
+{
+  id: 2,
+  title: "Materialize Product Rankings with CTAS",
+  difficulty: "easy",
+  techs: ["ddl","cte","win"],
+  schema: { table: "raw_sales", cols: "id, customer_id, product, category, amount, quantity, sale_date, region" },
+  intro: "CREATE TABLE AS SELECT (CTAS) is a shortcut that defines a table and populates it in one statement — the table's columns are inferred from the query results. This is especially useful for analytical marts where you want the schema to match the transformation output exactly.",
+  description: "Use CTAS to build a <code>product_rankings</code> table. Inside, use a CTE with a window function to rank products by total revenue within each category.",
+  codeLines: [
+    '-- Single CTAS statement with CTE + Window Function',
+    '{0} product_rankings AS',
+    '{1} product_rev AS (',
+    '    SELECT',
+    '        product, category,',
+    '        SUM(amount * quantity) AS total_rev',
+    '    FROM raw_sales',
+    '    GROUP BY product, category',
+    ')',
+    'SELECT',
+    '    product, category, total_rev,',
+    '    {2}() OVER (',
+    '        {3} category',
+    '        ORDER BY total_rev {4}',
+    '    ) AS category_rank',
+    'FROM {5};'
+  ],
+  blanks: [
+    { answer:"CREATE TABLE",  tech:"ddl", hint:"DDL command — but here combined with AS SELECT (CTAS).",   label:"CTAS start" },
+    { answer:"WITH",          tech:"cte", hint:"CTE keyword to define the transformation step.",           label:"CTE keyword" },
+    { answer:"RANK",          tech:"win", hint:"Window function that ranks with gaps for ties.",           label:"window fn",
+      accept:["RANK","DENSE_RANK","ROW_NUMBER"] },
+    { answer:"PARTITION BY",  tech:"win", hint:"Restart ranking per category.",                            label:"partition" },
+    { answer:"DESC",          tech:"win", hint:"Highest revenue gets rank 1.",                             label:"sort dir" },
+    { answer:"product_rev",   tech:"cte", hint:"Reference the CTE by its name.",                          label:"CTE name" }
+  ],
+  runnableSQL: `DROP TABLE IF EXISTS product_rankings;
+CREATE TABLE product_rankings AS
+WITH product_rev AS (
+  SELECT product, category, SUM(amount * quantity) AS total_rev
+  FROM raw_sales GROUP BY product, category
+)
+SELECT product, category, total_rev,
+  RANK() OVER (PARTITION BY category ORDER BY total_rev DESC) AS category_rank
+FROM product_rev;`,
+  runParams: null,
+  explanation: "<code class='ddl'>CREATE TABLE ... AS</code> (CTAS) creates the table with columns inferred from the SELECT. The CTE <code class='cte'>product_rev</code> aggregates revenue, and the outer query adds <code class='win'>RANK() OVER(PARTITION BY category ORDER BY total_rev DESC)</code> to rank within each category. The result is a ready-to-query materialized ranking table.",
+  notes: {
+    hints: [
+      "CTAS infers column names and types from the SELECT — you don't declare them.",
+      "RANK() leaves gaps after ties (1,1,3). DENSE_RANK() wouldn't (1,1,2). Either is accepted here.",
+      "The CTE aggregates first, then the window function ranks the aggregated rows — not the raw rows."
+    ],
+    consider: [
+      "CTAS fails if the table already exists. In refreshable pipelines, precede it with <code>DROP TABLE IF EXISTS</code>.",
+      "CTAS doesn't create indexes. For large tables, add indexes after creation for query performance.",
+      "This is equivalent to a dbt model with <code>materialized='table'</code>."
+    ]
+  },
+  helps: {
+    0: "CREATE TABLE … AS SELECT (CTAS) lets the database infer the table structure from the query. No column definitions needed.",
+    3: "PARTITION BY inside OVER() restarts the ranking for each category — like GROUP BY but without collapsing rows."
+  }
+},
+
+// ────────────────────────────
+// 3. BASIC: Incremental insert with date parameter + running total
+// ────────────────────────────
+{
+  id: 3,
+  title: "Incremental Load — Running Revenue by Region",
+  difficulty: "easy",
+  techs: ["ddl","cte","win","par"],
+  schema: { table: "raw_sales", cols: "id, customer_id, product, category, amount, quantity, sale_date, region" },
+  intro: "Incremental loads add only new data instead of rebuilding the entire table. Here you'll create a reporting table that tracks each sale alongside a running cumulative total per region — but only for sales after a parameterized cutoff date. This simulates a daily or weekly incremental refresh.",
+  description: "Create the target table with <code>IF NOT EXISTS</code> for idempotency, then INSERT new rows using a CTE + window function with a parameterized date filter.",
+  codeLines: [
+    '-- DDL: Idempotent target table',
+    'CREATE TABLE {0} region_running_rev (',
+    '    sale_date TEXT, region TEXT, product TEXT,',
+    '    line_revenue REAL, running_total REAL',
+    ');',
+    '',
+    '-- DML: Incremental insert for new data',
+    'INSERT INTO region_running_rev',
+    'WITH new_sales AS (',
+    '    SELECT sale_date, region, product,',
+    '        amount * quantity AS line_revenue',
+    '    FROM raw_sales',
+    '    WHERE sale_date > {1}',
+    ')',
+    'SELECT',
+    '    sale_date, region, product, line_revenue,',
+    '    {2}(line_revenue) {3} (',
+    '        PARTITION BY {4}',
+    '        {5} sale_date ASC',
+    '    ) AS running_total',
+    'FROM new_sales;'
+  ],
+  blanks: [
+    { answer:"IF NOT EXISTS",tech:"ddl", hint:"DDL clause that prevents an error if the table already exists.", label:"idempotency" },
+    { answer:"?",            tech:"par", hint:"SQLite parameter placeholder for the cutoff date.",              label:"date param" },
+    { answer:"SUM",          tech:"win", hint:"Aggregate function — used as a window for running total.",       label:"window fn" },
+    { answer:"OVER",         tech:"win", hint:"Keyword that makes an aggregate into a window function.",        label:"OVER keyword" },
+    { answer:"region",       tech:"win", hint:"Running total restarts per region.",                             label:"partition col" },
+    { answer:"ORDER BY",     tech:"win", hint:"Clause that sets cumulative order inside OVER().",               label:"ordering" }
+  ],
+  runnableSQL: `CREATE TABLE IF NOT EXISTS region_running_rev (sale_date TEXT, region TEXT, product TEXT, line_revenue REAL, running_total REAL);
+DELETE FROM region_running_rev;
+INSERT INTO region_running_rev
+WITH new_sales AS (
+  SELECT sale_date, region, product, amount * quantity AS line_revenue
+  FROM raw_sales WHERE sale_date > ?
+)
+SELECT sale_date, region, product, line_revenue,
+  SUM(line_revenue) OVER (PARTITION BY region ORDER BY sale_date ASC) AS running_total
+FROM new_sales;`,
+  runParams: ['2024-04-01'],
+  explanation: "<code class='ddl'>IF NOT EXISTS</code> makes the DDL idempotent — safe to run repeatedly. The CTE filters to only new sales via the <code class='par'>?</code> parameter. <code class='win'>SUM(line_revenue) OVER(PARTITION BY region ORDER BY sale_date)</code> produces a per-region running cumulative total. Each execution appends only the incremental slice.",
+  notes: {
+    hints: [
+      "<code>IF NOT EXISTS</code> is crucial for idempotent scripts — it prevents errors on re-runs.",
+      "<code>SUM() OVER(ORDER BY ...)</code> without a frame clause defaults to <code>RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW</code> — a running total.",
+      "The parameter <code>?</code> receives the cutoff date. In production, this would be the last successful load timestamp."
+    ],
+    consider: [
+      "What prevents duplicate rows on re-run? In production, you'd add a <code>DELETE WHERE sale_date > ?</code> before the INSERT, or use <code>INSERT OR IGNORE</code> with a unique constraint.",
+      "Running totals are cumulative <em>within the filtered window</em> — not across all-time data. Consider whether your business logic needs full-history or incremental running totals.",
+      "This pattern scales well: the WHERE clause limits the scan to recent data, and the window function only processes the new slice."
+    ]
+  },
+  helps: {
+    0: "IF NOT EXISTS after CREATE TABLE means: only create the table if it doesn't already exist. This makes the script safe to run repeatedly.",
+    3: "OVER is the keyword that transforms a regular aggregate (SUM, AVG, COUNT) into a window function that preserves every row."
+  }
+},
+
+// ────────────────────────────
+// 4. MODERATE: Customer segmentation with NTILE + LAG + upsert
+// ────────────────────────────
+{
+  id: 4,
+  title: "Customer Segmentation — Quartiles & Trend Detection",
+  difficulty: "med",
+  techs: ["ddl","cte","win","par"],
+  schema: { table: "raw_sales & raw_customers", cols: "See seed data above" },
+  intro: "This exercise builds a customer analytics mart that segments customers into spending quartiles and detects whether their most recent purchase amount trended up or down compared to their prior purchase. It chains three CTEs — each handling a distinct analytical step — and uses <code>INSERT OR REPLACE</code> for safe refreshes.",
+  description: "Complete the multi-CTE pipeline: filter by region parameter, aggregate per customer, apply NTILE for quartile bucketing and LAG for trend detection, then persist with INSERT OR REPLACE.",
+  codeLines: [
+    'CREATE TABLE IF NOT EXISTS customer_segments (',
+    '    customer_id INTEGER PRIMARY KEY, name TEXT,',
+    '    total_spend REAL, spend_quartile INTEGER,',
+    '    last_amount REAL, prev_amount REAL, trend TEXT',
+    ');',
+    '',
+    '{0} customer_segments',
+    'WITH spend_agg AS (',
+    '    SELECT s.customer_id, c.name,',
+    '        SUM(s.amount * s.quantity) AS total_spend',
+    '    FROM raw_sales s',
+    '    JOIN raw_customers c ON s.customer_id = c.id',
+    '    WHERE s.region = {1}',
+    '    {2} s.customer_id, c.name',
+    '),',
+    'quartiled AS (',
+    '    SELECT *,',
+    '        {3}(4) OVER (',
+    '            ORDER BY total_spend {4}',
+    '        ) AS spend_quartile',
+    '    FROM spend_agg',
+    '),',
+    'with_trend AS (',
+    '    SELECT q.customer_id, q.name, q.total_spend,',
+    '        q.spend_quartile,',
+    '        last_s.amount AS last_amount,',
+    '        {5}(last_s.amount, 1) OVER (',
+    '            PARTITION BY last_s.customer_id',
+    '            ORDER BY last_s.sale_date',
+    '        ) AS prev_amount',
+    '    FROM quartiled q',
+    '    JOIN raw_sales last_s ON q.customer_id = last_s.customer_id',
+    '    WHERE last_s.region = {6}',
+    ')',
+    'SELECT customer_id, name, total_spend, spend_quartile,',
+    '    last_amount, prev_amount,',
+    '    CASE',
+    '        WHEN prev_amount IS NULL THEN \'new\'',
+    '        WHEN last_amount > prev_amount THEN \'up\'',
+    '        WHEN last_amount < prev_amount THEN \'down\'',
+    '        ELSE \'flat\'',
+    '    END AS trend',
+    'FROM with_trend',
+    'GROUP BY customer_id;'
+  ],
+  blanks: [
+    { answer:"INSERT OR REPLACE INTO", tech:"ddl", hint:"DML that inserts or updates if the PK exists. SQLite's upsert.",
+      label:"upsert DML", accept:["INSERT OR REPLACE INTO"] },
+    { answer:"?",          tech:"par", hint:"Parameter for the region filter.",         label:"region param" },
+    { answer:"GROUP BY",   tech:"cte", hint:"Required clause when using SUM().",        label:"grouping" },
+    { answer:"NTILE",      tech:"win", hint:"Window function that splits into N equal buckets.",  label:"quartile fn" },
+    { answer:"DESC",       tech:"win", hint:"Highest spenders in quartile 1.",          label:"sort dir" },
+    { answer:"LAG",        tech:"win", hint:"Window function that looks back one row.", label:"trend fn" },
+    { answer:"?",          tech:"par", hint:"Same region parameter for the trend join.",label:"region param 2" }
+  ],
+  runnableSQL: `DROP TABLE IF EXISTS customer_segments;
+CREATE TABLE IF NOT EXISTS customer_segments (customer_id INTEGER PRIMARY KEY, name TEXT, total_spend REAL, spend_quartile INTEGER, last_amount REAL, prev_amount REAL, trend TEXT);
+INSERT OR REPLACE INTO customer_segments
+WITH spend_agg AS (
+  SELECT s.customer_id, c.name, SUM(s.amount * s.quantity) AS total_spend
+  FROM raw_sales s JOIN raw_customers c ON s.customer_id = c.id
+  WHERE s.region = ? GROUP BY s.customer_id, c.name
+),
+quartiled AS (
+  SELECT *, NTILE(4) OVER (ORDER BY total_spend DESC) AS spend_quartile FROM spend_agg
+),
+with_trend AS (
+  SELECT q.customer_id, q.name, q.total_spend, q.spend_quartile,
+    last_s.amount AS last_amount,
+    LAG(last_s.amount, 1) OVER (PARTITION BY last_s.customer_id ORDER BY last_s.sale_date) AS prev_amount
+  FROM quartiled q JOIN raw_sales last_s ON q.customer_id = last_s.customer_id
+  WHERE last_s.region = ?
+)
+SELECT customer_id, name, total_spend, spend_quartile, last_amount, prev_amount,
+  CASE WHEN prev_amount IS NULL THEN 'new'
+       WHEN last_amount > prev_amount THEN 'up'
+       WHEN last_amount < prev_amount THEN 'down'
+       ELSE 'flat' END AS trend
+FROM with_trend GROUP BY customer_id;`,
+  runParams: ['West','West'],
+  explanation: "<code class='ddl'>INSERT OR REPLACE INTO</code> handles the refresh — if a customer_id already exists, the row is replaced. Three chained CTEs form a pipeline: <code class='cte'>spend_agg</code> joins and aggregates with a <code class='par'>?</code> region filter, <code class='cte'>quartiled</code> applies <code class='win'>NTILE(4)</code> for segmentation, and <code class='cte'>with_trend</code> uses <code class='win'>LAG()</code> to detect purchase direction. The CASE expression translates the numeric comparison into a human-readable trend label.",
+  notes: {
+    hints: [
+      "<code>INSERT OR REPLACE</code> is SQLite's upsert mechanism — it deletes the conflicting row and inserts the new one. PostgreSQL uses <code>ON CONFLICT ... DO UPDATE</code> instead.",
+      "<code>NTILE(4)</code> splits rows into 4 equal groups. With DESC ordering, the highest spenders land in quartile 1.",
+      "<code>LAG(amount, 1)</code> reaches back one row per customer's chronological order to find their previous purchase amount."
+    ],
+    consider: [
+      "The same <code>?</code> placeholder appears twice for the region — both must receive the same value in the parameter array. Consider whether a CTE-level filter is cleaner than repeating the WHERE.",
+      "NTILE distribution can be uneven with small datasets. With 6 customers split into 4 quartiles, the buckets will be 2-2-1-1.",
+      "The CASE/trend logic runs <em>after</em> the window function. This is a good pattern: compute in the window, interpret in the outer query."
+    ]
+  },
+  helps: {
+    0: "INSERT OR REPLACE INTO is SQLite's way of handling upserts. If a row with the same PRIMARY KEY exists, it's replaced entirely.",
+    3: "NTILE(n) is a window function that distributes rows into n roughly equal numbered buckets. NTILE(4) creates quartiles.",
+    5: "LAG(column, offset) looks backward by 'offset' rows in the window's ORDER BY sequence. LAG(amount, 1) gets the previous row's amount."
+  }
+},
+
+// ────────────────────────────
+// 5. MODERATE: Full ETL pipeline — staging → transform → dual materialize
+// ────────────────────────────
+{
+  id: 5,
+  title: "Full ETL Pipeline — Monthly Reporting Mart",
+  difficulty: "med",
+  techs: ["ddl","cte","win","par"],
+  schema: { table: "raw_sales & raw_customers", cols: "See seed data above" },
+  intro: "This final exercise simulates a complete ETL pipeline: create two reporting tables — a monthly revenue summary and a month-over-month growth analysis — from a single parameterized, multi-CTE query with multiple window functions. In production, this would be a scheduled job that refreshes your BI layer.",
+  description: "Build two materialized tables in sequence. The first aggregates monthly revenue by region. The second adds month-over-month growth rate using <code>LAG()</code> and a running YTD total. Both filter to a parameterized year.",
+  codeLines: [
+    '-- TABLE 1: Monthly revenue summary',
+    '{0} monthly_revenue (',
+    '    month TEXT, region TEXT, revenue REAL,',
+    '    order_count INTEGER, avg_order REAL',
+    ');',
+    '',
+    'INSERT INTO monthly_revenue',
+    '{1} monthly AS (',
+    '    SELECT',
+    "        strftime('%Y-%m', sale_date) AS month,",
+    '        region,',
+    '        SUM(amount * quantity) AS revenue,',
+    '        COUNT(*) AS order_count,',
+    '        {2}(amount * quantity) AS avg_order',
+    '    FROM raw_sales',
+    "    WHERE strftime('%Y', sale_date) = {3}",
+    '    GROUP BY month, region',
+    ')',
+    'SELECT * FROM monthly;',
+    '',
+    '-- TABLE 2: Growth analysis (reads from table 1)',
+    'CREATE TABLE IF NOT EXISTS monthly_growth (',
+    '    month TEXT, region TEXT, revenue REAL,',
+    '    prev_month_rev REAL, growth_pct REAL,',
+    '    ytd_revenue REAL',
+    ');',
+    '',
+    '{4} monthly_growth',
+    'WITH base AS (',
+    '    SELECT * FROM monthly_revenue',
+    '),',
+    'enriched AS (',
+    '    SELECT month, region, revenue,',
+    '        {5}(revenue, 1) OVER (',
+    '            {6} region',
+    '            ORDER BY month',
+    '        ) AS prev_month_rev,',
+    '        {7}(revenue) OVER (',
+    '            PARTITION BY region',
+    '            {8} month',
+    '        ) AS ytd_revenue',
+    '    FROM base',
+    ')',
+    'SELECT month, region, revenue, prev_month_rev,',
+    '    ROUND((revenue - prev_month_rev) * 100.0',
+    '        / prev_month_rev, 1) AS growth_pct,',
+    '    ytd_revenue',
+    'FROM enriched;'
+  ],
+  blanks: [
+    { answer:"CREATE TABLE IF NOT EXISTS", tech:"ddl",
+      hint:"Idempotent DDL for the first target table.", label:"DDL idempotent",
+      accept:["CREATE TABLE IF NOT EXISTS"] },
+    { answer:"WITH",          tech:"cte", hint:"Start the CTE block for the INSERT.",     label:"CTE keyword" },
+    { answer:"AVG",           tech:"cte", hint:"Aggregate function for average order size.",label:"avg fn" },
+    { answer:"?",             tech:"par", hint:"Parameter for the year filter.",           label:"year param" },
+    { answer:"INSERT INTO",   tech:"ddl", hint:"DML to populate the growth table.",        label:"DML insert" },
+    { answer:"LAG",           tech:"win", hint:"Look back one month for comparison.",      label:"MoM fn" },
+    { answer:"PARTITION BY",  tech:"win", hint:"Restart LAG calculation per region.",      label:"partition" },
+    { answer:"SUM",           tech:"win", hint:"Running sum for year-to-date.",            label:"YTD fn" },
+    { answer:"ORDER BY",      tech:"win", hint:"Cumulative ordering for the YTD total.",   label:"YTD order" }
+  ],
+  runnableSQL: `DROP TABLE IF EXISTS monthly_revenue;
+DROP TABLE IF EXISTS monthly_growth;
+CREATE TABLE IF NOT EXISTS monthly_revenue (month TEXT, region TEXT, revenue REAL, order_count INTEGER, avg_order REAL);
+INSERT INTO monthly_revenue
+WITH monthly AS (
+  SELECT strftime('%Y-%m', sale_date) AS month, region,
+    SUM(amount * quantity) AS revenue, COUNT(*) AS order_count, AVG(amount * quantity) AS avg_order
+  FROM raw_sales WHERE strftime('%Y', sale_date) = ?
+  GROUP BY month, region
+) SELECT * FROM monthly;
+CREATE TABLE IF NOT EXISTS monthly_growth (month TEXT, region TEXT, revenue REAL, prev_month_rev REAL, growth_pct REAL, ytd_revenue REAL);
+INSERT INTO monthly_growth
+WITH base AS (SELECT * FROM monthly_revenue),
+enriched AS (
+  SELECT month, region, revenue,
+    LAG(revenue, 1) OVER (PARTITION BY region ORDER BY month) AS prev_month_rev,
+    SUM(revenue) OVER (PARTITION BY region ORDER BY month) AS ytd_revenue
+  FROM base
+)
+SELECT month, region, revenue, prev_month_rev,
+  ROUND((revenue - prev_month_rev) * 100.0 / prev_month_rev, 1) AS growth_pct, ytd_revenue
+FROM enriched;
+SELECT * FROM monthly_growth ORDER BY region, month;`,
+  runParams: ['2024'],
+  explanation: "This is a two-stage pipeline. Stage 1: <code class='ddl'>CREATE TABLE + INSERT</code> materializes <code class='cte'>monthly</code> aggregates filtered by a <code class='par'>?</code> year parameter. Stage 2 reads from that freshly-materialized table and enriches it with two window functions: <code class='win'>LAG()</code> for month-over-month comparison and <code class='win'>SUM() OVER(ORDER BY month)</code> for a running YTD total. The growth percentage is computed in the outer SELECT. This multi-table approach mimics real warehouse layering — staging → transform → mart.",
+  notes: {
+    hints: [
+      "Stage 2 reads from <code>monthly_revenue</code> (a physical table), not from a CTE. This is intentional — in production, downstream tables reading from upstream materializations is cleaner than one giant query.",
+      "<code>strftime('%Y', sale_date)</code> extracts the year in SQLite. Other databases use <code>EXTRACT(YEAR FROM ...)</code> or <code>DATE_PART()</code>.",
+      "Two window functions in the same SELECT can have different PARTITION BY and ORDER BY clauses — they're independent calculations."
+    ],
+    consider: [
+      "The growth_pct will be NULL for each region's first month (no prior month to compare). Consider using <code>COALESCE(growth_pct, 0)</code> in downstream dashboards.",
+      "This two-table approach models a common warehouse architecture: <strong>staging → intermediate → mart</strong>. The monthly_revenue table is the intermediate layer; monthly_growth is the mart.",
+      "If this ran daily, you'd parameterize the month too (not just year) and use <code>INSERT OR REPLACE</code> with a composite primary key for safe re-runs.",
+      "Consider adding indexes on (month, region) after creation for fast dashboard queries."
+    ]
+  },
+  helps: {
+    0: "CREATE TABLE IF NOT EXISTS prevents errors when the script is run repeatedly. It's essential for idempotent ETL.",
+    5: "LAG(revenue, 1) looks at the previous row's revenue within the window. With ORDER BY month, this gives you last month's revenue for comparison.",
+    7: "SUM() as a window function with ORDER BY produces a running cumulative total — here it accumulates revenue month by month for a year-to-date figure."
+  }
+}
+
+];
+
+// ═══════════════════════════════════════════
+//  RENDER ENGINE
+// ═══════════════════════════════════════════
+let solved = new Set();
+
+function updateProgress() {
+  const pct = (solved.size / exercises.length) * 100;
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('scoreLabel').textContent = `${solved.size} / ${exercises.length}`;
+}
+
+function renderExercises() {
+  const container = document.getElementById('exerciseContainer');
+  exercises.forEach(ex => {
+    const div = document.createElement('div');
+    div.className = 'exercise';
+    div.id = `ex-${ex.id}`;
+
+    const diffClass = ex.difficulty === 'easy' ? 'diff-easy' : ex.difficulty === 'med' ? 'diff-med' : 'diff-hard';
+    const diffLabel = ex.difficulty === 'easy' ? 'Beginner' : ex.difficulty === 'med' ? 'Moderate' : 'Advanced';
+
+    const techLabels = { ddl:"DDL/DML", cte:"CTE", win:"Window Fn", par:"Parameter" };
+    const usedTechs = [...new Set(ex.techs)];
+    const tagsHTML = usedTechs.map(t => `<span class="tech-tag ${t}">${techLabels[t]}</span>`).join('');
+
+    let schemaHTML = '';
+    if (ex.schema.cols && ex.schema.cols !== 'See seed data above') {
+      schemaHTML = `<div class="schema-box"><span class="tname">${ex.schema.table}</span> <span class="cols">(${ex.schema.cols})</span></div>`;
+    } else {
+      schemaHTML = `<div class="schema-box"><span class="tname">${ex.schema.table}</span> <span class="cols">${ex.schema.cols || ''}</span></div>`;
+    }
+
+    // Build code with blanks + context help buttons
+    const joined = ex.codeLines.join('\n');
+    let codeHTML = joined.replace(/\{(\d+)\}/g, (_, idx) => {
+      const i = parseInt(idx);
+      const b = ex.blanks[i];
+      const ansLen = b.answer.length;
+      const widthCh = Math.max(ansLen + 2, 6);
+      const techClass = b.tech ? ` t-${b.tech}` : '';
+      let helpBtn = '';
+      if (ex.helps && ex.helps[i]) {
+        helpBtn = ` <span class="help-btn" onclick="toggleHelp(this,event)">?<span class="help-tip">${ex.helps[i]}</span></span>`;
+      }
+      return `<span class="blank-wrap"><input type="text" class="${techClass}" data-ex="${ex.id}" data-blank="${i}" style="width:${widthCh}ch" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="???" /><span class="blank-label">${b.label}${helpBtn}</span></span>`;
+    });
+
+    // Syntax highlight
+    codeHTML = codeHTML
+      .replace(/\b(SELECT|FROM|WHERE|AND|OR|JOIN|INNER JOIN|LEFT JOIN|ON|GROUP BY|HAVING|ORDER BY|DESC|ASC|IN|LIKE|AS|INTO|UNION ALL|UNION|WITH|CASE|WHEN|THEN|ELSE|END|LIMIT|ROUND|COALESCE|NULL)\b/g, '<span class="kw">$1</span>')
+      .replace(/\b(CREATE TABLE|DROP TABLE|INSERT INTO|INSERT OR REPLACE INTO|IF NOT EXISTS|IF EXISTS|DELETE|ALTER TABLE|PRIMARY KEY|TEXT|INTEGER|REAL)\b/g, '<span class="dl">$1</span>')
+      .replace(/\b(PARTITION BY|OVER|ROWS|RANGE|PRECEDING|FOLLOWING|UNBOUNDED|BETWEEN|CURRENT ROW)\b/g, '<span class="cl">$1</span>')
+      .replace(/\b(SUM|AVG|COUNT|MAX|MIN|ROW_NUMBER|RANK|DENSE_RANK|NTILE|LAG|LEAD|FIRST_VALUE|LAST_VALUE|PERCENT_RANK)\b/g, '<span class="fn">$1</span>')
+      .replace(/(--[^\n]*)/g, '<span class="cmt">$1</span>')
+      .replace(/(strftime\([^)]+\))/g, '<span class="fn">$1</span>');
+
+    // Notes section
+    let notesHTML = '';
+    if (ex.notes) {
+      notesHTML = `<div class="note-box"><h4>NOTE</h4>`;
+      if (ex.notes.hints) {
+        notesHTML += `<div class="note-section"><div class="note-section-title hints">&#128161; Hints</div><ul>${ex.notes.hints.map(h=>`<li>${h}</li>`).join('')}</ul></div>`;
+      }
+      if (ex.notes.consider) {
+        notesHTML += `<div class="note-section"><div class="note-section-title consider">&#9889; Points to Consider</div><ul>${ex.notes.consider.map(c=>`<li>${c}</li>`).join('')}</ul></div>`;
+      }
+      notesHTML += '</div>';
+    }
+
+    div.innerHTML = `
+      <div class="exercise-header">
+        <div class="exercise-num">${ex.id}</div>
+        <div class="exercise-title">${ex.title}</div>
+        <div class="exercise-diff ${diffClass}">${diffLabel}</div>
+        <div class="tech-tags">${tagsHTML}</div>
+      </div>
+      <div class="exercise-body">
+        <div class="intro-box">
+          <h4><span class="icon">&#128218;</span> Introduction</h4>
+          <p>${ex.intro}</p>
+        </div>
+        <p>${ex.description}</p>
+        ${schemaHTML}
+        <div class="fill-code">${codeHTML}</div>
+        <div class="exercise-actions">
+          <button class="btn btn-check" onclick="checkExercise(${ex.id})">Check Answer</button>
+          <button class="btn btn-run" id="run-${ex.id}" onclick="runExercise(${ex.id})" disabled>&#9654; Run Query</button>
+          <button class="btn btn-hint" onclick="showHint(${ex.id})">Hint</button>
+          <button class="btn btn-reveal" onclick="revealAnswer(${ex.id})">Reveal</button>
+          <button class="btn btn-reset" onclick="resetExercise(${ex.id})">Reset</button>
+        </div>
+        <div class="hint-area" id="hint-${ex.id}"></div>
+        <div class="results-area" id="results-${ex.id}"></div>
+        ${notesHTML}
+        <div class="explanation" id="explain-${ex.id}"><p>${ex.explanation}</p></div>
+      </div>
+    `;
+    container.appendChild(div);
+  });
+}
+
+function toggleHelp(el, ev) {
+  ev.stopPropagation();
+  const wasActive = el.classList.contains('active');
+  document.querySelectorAll('.help-btn.active').forEach(b => b.classList.remove('active'));
+  if (!wasActive) el.classList.add('active');
+}
+document.addEventListener('click', () => {
+  document.querySelectorAll('.help-btn.active').forEach(b => b.classList.remove('active'));
+});
+
+function getExercise(id) { return exercises.find(e => e.id === id); }
+function getInputs(id) { return Array.from(document.querySelectorAll(`input[data-ex="${id}"]`)); }
+
+function normalize(s) {
+  return s.trim().replace(/\s+/g,' ').replace(/[""]/g,'"').replace(/['']/g,"'").toUpperCase();
+}
+
+function checkBlank(ex, idx, value) {
+  const b = ex.blanks[idx];
+  const nv = normalize(value);
+  const na = normalize(b.answer);
+  if (nv === na) return true;
+  if (b.accept) return b.accept.some(a => normalize(a) === nv);
+  return false;
+}
+
+function checkExercise(id) {
+  const ex = getExercise(id);
+  const inputs = getInputs(id);
+  const hintArea = document.getElementById(`hint-${id}`);
+  let allCorrect = true;
+
+  inputs.forEach((inp, idx) => {
+    inp.classList.remove('correct','wrong');
+    if (checkBlank(ex, idx, inp.value)) {
+      inp.classList.add('correct');
+    } else {
+      inp.classList.add('wrong');
+      allCorrect = false;
+    }
+  });
+
+  if (allCorrect) {
+    hintArea.className = 'hint-area visible success';
+    hintArea.textContent = '✓ All correct! Click ▶ Run Query to execute against the live database.';
+    document.getElementById(`run-${id}`).disabled = false;
+    solved.add(id);
+    document.getElementById(`ex-${id}`).classList.add('solved');
+    document.getElementById(`explain-${id}`).classList.add('visible');
+    updateProgress();
+  } else {
+    const wrongCount = inputs.filter((inp,i) => !checkBlank(ex,i,inp.value)).length;
+    hintArea.className = 'hint-area visible error';
+    hintArea.textContent = `✗ ${wrongCount} blank${wrongCount>1?'s':''} still incorrect. Try again, use Hint, or click the ? icons for context help.`;
+    document.getElementById(`run-${id}`).disabled = true;
+  }
+}
+
+function runExercise(id) {
+  const ex = getExercise(id);
+  const resultsArea = document.getElementById(`results-${id}`);
+  if (!db) {
+    resultsArea.className = 'results-area visible';
+    resultsArea.innerHTML = '<div class="results-msg" style="color:var(--red)">Database not loaded. Please wait or refresh.</div>';
+    return;
+  }
+  const result = runSQL(ex.runnableSQL, ex.runParams);
+  resultsArea.className = 'results-area visible';
+  if (result.error) {
+    resultsArea.innerHTML = `<div class="results-msg" style="color:var(--red)">Error: ${result.error}</div>`;
+  } else if (result.data && result.data.length > 0) {
+    const r = result.data[result.data.length - 1]; // last result set
+    resultsArea.innerHTML = `<div class="results-header">&#9989; Query Result <span class="rows">(${r.values.length} row${r.values.length!==1?'s':''})</span></div>` + renderTable(r);
+  } else {
+    resultsArea.innerHTML = '<div class="results-msg">Statement executed successfully (no rows returned). Check the table preview buttons above.</div>';
+  }
+}
+
+function showHint(id) {
+  const ex = getExercise(id);
+  const inputs = getInputs(id);
+  const hintArea = document.getElementById(`hint-${id}`);
+  let targetIdx = inputs.findIndex((inp,i) => !checkBlank(ex,i,inp.value));
+  if (targetIdx < 0) targetIdx = 0;
+  const b = ex.blanks[targetIdx];
+  const techName = {ddl:"DDL/DML",cte:"CTE",win:"Window Fn",par:"Parameter"}[b.tech] || "";
+  hintArea.className = 'hint-area visible hint';
+  hintArea.innerHTML = `<strong>[${techName}] Hint for "${b.label}":</strong> ${b.hint}`;
+}
+
+function revealAnswer(id) {
+  const ex = getExercise(id);
+  const inputs = getInputs(id);
+  inputs.forEach((inp,idx) => {
+    inp.value = ex.blanks[idx].answer;
+    inp.classList.remove('wrong');
+    inp.classList.add('correct');
+  });
+  const hintArea = document.getElementById(`hint-${id}`);
+  hintArea.className = 'hint-area visible success';
+  hintArea.textContent = 'Answers revealed. Click ▶ Run Query to see the results!';
+  document.getElementById(`run-${id}`).disabled = false;
+  solved.add(id);
+  document.getElementById(`ex-${id}`).classList.add('solved');
+  document.getElementById(`explain-${id}`).classList.add('visible');
+  updateProgress();
+}
+
+function resetExercise(id) {
+  const inputs = getInputs(id);
+  inputs.forEach(inp => { inp.value=''; inp.classList.remove('correct','wrong'); });
+  document.getElementById(`hint-${id}`).className = 'hint-area';
+  document.getElementById(`results-${id}`).className = 'results-area';
+  document.getElementById(`explain-${id}`).classList.remove('visible');
+  document.getElementById(`run-${id}`).disabled = true;
+}
+
+// ── Initialize ──
+renderExercises();
+updateProgress();
+initDB();
+</script>
+
+</body>
+</html>

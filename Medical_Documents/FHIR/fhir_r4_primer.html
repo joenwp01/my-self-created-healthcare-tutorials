@@ -1,0 +1,1952 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>FHIR R4 Primer — Before You Begin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;600;700&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#7d8b9d;--header-bg:#1e4670;
+  --surface:#d3dde8;--surface-raised:#c8d3e0;--surface-inset:#a8b4c2;
+  --border:#8693a3;--border-accent:#5d6e85;--border-focus:#1e4670;
+  --text:#2a2a2a;--text-muted:#4a5260;--text-dim:#6b7280;
+  --accent:#7a5418;--accent-glow:rgba(184,134,42,.12);--accent-dim:#5d3f10;--accent-badge:#b8862a;
+  --green:#1f6843;--green-bg:rgba(31,104,67,.12);
+  --red:#9c382d;--red-bg:rgba(156,56,45,.10);
+  --orange:#8e4d10;--orange-bg:rgba(142,77,16,.10);
+  --blue:#2c5680;--blue-bg:rgba(44,86,128,.10);
+  --purple:#553a80;--purple-bg:rgba(85,58,128,.10);
+  --cyan:#155f6e;--cyan-bg:rgba(21,95,110,.10);
+  --radius:8px;--radius-lg:12px;
+  --mono:'JetBrains Mono',monospace;--serif:'Crimson Pro',Georgia,serif;--sans:'DM Sans',system-ui,sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:#1e4670;color:var(--text);font-family:var(--sans);font-size:15px;line-height:1.7;min-height:100vh}
+
+/* ── Header ── */
+.header{background:var(--header-bg);border-bottom:2px solid var(--accent);padding:20px 28px 0;color:#f0f4fa}
+.header-top{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;padding-bottom:14px}
+.header-brand{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.header-brand h1{font-family:var(--serif);font-size:26px;font-weight:700;color:#f4c97c;letter-spacing:.3px}
+.header-brand .pipe-motif{font-family:var(--mono);color:#a8b8c8;font-size:11px;letter-spacing:.5px;opacity:.75}
+.header-brand .subtitle{font-family:var(--sans);font-size:13px;color:#cfd8e3;font-weight:400;margin-left:4px}
+.header-credit{font-size:11px;color:#a8b8c8;font-family:var(--mono)}
+
+/* ── Welcome-back banner ── */
+.welcome-back{background:rgba(184,134,42,.18);border:1px solid var(--accent-badge);
+  padding:10px 18px;margin-bottom:14px;border-radius:var(--radius);display:flex;align-items:center;
+  justify-content:space-between;gap:12px;flex-wrap:wrap}
+.welcome-back-text{color:#f0f4fa;font-size:13px}
+.welcome-back-text strong{color:#f4c97c}
+
+/* ── Progress Bar ── */
+.progress-bar{position:sticky;top:0;z-index:90;background:rgba(125,139,157,.95);backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border);padding:10px 20px;overflow-x:auto;white-space:nowrap;
+  display:flex;gap:6px;align-items:center}
+.progress-bar::-webkit-scrollbar{height:4px}
+.progress-bar::-webkit-scrollbar-thumb{background:var(--border-accent);border-radius:2px}
+.seg-pill{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:18px;
+  font-family:var(--mono);font-size:11px;font-weight:600;cursor:pointer;
+  background:#73798a;color:#000;border:1px solid #525861;transition:all .15s;flex-shrink:0}
+.seg-pill .seg-num{font-family:var(--mono);font-size:10px;color:#000;font-weight:700}
+.seg-pill .seg-icon{font-size:14px}
+.seg-pill:hover{background:#8a92a0;color:#000;border-color:#5d6470}
+.seg-pill.done{background:#5cae6a;color:#000;border-color:#3d9555}
+.seg-pill.done:hover{background:#7cc188;color:#000;border-color:#5cae6a}
+.seg-pill.active{background:#4a90c2;color:#000;border-color:#3a7aa6}
+.seg-pill.active:hover{background:#5fa0d0;color:#000;border-color:#4a90c2}
+.seg-pill.done.active{background:#4a90c2;color:#000;border-color:#3a7aa6}
+.seg-pill.locked{background:#5d6470;color:#3a3a3a;border-color:#4a5058;cursor:not-allowed;opacity:.5}
+.seg-pill.locked:hover{background:#5d6470;color:#3a3a3a}
+.time-remaining{margin-left:auto;font-family:var(--mono);font-size:10px;color:#0d2640;
+  padding:4px 10px;background:rgba(255,255,255,.15);border-radius:10px;flex-shrink:0}
+
+/* ── Main layout ── */
+main{max-width:1200px;margin:0 auto;padding:24px 28px;display:grid;grid-template-columns:1fr 280px;gap:28px}
+@media (max-width:920px){main{grid-template-columns:1fr;padding:16px}}
+.content-col{min-width:0}
+.sidebar-col{position:relative}
+
+/* ── Hero ── */
+.hero{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);
+  padding:32px 28px;margin-bottom:24px}
+.hero h1{font-family:var(--serif);font-size:34px;font-weight:700;color:var(--text);margin-bottom:10px}
+.hero .hero-sub{font-family:var(--mono);font-size:12px;color:var(--accent-dim);
+  letter-spacing:1px;text-transform:uppercase;margin-bottom:16px}
+.hero p{color:var(--text-muted);margin-bottom:14px;font-size:15px;line-height:1.75}
+.hero-cta{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap}
+
+/* ── Action Bar ── */
+.action-bar{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;
+  margin-bottom:20px;padding:10px 14px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius)}
+.action-bar .left-actions,.action-bar .right-actions{display:flex;gap:8px;flex-wrap:wrap}
+
+/* ── Buttons ── */
+.btn{font-family:var(--mono);font-size:12px;font-weight:600;padding:8px 18px;border-radius:var(--radius);
+  border:1px solid var(--border);cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:6px;
+  background:#b8862a;color:#000;border-color:#b8862a}
+.btn:hover{background:#cc9633;color:#000;border-color:#cc9633}
+.btn.primary{background:var(--accent-badge);color:#000;border-color:var(--accent-badge);font-weight:700}
+.btn.primary:hover{box-shadow:0 2px 16px var(--accent-glow);background:#cc9633;color:#000}
+.btn.primary:disabled{opacity:.35;cursor:not-allowed;box-shadow:none}
+.btn.secondary{background:#b8862a;color:#000;border-color:#b8862a}
+.btn.ghost{background:transparent;color:var(--text);border-color:var(--border)}
+.btn.ghost:hover{background:var(--surface-inset);color:var(--text);border-color:var(--border-accent)}
+
+/* ── Segment ── */
+.segment{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);
+  padding:28px 32px;margin-bottom:24px}
+@media (max-width:920px){.segment{padding:20px 18px}}
+.segment-header{margin-bottom:20px;padding-bottom:18px;border-bottom:1px solid var(--border)}
+.segment-meta{font-family:var(--mono);font-size:11px;color:var(--text-dim);letter-spacing:1px;
+  text-transform:uppercase;margin-bottom:8px;display:flex;gap:14px;flex-wrap:wrap}
+.segment-meta .seg-step{color:var(--accent-dim);font-weight:700}
+.segment-title{font-family:var(--serif);font-size:28px;font-weight:700;color:var(--text);
+  margin-bottom:6px;display:flex;align-items:center;gap:12px}
+.segment-title .seg-icon-large{font-size:30px}
+.segment-subtitle{color:var(--text-muted);font-size:14px;margin-bottom:14px}
+.end-goal{background:var(--accent-glow);border-left:3px solid var(--accent-badge);
+  padding:12px 16px;margin-top:14px;border-radius:0 var(--radius) var(--radius) 0}
+.end-goal-label{font-family:var(--mono);font-size:10px;color:var(--accent-dim);
+  letter-spacing:1.2px;text-transform:uppercase;font-weight:700;margin-bottom:4px}
+.end-goal-text{color:var(--text);font-size:14px;font-style:italic}
+
+/* ── Lecture ── */
+.lecture{font-size:15px;color:var(--text);line-height:1.8}
+.lecture h3{font-family:var(--serif);font-size:20px;font-weight:700;color:var(--text);margin:24px 0 10px}
+.lecture h4{font-family:var(--sans);font-size:15px;font-weight:700;color:var(--accent-dim);margin:18px 0 8px;letter-spacing:.3px}
+.lecture p{margin-bottom:14px;color:var(--text-muted)}
+.lecture p strong{color:var(--text)}
+.lecture ul,.lecture ol{margin:10px 0 14px 24px;color:var(--text-muted)}
+.lecture li{margin-bottom:6px}
+.lecture code{font-family:var(--mono);font-size:12.5px;background:var(--surface-inset);color:var(--accent);
+  padding:2px 6px;border-radius:4px;border:1px solid var(--border)}
+.lecture .callout{background:#e0e0e0;border:1px solid #b0b0b0;border-radius:var(--radius);
+  padding:14px 18px;margin:16px 0;font-size:14px;color:#000}
+.lecture .callout strong{color:#000}
+.lecture .callout-icon{font-size:18px;margin-right:6px}
+
+/* ── Inline card-link earmark ── */
+.card-link{color:var(--accent);cursor:pointer;border-bottom:1px dotted var(--accent);font-weight:600;
+  background:none;border-top:none;border-left:none;border-right:none;font-family:inherit;
+  font-size:inherit;padding:0;display:inline;line-height:inherit;text-align:left}
+.card-link:hover{border-bottom-style:solid;color:var(--accent-dim)}
+
+/* ── Code block ── */
+.code-block{font-family:var(--mono);font-size:12px;background:#1e2d3e;color:#e8eef5;
+  padding:14px 16px;border-radius:var(--radius);margin:12px 0;overflow-x:auto;line-height:1.75;
+  border:1px solid #2a3f56;white-space:pre}
+.code-block .hl-verb{color:#f4c97c;font-weight:700}
+.code-block .hl-url{color:#82d8e8}
+.code-block .hl-key{color:#6aaed6}
+.code-block .hl-str{color:#b8d97a}
+.code-block .hl-num{color:#d49c8f}
+.code-block .hl-kw{color:#c89640;font-weight:700}
+.code-block .hl-comment{color:#7a8b9c;font-style:italic}
+.code-block .hl-ok{color:#5cae6a;font-weight:700}
+.code-block .hl-err{color:#e07070;font-weight:700}
+
+/* ── Before / After ── */
+.ba-block{display:grid;grid-template-columns:1fr auto 1fr;gap:14px;margin:18px 0;align-items:stretch}
+@media (max-width:680px){.ba-block{grid-template-columns:1fr;gap:8px}}
+.ba-panel{background:var(--surface-raised);border:1px solid var(--border);border-radius:var(--radius);padding:14px;display:flex;flex-direction:column}
+.ba-label{font-family:var(--mono);font-size:10px;color:var(--text-dim);letter-spacing:1.5px;text-transform:uppercase;font-weight:700;margin-bottom:8px}
+.ba-before .ba-label{color:var(--blue)}
+.ba-after .ba-label{color:var(--green)}
+.ba-content{font-size:13px;color:var(--text);line-height:1.7;flex:1}
+.ba-content code,.ba-content pre{font-family:var(--mono);font-size:11.5px;color:var(--accent);
+  background:var(--surface-inset);padding:2px 5px;border-radius:3px;display:inline-block;word-break:break-all;white-space:pre-wrap}
+.ba-content pre{display:block;padding:8px 10px;margin-top:6px}
+.ba-arrow{display:flex;align-items:center;justify-content:center;color:var(--accent-badge);font-size:24px;font-weight:700;font-family:var(--mono)}
+@media (max-width:680px){.ba-arrow{transform:rotate(90deg);padding:4px 0}}
+
+/* ── Pulse Check ── */
+.pulse-check{background:#e0e0e0;border:1px solid #b0b0b0;border-radius:var(--radius-lg);padding:18px 22px;margin:22px 0;color:#000}
+.pulse-header{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.pulse-icon{font-size:18px}
+.pulse-label{font-family:var(--mono);font-size:11px;color:#000;letter-spacing:1.5px;text-transform:uppercase;font-weight:700}
+.pulse-question{font-size:15px;color:#000;margin-bottom:14px;line-height:1.6}
+.pulse-question code{font-family:var(--mono);font-size:12.5px;background:#fff;color:var(--accent);padding:2px 5px;border-radius:3px;border:1px solid #b0b0b0}
+.pulse-options{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
+.pulse-option{display:flex;align-items:flex-start;gap:10px;padding:10px 14px;background:var(--surface-raised);
+  border:1px solid var(--border);border-radius:var(--radius);cursor:pointer;transition:all .15s;
+  color:#000;font-size:13.5px;line-height:1.5;text-align:left;width:100%;font-family:var(--sans)}
+.pulse-option:hover{background:var(--surface);border-color:var(--border-accent)}
+.pulse-option.correct{background:rgba(31,104,67,.18);border-color:var(--green)}
+.pulse-option.wrong{background:rgba(156,56,45,.15);border-color:var(--red)}
+.pulse-option.disabled{cursor:not-allowed;opacity:.6}
+.pulse-option.disabled.correct,.pulse-option.disabled.wrong{opacity:1}
+.pulse-key{font-family:var(--mono);font-weight:700;font-size:12px;color:#000;
+  min-width:22px;height:22px;display:flex;align-items:center;justify-content:center;
+  border:1px solid var(--border);border-radius:4px;flex-shrink:0;background:var(--surface)}
+.pulse-feedback{padding:12px 14px;border-radius:var(--radius);font-size:13.5px;line-height:1.6;margin-top:10px;color:#000;display:none}
+.pulse-feedback.visible{display:block}
+.pulse-feedback.correct{background:rgba(31,104,67,.15);border:1px solid var(--green)}
+.pulse-feedback.incorrect{background:rgba(156,56,45,.12);border:1px solid var(--red)}
+.pulse-feedback.revealed{background:rgba(44,86,128,.12);border:1px solid var(--blue)}
+.pulse-feedback strong{color:#000}
+.pulse-actions{display:flex;gap:10px;margin-top:10px;flex-wrap:wrap}
+.pulse-link{font-family:var(--mono);font-size:11px;color:var(--accent-dim);font-weight:600;background:none;border:none;cursor:pointer;text-decoration:underline;padding:4px 0}
+.pulse-link:hover{color:var(--accent)}
+
+/* ── Cards Sidebar ── */
+.cards-panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:18px;position:sticky;top:80px}
+.cards-panel h3{font-family:var(--mono);font-size:11px;color:var(--accent-dim);letter-spacing:1.5px;text-transform:uppercase;font-weight:700;margin-bottom:6px}
+.cards-panel .cards-sub{font-size:11.5px;color:var(--text-dim);margin-bottom:14px;line-height:1.5}
+.card-item{padding:8px 12px;background:var(--surface-raised);border:1px solid var(--border);
+  border-radius:var(--radius);margin-bottom:6px;cursor:pointer;transition:all .15s;font-size:13px;
+  color:var(--text);display:flex;justify-content:space-between;align-items:center;gap:8px}
+.card-item:hover{background:var(--surface-inset);border-color:var(--border-accent)}
+.card-item-term{font-weight:600}
+.card-item-expand{font-size:10px;color:var(--text-dim);font-family:var(--mono)}
+
+/* ── Modal ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;display:none;align-items:center;justify-content:center;padding:20px}
+.modal-overlay.open{display:flex}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);max-width:680px;width:100%;max-height:85vh;display:flex;flex-direction:column;box-shadow:0 8px 32px rgba(0,0,0,.4)}
+.modal-header{padding:18px 22px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;gap:12px}
+.modal-title{font-family:var(--serif);font-size:20px;font-weight:700;color:var(--text)}
+.modal-close{background:none;border:1px solid var(--border);color:var(--text);font-size:18px;width:32px;height:32px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.modal-close:hover{background:var(--surface-inset);border-color:var(--border-accent)}
+.modal-body{padding:18px 22px;overflow-y:auto;flex:1}
+.modal-search{margin-bottom:14px}
+.modal-search input{width:100%;padding:8px 12px;font-family:var(--sans);font-size:14px;background:var(--surface-raised);border:1px solid var(--border);border-radius:var(--radius);color:var(--text)}
+.modal-search input:focus{outline:none;border-color:var(--border-focus)}
+.card-modal-term{font-family:var(--mono);font-size:11px;color:var(--accent-dim);letter-spacing:1.5px;text-transform:uppercase;font-weight:700;margin-bottom:6px}
+.card-modal-expansion{font-family:var(--mono);font-size:13px;color:var(--text-dim);font-style:italic;margin-bottom:10px}
+.card-modal-def{font-size:14.5px;color:var(--text);line-height:1.7;margin-bottom:12px}
+.card-modal-long{font-size:13.5px;color:var(--text-muted);line-height:1.7;padding-top:12px;border-top:1px solid var(--border)}
+.lib-segment-group{margin-bottom:18px}
+.lib-segment-header{font-family:var(--mono);font-size:11px;color:var(--accent-dim);letter-spacing:1.5px;text-transform:uppercase;font-weight:700;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+.lib-card{background:var(--surface-raised);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;margin-bottom:8px}
+.lib-card-term{font-family:var(--sans);font-weight:700;font-size:14px;color:var(--text);margin-bottom:4px}
+.lib-card-expansion{font-family:var(--mono);font-size:11px;color:var(--text-dim);font-style:italic;margin-bottom:6px}
+.lib-card-def{font-size:13px;color:var(--text-muted);line-height:1.6}
+
+/* ── Segment nav footer ── */
+.seg-nav{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:24px;padding-top:18px;border-top:1px solid var(--border);flex-wrap:wrap}
+.seg-nav-left,.seg-nav-right{display:flex;gap:10px;flex-wrap:wrap}
+
+/* ── Footer ── */
+.footer{padding:30px 28px;text-align:center;border-top:1px solid rgba(255,255,255,.1)}
+.footer-actions{display:flex;gap:14px;justify-content:center;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+.footer-credit{font-family:var(--mono);font-size:11px;color:#a8b8c8}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-top">
+    <div class="header-brand">
+      <h1>FHIR R4 Primer</h1>
+      <span class="pipe-motif">{ "resourceType": "Primer", "version": "R4" }</span>
+      <span class="subtitle">Before You Begin · Foundation for the FHIR Pipeline Lab</span>
+    </div>
+    <div class="header-credit">Developed by: Joe Williams</div>
+  </div>
+  <div id="welcomeBackBanner" style="display:none"></div>
+  <div class="progress-bar" id="progressBar"></div>
+</header>
+
+<main>
+  <div class="content-col">
+    <div id="heroSection"></div>
+    <div id="actionBar"></div>
+    <div id="segmentContainer"></div>
+  </div>
+  <aside class="sidebar-col">
+    <div id="cardsSidebar"></div>
+  </aside>
+</main>
+
+<footer class="footer">
+  <div class="footer-actions">
+    <button class="btn ghost" onclick="resetProgress()">↺ Start over</button>
+    <button class="btn primary" id="beginLabBtn" disabled onclick="window.location.href='fhir_pipeline_lab_v1.html'">Begin FHIR Pipeline Lab →</button>
+  </div>
+  <div class="footer-credit">FHIR R4 Primer · Developed by: Joe Williams</div>
+</footer>
+
+<div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modalTitle">Definition</div>
+      <button class="modal-close" onclick="closeModal()" aria-label="Close">×</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════════════════════════════════════
+//  CARDS — 42 definitions across all 8 segments
+//  sidebar: listed per-segment · modal: term + expansion + def + long
+// ════════════════════════════════════════════════════════════════
+const CARDS = {
+
+  // ── Segment 1: REST + HTTP ──
+  restApi:{
+    term:'REST API',expansion:'Representational State Transfer — Application Programming Interface',
+    def:'A web-based interface where software systems exchange data using standard HTTP conventions — the architectural pattern FHIR is built on.',
+    long:'REST is an architectural style, not a protocol. A REST API exposes resources at predictable URLs and responds to standard HTTP verbs. FHIR adds healthcare-specific rules on top — such as application/fhir+json as the required Content-Type and OperationOutcome as the required error format. Key constraints: stateless (each request carries all needed context), cacheable, and uniform interface (the same verbs work for all resource types). When someone says "FHIR endpoint," they mean a REST API that speaks FHIR.'
+  },
+  httpVerb:{
+    term:'HTTP verb',
+    def:'A keyword that tells the server what action to perform: GET (read), POST (create), PUT (replace), DELETE (remove), PATCH (partial update).',
+    long:'FHIR uses GET most heavily for data pipelines (fetching resources by ID or by search). POST creates new resources or submits transaction Bundles — the server assigns the new resource\'s ID. PUT replaces a resource entirely (the full resource body must be supplied). DELETE is disabled on most production FHIR servers; clinical data has regulatory retention requirements and audit trail obligations. PATCH (FHIRPatch) lets you modify specific fields without resending the full resource — useful for correcting a Condition status or updating a MedicationRequest without risk of inadvertently overwriting concurrent changes.'
+  },
+  statusCode:{
+    term:'HTTP status code',
+    def:'A 3-digit number the server returns with every response, indicating whether the request succeeded and why.',
+    long:'200 OK — success; body is the requested resource. 201 Created — new resource created; Location header holds the new URL. 400 Bad Request — malformed JSON or missing required header. 401 Unauthorized — no valid access token. 403 Forbidden — valid token but insufficient scope. 404 Not Found — no resource with that ID. 422 Unprocessable Entity — FHIR\'s validation error: the JSON parsed but the content failed profile rules; response body is always an OperationOutcome naming the failing element and constraint. 500 Internal Server Error — server-side failure. 422 is the code FHIR engineers encounter most in integration work — learning to read the OperationOutcome it returns is the core debugging skill.'
+  },
+  httpHeader:{
+    term:'HTTP header',
+    def:'Key-value metadata attached to every HTTP request or response, describing the payload format, authentication state, and other protocol properties.',
+    long:'Critical FHIR headers: Content-Type: application/fhir+json — required when sending a resource body; tells the server this is FHIR JSON, not plain JSON. Accept: application/fhir+json — tells the server what format to return. Authorization: Bearer {token} — carries the OAuth 2.0 access token; required on virtually every FHIR request beyond /metadata. Prefer: return=representation — asks the server to return the full updated resource after a POST, not just 201 + Location. Servers that receive an unknown or wrong Content-Type often reject the request with 400 even if the JSON is otherwise valid.'
+  },
+  jsonFormat:{
+    term:'JSON',expansion:'JavaScript Object Notation',
+    def:'The text-based data format FHIR uses for all resource payloads — human-readable, machine-parseable, and universally supported.',
+    long:'JSON has six value types: strings ("female"), numbers (62), booleans (true/false), null, objects ({"key":"value"} — unordered key-value pairs), and arrays (["item1","item2"] — ordered lists). FHIR resources are deeply nested JSON objects. Understanding three operations covers most FHIR JSON navigation: access an object field (resource.resourceType), access an array element (resource.name[0].family), and check whether a key exists before accessing it. FHIR also supports XML, but JSON dominates modern US healthcare pipelines. When in doubt, request application/fhir+json.'
+  },
+  bearerToken:{
+    term:'Bearer token',
+    def:'A credential string sent in the HTTP Authorization header that proves the caller has been granted permission to make the request.',
+    long:'"Bearer" means whoever holds the token can use it — unlike certificate-based auth, the server does not re-verify the caller\'s identity beyond token validity. This means tokens must be kept secret (stored in vaults, never in source code), transmitted only over HTTPS, and kept short-lived (5-60 minute expiry is typical). If a bearer token is compromised, the attacker can impersonate the client until the token expires — short expiry is the first-line defense. Tokens are obtained via OAuth 2.0 (Segment 2). The Authorization header format is always: Authorization: Bearer {token_string}.'
+  },
+
+  // ── Segment 2: OAuth 2.0 ──
+  oauth2:{
+    term:'OAuth 2.0',
+    def:'An authorization framework that lets one system access resources on another system using time-limited, scope-limited tokens — without sharing passwords.',
+    long:'OAuth 2.0 handles authorization (what the caller can do), not authentication (who the caller is). Key insight: rather than giving system B your password, system A issues a token granting specific permissions for a limited time. FHIR pipelines use OAuth 2.0 as the authorization foundation under SMART on FHIR. The four OAuth 2.0 flows are: authorization code (user present, browser redirect), implicit (deprecated), client credentials (server-to-server, no user), and device (limited-input devices). For server-to-server healthcare pipelines — which is most of the FHIR Pipeline Lab — client credentials is the correct flow.'
+  },
+  accessToken:{
+    term:'Access token',
+    def:'A short-lived string issued by an authorization server that grants a client permission to make API calls within a declared scope and duration.',
+    long:'Token lifetime: typically 5-60 minutes (expires_in: 900 = 15 minutes). A well-designed pipeline never hard-codes a token. Correct refresh strategy: cache the token\'s expiration time; request a new token at T-2 minutes — not on 401 (that wastes a round-trip and may interrupt a batch operation mid-run). Tokens must be stored in memory or a secrets vault, never written to disk or logged. On an unexpected 401 mid-batch, request a new token once; if the second attempt also fails, abort the run and alert — the problem is likely misconfiguration, not expiry.'
+  },
+  clientCredentials:{
+    term:'Client credentials flow',
+    def:'The OAuth 2.0 flow for server-to-server access with no interactive user — the client authenticates with its own credentials and receives a system-scope token.',
+    long:'Full sequence: (1) Pre-registration: the client registers its public key (JWKS URL) with the authorization server. (2) At runtime, the client builds a signed JWT assertion and POSTs it to the token endpoint with grant_type=client_credentials and the desired scope. (3) The authorization server verifies the JWT signature using the registered public key. (4) If valid, it returns an access token. (5) The client uses the token in Authorization: Bearer headers for the duration of the batch, refreshing before expiry. The private key never travels on the wire — only the signed assertion does. This is the flow underlying SMART Backend Services, used throughout the FHIR Pipeline Lab.'
+  },
+  oauthScope:{
+    term:'OAuth scope',
+    def:'A permission string declaring what resource types and operations a token is authorized to perform, in what patient context.',
+    long:'SMART v2 scope syntax: {context}/{ResourceType}.{permissions}. Context options: "system" (all patients, system-wide — requires no user login), "patient" (single-patient context embedded in the token), "user" (based on the logged-in user\'s permissions). Permission letters: c (create), r (read), u (update), d (delete), s (search). Wildcards: system/*.rs = read and search all resource types. Production practice: enumerate specific resource types needed (system/Patient.rs system/Condition.rs) rather than using wildcards. Narrow scopes survive security audits, fail more safely when the upstream schema adds new resource types, and produce readable audit trails.'
+  },
+  jwt:{
+    term:'JWT',expansion:'JSON Web Token',
+    def:'A compact, self-contained token format consisting of three Base64url-encoded sections — header, payload, and signature — separated by dots.',
+    long:'Structure: header.payload.signature. Header: {"alg":"RS256","typ":"JWT"}. Payload (standard claims): iss (issuer = client ID), sub (subject = also client ID for client credentials), aud (audience = the token endpoint URL — must match exactly), exp (expiration = now + 300 seconds max), jti (JWT ID = UUID, prevents replay). Signature: cryptographic hash of header + payload, signed with the issuer\'s RS256 private key. In SMART Backend Services, the FHIR client signs this JWT with its private key; the authorization server verifies the signature with the registered public key. The private key never travels on the wire — only the signed assertion does.'
+  },
+  tokenEndpoint:{
+    term:'Token endpoint',
+    def:'The HTTPS URL a client POSTs to in order to exchange credentials for an access token.',
+    long:'Discovered from the FHIR server\'s CapabilityStatement (in the SMART security extension at rest.security.extension) or from the /.well-known/smart-configuration document. Token request is a URL-encoded POST: grant_type=client_credentials &scope={space-separated list} &client_assertion_type=urn:ietf:params:oauth:client-assertion-type:jwt-bearer &client_assertion={signed JWT}. Successful response: {"access_token":"...","token_type":"bearer","expires_in":900,"scope":"..."}. Cache the response; re-request before expires_in seconds have elapsed. A 400 from the token endpoint usually means a malformed assertion; a 401 means the signature failed verification — check key registration.'
+  },
+
+  // ── Segment 3: FHIR Core Model ──
+  fhirR4:{
+    term:'FHIR R4',expansion:'Fast Healthcare Interoperability Resources, Release 4 (version 4.0.1)',
+    def:'The current normative version of HL7\'s web-native clinical data standard, published in 2019 and required by US CMS interoperability regulations.',
+    long:'FHIR R4 (4.0.1) is the baseline for all US interoperability mandates as of 2026: US Core 6.1.0, USCDI v3, the CMS Interoperability and Patient Access Rule, and the ONC HTI-1 final rule. R4B (4.3.0) introduced targeted changes to a small set of resources (Evidence, Ingredient, etc.) — most pipelines can ignore it. R5 (2023) adds significant enhancements but is not yet required or widely deployed. When a server\'s CapabilityStatement declares fhirVersion: "4.0.1", that\'s R4. Check this at pipeline startup; if the version drifts, fail the run rather than attempting to parse a potentially incompatible response format.'
+  },
+  fhirResource:{
+    term:'FHIR resource',
+    def:'The fundamental unit of FHIR data — a typed, self-contained JSON object representing one clinical or administrative entity.',
+    long:'Every resource has the same outer envelope: resourceType (always first, drives parsing), id (server-assigned, URL-safe, unique on this server), meta (versionId, lastUpdated, profile URL claims, tags, security labels). Type-specific clinical elements follow. About 150 resource types exist in R4. Most pipeline work involves: Patient, Condition, Observation, MedicationRequest, Encounter, Practitioner, Organization, Bundle, CapabilityStatement, ValueSet, ConceptMap. Resources are addressable by URL: {server}/R4/{resourceType}/{id}. The URL is the global identity of a resource — it changes if the resource moves to a different server, which is why logical identifiers (MRN, NPI) are essential for cross-server matching.'
+  },
+  fhirBundle:{
+    term:'Bundle',
+    def:'A FHIR resource that contains a collection of other resources, with a type attribute that determines the semantics of the collection.',
+    long:'Bundle types: searchset — returned by every FHIR search; has a total count and entries with search.mode = "match" or "include". transaction — atomic multi-resource write; all entries succeed or all fail; internal references use urn:uuid temporary IDs that the server resolves after commit. batch — like transaction but each entry succeeds or fails independently; useful when partial success is acceptable. collection — generic grouping with no transactional semantics. document — signed clinical document; first entry must be a Composition. The transaction Bundle is the terminal goal of the Produce journey. The searchset Bundle is what every search operation returns.'
+  },
+  fhirReference:{
+    term:'Reference',
+    def:'A FHIR element that links from one resource to another — by literal URL, by logical identifier, or by inline embedding.',
+    long:'Literal reference: {"reference":"Patient/p001"} — relative URL, resolved on the same server. Absolute: {"reference":"https://fhir.other.example/R4/Patient/abc"} — cross-server. Logical: {"identifier":{"system":"http://hl7.org/fhir/sid/us-npi","value":"1234567890"}} — no URL; client must search by identifier to resolve. Contained: {"reference":"#local"} — points to a resource in the resource.contained array; used when the child has no independent existence. References form FHIR\'s graph: Condition → Patient (subject), Observation → Patient (subject) + Encounter (encounter), MedicationRequest → Patient (subject) + Practitioner (requester). Unresolvable references are "dangling references" — detecting them is a core pipeline concern.'
+  },
+  fhirExtension:{
+    term:'Extension',
+    def:'The FHIR mechanism for adding data elements beyond the base specification, each identified by a URL that serves as its globally unique name.',
+    long:'Every extension URL is either HL7-defined or implementer-controlled. US Core defines three required Patient extensions: us-core-race (complex — has sub-extensions for ombCategory, detailed, and text), us-core-ethnicity (same structure), and us-core-birthsex (simple coded value). The race extension is not a single code — it is a complex structure with sub-extensions. A producer that expresses race as a bare string fails US Core validation. Modifier extensions live under modifierExtension instead of extension and change the meaning of the element they annotate — receivers must understand them or reject the resource. Modifier extensions are rare and always significant.'
+  },
+  resourceId:{
+    term:'Resource ID',
+    def:'The server-assigned, URL-safe string that uniquely identifies one resource instance on a given FHIR server.',
+    long:'Server-assigned: the client does not choose the ID on a POST — the server sets it and returns it in the Location response header (201 Created). Clients that need to suggest an ID use PUT to a specific URL or a conditional create. Inside a transaction Bundle, temporary IDs use the urn:uuid: prefix (e.g., urn:uuid:a1b2c3) — entries reference each other with these temporary IDs, and the server replaces all urn:uuid references with server-assigned IDs after committing the transaction. ID scope is per-server: Patient "p001" on Server A is entirely different from Patient "p001" on Server B. For cross-server coordination, always use the full URL or a logical identifier.'
+  },
+
+  // ── Segment 4: Profiles + Conformance ──
+  fhirProfile:{
+    term:'Profile (StructureDefinition)',
+    def:'A FHIR resource that constrains a base resource type — adding required elements, value set bindings, must-support flags, invariants, and extensions.',
+    long:'Profiles narrow the base spec without breaking it: a valid US Core Patient is still a valid base Patient, but with additional obligations. A resource claims conformance via meta.profile: ["http://hl7.org/fhir/us/core/StructureDefinition/us-core-patient|6.1.0"]. The version is part of the URL. A server that receives a resource with a profile claim validates the resource against that profile and returns 422 + OperationOutcome if it fails. Implementation Guides (IGs) are published collections of profiles and supporting resources — US Core is the US baseline IG; specialty IGs (oncology, cardiology, genomics) layer on top of US Core.'
+  },
+  usCore:{
+    term:'US Core',
+    def:'The HL7 Implementation Guide defining minimum FHIR conformance for US healthcare data exchange, anchored to USCDI data classes. Current version: 6.1.0.',
+    long:'US Core 6.1.0 defines approximately 30 profiles: Patient, Condition (problems + health concerns), Observation (lab, vitals, social history, smoking status), MedicationRequest, Immunization, AllergyIntolerance, Procedure, Encounter, DocumentReference, DiagnosticReport, and more. US Core 6.1.0 introduces a more precise must-support obligation definition and adds several profiles for USCDI v3 requirements. The FHIR Pipeline Lab validates all incoming and outgoing resources against US Core 6.1.0. Checking a resource\'s meta.profile claim against the server\'s declared supportedProfile list is Consume Station 1\'s first gate.'
+  },
+  mustSupport:{
+    term:'Must-support',
+    def:'A US Core profile flag requiring that a producer populate this element when data is available, and a consumer not silently discard it when received.',
+    long:'Must-support does NOT equal required. Required = min cardinality of 1 (always present). Must-support = if you have the data, you must send it; if you receive it, you must handle it. Practical example: US Core Patient.birthDate is must-support. A patient in a medical system almost always has a recorded birth date — its absence is a likely conformance gap. Null-flavor pattern: if a patient declined to state race, the us-core-race extension must still be present, populated with the ASKU (asked but unknown) null-flavor code — omitting the extension when the patient was asked violates must-support because the data point exists (we know they were asked and declined).'
+  },
+  capabilityStatement:{
+    term:'CapabilityStatement',
+    def:'A FHIR resource describing what a server supports — resource types, interactions, search parameters, operations, profiles, and security schemes.',
+    long:'Exposed at GET /metadata (no auth required on most servers). Key fields: fhirVersion (must be "4.0.1" for R4), format (["application/fhir+json","application/fhir+xml"]), rest.mode ("server"), rest.security (SMART extensions with token endpoint URLs), rest.resource (per-type entries listing supported interactions, search parameters, and supportedProfile URLs), rest.operation (system-level operations like $export). A robust FHIR pipeline reads /metadata at startup, validates fhirVersion and declared profile URLs against expected baseline, and fails the run if either has drifted. This startup gate is Consume Station 1 of the FHIR Pipeline Lab.'
+  },
+  operationOutcome:{
+    term:'OperationOutcome',
+    def:'A FHIR resource returned by the server to communicate errors, warnings, and information — always the response body on 4xx and 5xx.',
+    long:'Structure: {resourceType:"OperationOutcome", issue:[{severity, code, diagnostics, location, expression}]}. Severity: error (request failed), warning (succeeded but notable), information (purely informational). Code: required (missing element), value (invalid value), invalid (structural problem), security (auth failure), not-found. The diagnostics string contains the human-readable explanation — often citing the FHIRPath of the offending element and the constraint violated. The expression array (FHIRPath expressions) pinpoints the exact location. Reading OperationOutcome messages efficiently is the primary debugging skill for FHIR integration. Never ignore them — they contain precise information that generic HTTP error logging loses.'
+  },
+  uscdi:{
+    term:'USCDI',expansion:'United States Core Data for Interoperability',
+    def:'ONC\'s standardized set of data classes and elements that US healthcare systems are required to support for nationwide data exchange.',
+    long:'USCDI v3 (2022, required by ONC\'s HTI-1 rule) defines the data classes that US Core 6.1.0 implements as FHIR profiles. Data classes include: allergies and intolerances, clinical notes, diagnoses and problems, encounter information, goals, health concerns, immunizations, laboratory, medications, patient demographics, procedures, provenance, smoking status, unique device identifiers, vital signs. When a CMS regulation says a certified EHR must support USCDI, it means the EHR must expose and accept US Core-profiled FHIR resources for all those classes. USCDI is the regulatory mandate; US Core is the FHIR technical implementation of that mandate.'
+  },
+
+  // ── Segment 5: SMART + Bulk Data ──
+  smartFhir:{
+    term:'SMART on FHIR',expansion:'Substitutable Medical Applications and Reusable Technologies on FHIR',
+    def:'An OAuth 2.0 profile for FHIR standardizing authorization flows, scope syntax, and launch contexts for apps and server-to-server pipelines.',
+    long:'SMART defines launch patterns: EHR Launch (user clicks an app from within an EHR — the app receives patient context in the token), Standalone Launch (app opens independently, requests its own patient list), and Backend Services (server-to-server, signed JWT, system-scope token — no user). SMART v2 refined scope syntax to {context}/{ResourceType}.{cruds} and added support for granular resource-level permissions. All CMS-mandated patient access endpoints must support SMART, making it the de facto US authorization standard for FHIR. The FHIR Pipeline Lab uses SMART Backend Services throughout — Segment 2 covers the underlying OAuth mechanics; SMART is the healthcare-specific wrapper.'
+  },
+  backendServices:{
+    term:'SMART Backend Services',
+    def:'The SMART on FHIR flow for machine-to-machine access: signed JWT assertion, system-scope token, no user interaction required.',
+    long:'Prerequisites: register a JWKS URL (public key endpoint) with the FHIR authorization server before any token requests — this is one-time setup. Runtime: (1) Build a signed JWT assertion (iss=client_id, sub=client_id, aud=token_endpoint, exp=now+5min, jti=unique_uuid). (2) POST to token endpoint: grant_type=client_credentials, client_assertion_type=urn:ietf:params:oauth:client-assertion-type:jwt-bearer, client_assertion={JWT}, scope={desired}. (3) Use the returned access_token for the batch. Private key storage: AWS Secrets Manager, HashiCorp Vault, Azure Key Vault, or equivalent — never in source code, never in environment variables that may be logged or exported. Rotation: rotate keys on a schedule; update the JWKS URL registration before retiring the old key.'
+  },
+  bulkExport:{
+    term:'$export / Bulk Data',
+    def:'An asynchronous FHIR operation that exports a large patient cohort as NDJSON files, designed for population-level pulls without individual resource requests.',
+    long:'Kick-off request: POST [base]/Group/{id}/$export (group-scoped, preferred) or GET [base]/Group/{id}/$export. Response: 202 Accepted + Content-Location header pointing to the polling URL. Polling: GET the polling URL periodically — 202 means still in progress, 200 means complete, response body is a manifest listing NDJSON file URLs by resource type (Patient.ndjson, Condition.ndjson, Observation.ndjson, etc.). Download: GET each file URL. Group-scoped export is preferred over system-level export — it restricts to a defined patient cohort, which is both more efficient and more scope-appropriate. The Consume journey uses a group-scoped export from the regional HIE to pull the Cascade Cohort\'s data.'
+  },
+  ndjson:{
+    term:'NDJSON',expansion:'Newline-Delimited JSON',
+    def:'A file format where each line is a complete, independent JSON object — the standard output format of FHIR Bulk Data exports.',
+    long:'Unlike a JSON array (one giant object requiring full parse before any entry is accessible), NDJSON is streamable: process one resource per line while the file is still downloading. A Bulk Data export of 10,000 Patients produces a single Patient.ndjson file with 10,000 lines — one Patient resource per line. Line count = resource count. Processing options: Python line-by-line, jq -c \'.\'  (one JSON per output line), Apache Spark textFile() input. FHIR Bulk Data NDJSON files may be gzip-compressed (.ndjson.gz) — check the Content-Encoding header on the download response and decompress before parsing. Empty files (zero-length or zero-line) are valid — they mean no resources of that type exist in the cohort.'
+  },
+  includeRevinclude:{
+    term:'_include / _revinclude',
+    def:'FHIR search modifiers instructing the server to include referenced or referencing resources in the result Bundle — reducing round-trips.',
+    long:'_include follows a reference forward from search result to referenced resource: GET Observation?patient=p001&_include=Observation:subject returns matching Observations plus the Patient they reference. _revinclude follows a reference backward: GET Patient?_id=p001&_revinclude=Condition:subject returns Patient p001 plus all Conditions that have a subject reference pointing to it. Both reduce round-trips significantly for graph-traversal queries. Included resources appear in the Bundle with search.mode = "include" (vs. "match" for primary results). Support varies: not all servers support all _include/_revinclude combinations — check the CapabilityStatement rest.resource[*].searchInclude list before relying on them.'
+  },
+  conditionalCreate:{
+    term:'Conditional create / ifNoneExist',
+    def:'A FHIR create operation that only proceeds if no existing resource matches a given search condition — the primary mechanism for preventing duplicates.',
+    long:'In a transaction Bundle entry: set request.method = "POST" and request.ifNoneExist to a search string (e.g., "identifier=http://hospital.example/mrn|CRH-10001"). Server behavior: if a Patient with that identifier already exists → return 200 with the existing resource and skip creation. If no match → create the resource and return 201. This is how the Produce journey handles Patient P005 (Maria Gonzales — possible near-duplicate of P001 Maria Gonzalez). Rather than forcing a second Patient resource into the system, the conditional create lets the server\'s deduplication logic decide. The ifNoneExist search string is evaluated as a standard FHIR search on the resource type being created.'
+  },
+
+  // ── Segment 6: Terminologies ──
+  icd10cm:{
+    term:'ICD-10-CM',expansion:'International Classification of Diseases, 10th Revision, Clinical Modification',
+    def:'The US standard for coding diagnoses in all billing and interoperability contexts — approximately 70,000 codes, updated annually each October.',
+    long:'Maintained by CMS and CDC. Required for all US billing claims and for US Core Condition resources. Code structure: 1 letter (category) + 2 mandatory digits + optional decimal + up to 4 more specificity characters. E11.9 = Type 2 diabetes mellitus without complications. F11.21 = Opioid dependence, in remission. I48.91 = Unspecified atrial fibrillation. The "CM" distinguishes the US clinical modification from the WHO base ICD-10. ICD-9 (used until October 2015) has a ConceptMap crosswalk to ICD-10. Consume Station 7 works this crosswalk for P002 Kowalski, whose incoming CHF record carries a legacy ICD-9 code (428.0 → I50.9).'
+  },
+  snomedCt:{
+    term:'SNOMED CT',expansion:'Systematized Nomenclature of Medicine — Clinical Terms',
+    def:'A comprehensive clinical terminology with ~350,000 hierarchically organized concepts covering diseases, findings, procedures, body structures, and substances.',
+    long:'SNOMED concept IDs are integers with no structural meaning (44054006 = Diabetes mellitus type 2). Organized into 19 hierarchical axes: Clinical finding, Procedure, Observable entity, Body structure, Organism, Substance, Product, etc. More clinically detailed than ICD-10 (which was designed for billing) and broader than LOINC (observations only). SNOMED CT is the preferred clinical concept system for US Core Condition.code — a Condition should carry both a SNOMED concept (clinical accuracy) and an ICD-10 code (billing requirement) when both are available. One SNOMED concept may map to multiple ICD-10 codes depending on specificity.'
+  },
+  loincCode:{
+    term:'LOINC',expansion:'Logical Observation Identifiers Names and Codes',
+    def:'The standard for identifying lab tests, vital signs, and clinical observations — the "what was measured" identifier attached to a result.',
+    long:'Maintained free by Regenstrief Institute. Code format: numeric sequence + hyphen + check digit (4548-4 = Hemoglobin A1c/Hemoglobin.total in Renal dialysis). In FHIR Observation resources, LOINC codes belong in Observation.code.coding to identify what was observed; the measured value goes in Observation.value[x]. US Core vital sign profiles bind required LOINC codes: 8480-6 = Systolic blood pressure, 8462-4 = Diastolic blood pressure, 8867-4 = Heart rate, 29463-7 = Body weight. A vital sign Observation missing the correct LOINC code fails US Core validation. LOINC is also used in DiagnosticReport and DocumentReference to identify the type of document or report.'
+  },
+  rxnorm:{
+    term:'RxNorm',
+    def:'The US standard for medication names — providing normalized, unique identifiers (RxCUI codes) for medications at multiple levels of specificity.',
+    long:'Maintained free by the National Library of Medicine. RxNorm organizes medications in a hierarchy: ingredient (metformin), clinical drug (metformin 500 MG), branded drug (Glucophage 500 MG), dose form group (metformin oral product). RxCUI 860975 = Metformin 500 MG Oral Tablet. US Core MedicationRequest.medication must be coded with RxNorm — a medication documented only as free text fails conformance. The Cascade Cohort\'s P003 (buprenorphine/naloxone, a 42 CFR Part 2 case) requires ensuring the combination product RxNorm code exists in the current release before submission.'
+  },
+  conceptMap:{
+    term:'ConceptMap',
+    def:'A FHIR resource that formally defines mappings between codes in different code systems — the machine-readable representation of a crosswalk.',
+    long:'Structure: groups (each maps from one source system to one target system) containing element entries (source code → target code + equivalence). Equivalence values: equivalent (exact match), wider (target is broader), narrower (target is more specific), inexact (approximate), unmatched (no mapping). The $translate terminology service operation executes a ConceptMap: send a code from system A, receive the mapped code in system B. Consume Station 7 uses a ConceptMap to translate P002 Kowalski\'s atrial fibrillation from ICD-9 (427.31) to ICD-10 (I48.91). Equivalence is "narrower" — I48.91 is more specific than old 427.31.'
+  },
+  valueSet:{
+    term:'ValueSet',
+    def:'A FHIR resource defining the allowed set of coded values for a given context — drawn from one or more code systems.',
+    long:'Profiles bind elements to ValueSets at a binding strength. Key FHIR operations: $expand returns all codes in a ValueSet (used for UI pickers and completeness checks); $validate-code checks whether a given code is valid within a ValueSet. In the US, the VSAC (Value Set Authority Center) hosts most US Core ValueSets. Key sets in the FHIR Pipeline Lab: AdministrativeGender (male/female/other/unknown), ConditionClinicalStatusCodes (active/recurrence/inactive/remission/resolved), US Core Race (OMB racial categories), ObservationStatus (registered/preliminary/final/amended). A required-bound ValueSet means validators reject any code not in the set.'
+  },
+  bindingStrength:{
+    term:'Binding strength',
+    def:'How strictly a profile requires use of a bound ValueSet: required, extensible, preferred, or example.',
+    long:'Required: must use a code from the ValueSet — validation fails otherwise. Example: Observation.status is required-bound to ObservationStatus; any code not in {registered, preliminary, final, amended, corrected, cancelled, entered-in-error, unknown} fails validation. Extensible: use a code from the ValueSet if one applies; use a local code only if no applicable code exists in the set — a common trap: local codes pass schema validation but may fail semantic validation on the receiving end. Preferred: strongly encouraged but not enforced. Example: illustrative only, any code accepted. The binding strength is declared in the StructureDefinition for each coded element.'
+  },
+
+  // ── Segment 7: EHR / HIE / HIPAA ──
+  ehrSystem:{
+    term:'EHR',expansion:'Electronic Health Record',
+    def:'The primary clinical software where a healthcare organization stores patient charts, encounter notes, orders, lab results, and care plans.',
+    long:'Major US vendors: Epic (dominant in large health systems and academic medical centers), Oracle Health / Cerner (large and mid-size hospitals), Meditech (community hospitals), athenahealth (ambulatory). EHRs are the primary source of FHIR data in modern pipelines. CMS certification requirements have pushed all major EHRs to expose FHIR R4 / US Core APIs, but implementation quality and completeness vary significantly by vendor and configuration. SMART on FHIR app launch is certified by ONC. The Produce journey models submitting post-discharge data from a hospital EHR to external recipients — a transaction Bundle POST to the receiving organization\'s FHIR server.'
+  },
+  hie:{
+    term:'HIE',expansion:'Health Information Exchange',
+    def:'A network or organization enabling the sharing of clinical data among multiple healthcare providers across a region or state.',
+    long:'National networks: CommonWell Health Alliance, Carequality (a framework enabling cross-network query). State HIEs vary: NY SHIN-NY, CalHIE (California), Colorado RHIO. The Cascade Regional HIE (fictional) used in the FHIR Pipeline Lab is a regional HIE aggregating patient data from multiple organizations and exposing it via FHIR. The Consume journey models a pipeline receiving data from this HIE — a realistic pattern for health systems wanting community-wide clinical history to support care coordination and readmission risk modeling. In practice, HIE FHIR APIs may lag EHR vendor implementations in profile conformance quality.'
+  },
+  hipaa:{
+    term:'HIPAA',expansion:'Health Insurance Portability and Accountability Act (1996)',
+    def:'US federal law establishing national standards for the protection of health information privacy and security.',
+    long:'Three rules relevant to FHIR engineers: Privacy Rule (defines PHI, restricts use and disclosure — minimum necessary principle applies to scope design: request only the data the pipeline actually needs). Security Rule (requires administrative, physical, and technical safeguards for electronic PHI — encryption in transit and at rest, access controls, audit logging). Breach Notification Rule (mandatory notification when PHI is compromised). Business Associate Agreements (BAAs) are required between covered entities and their technology vendors. HIPAA shapes FHIR pipeline design throughout: what data you request, how long you retain it, how you log access, and how you respond to unauthorized disclosure.'
+  },
+  phi:{
+    term:'PHI',expansion:'Protected Health Information',
+    def:'Individually identifiable health information held by a HIPAA-covered entity — the regulated category of data that triggers HIPAA protections.',
+    long:'HIPAA defines 18 identifier categories whose presence makes information PHI: names, geographic subdivisions smaller than state, dates (except year) related to the individual, phone numbers, fax numbers, email addresses, SSNs, MRNs, health plan beneficiary numbers, account numbers, certificate/license numbers, VINs, device identifiers, URLs, IP addresses, biometric identifiers, full-face photographs, and any other unique identifying number. FHIR Patient resources contain PHI by definition. All FHIR pipeline traffic involving PHI must be HTTPS, must be authorized with an OAuth token, and must be logged for HIPAA audit purposes. PHI must not appear in log files, error messages, or monitoring dashboards.'
+  },
+  safeHarbor:{
+    term:'Safe Harbor de-identification',
+    def:'A HIPAA-approved method requiring removal of all 18 identifier categories plus good-faith verification that remaining data cannot re-identify an individual.',
+    long:'Safe Harbor is conservative but reliable and requires no statistical expertise. Steps: remove all 18 identifiers, reduce all dates to year only, generalize ZIP codes to 3-digit prefix (suppress any prefix with fewer than 20,000 population — a list published by HHS), verify no remaining data could reasonably re-identify the subject. The result is de-identified data — no longer PHI, usable for research without patient authorization. Expert Determination is the alternative: a qualified statistician certifies re-identification risk is very small, allowing more granular data (specific dates, 5-digit ZIPs) to be retained. Safe Harbor is the default for research data releases from FHIR pipelines when statistical expertise is unavailable.'
+  },
+  cfr42part2:{
+    term:'42 CFR Part 2',
+    def:'Federal regulations imposing stricter confidentiality on substance use disorder (SUD) treatment records than HIPAA applies to general health records.',
+    long:'42 CFR Part 2 predates HIPAA and is not superseded by it. Under Part 2, SUD records cannot be disclosed to other providers for treatment purposes without explicit patient consent — including to an emergency department treating the same patient. This is a major departure from HIPAA\'s treatment-payment-operations exception. Regulations updated in 2024 brought Part 2 closer to HIPAA in some respects (permitting use for payment and health care operations with patient consent) but the disclosure restrictions remain stricter. In the Cascade Cohort, P003 Jamal Washington (opioid use disorder in remission) is the Part 2 candidate: his Produce journey note requires redaction of SUD details before submission to the HIE.'
+  },
+
+  // ── Segment 8: Data Engineering + SQL ──
+  etlPipeline:{
+    term:'ETL / ELT',expansion:'Extract, Transform, Load / Extract, Load, Transform',
+    def:'The two dominant patterns for moving data from source systems into a warehouse: transform before loading (ETL) or load raw then transform in the warehouse (ELT).',
+    long:'ETL (traditional): extract from source, transform in a separate process, load clean structured data to the warehouse. ELT (modern cloud pattern): extract from source, load raw NDJSON/JSON to a staging area or data lake, transform using SQL or dbt inside the warehouse. FHIR pipelines increasingly use ELT: raw NDJSON files from Bulk Data exports land in a staging schema; dbt models flatten them into clinical fact tables. ELT preserves the raw source for reprocessing (schema changes don\'t require re-extraction) and leverages cloud warehouse compute for transformation at scale. The Consume journey uses an ELT pattern: NDJSON lands in staging, SQL flattens it into dim_patient and fact_* tables.'
+  },
+  dataQuality:{
+    term:'Data quality flag',
+    def:'A structured marker attached to a pipeline record indicating a specific quality problem detected during ingestion or transformation.',
+    long:'Examples from the FHIR Pipeline Lab\'s quarantine log: missing_required:birthDate (Patient arrived without a birth date — US Core must-support violation), code_not_found:rxnorm (MedicationRequest carries an RxNorm code not present in the current release), possible_duplicate (P005 Maria Gonzales may duplicate P001 Maria Gonzalez — name spelling variant + similar DOB). Quality flags route records to a quarantine queue rather than allowing bad data to silently reach warehouse fact tables. The quarantine_log table holds all flagged records with stage (which pipeline step flagged it), reason (the specific failure), and flagged_at timestamp. Quarantine is a holding pattern, not disposal — most quarantine records are resolvable with manual review.'
+  },
+  omopCdm:{
+    term:'OMOP CDM',expansion:'Observational Medical Outcomes Partnership Common Data Model',
+    def:'A standardized analytical schema for clinical data enabling multi-site research by placing data from different sources in a consistent, queryable format.',
+    long:'OMOP uses a star schema: person (patients), visit_occurrence (encounters), condition_occurrence (diagnoses), drug_exposure (medications), measurement (labs and quantitative vitals), observation (qualitative clinical facts), procedure_occurrence. All concepts are coded using the OMOP concept vocabulary, which maps ICD-10, SNOMED CT, LOINC, and RxNorm codes to a unified concept_id integer — enabling queries like "all patients on metformin" without specifying every possible RxNorm code individually. The Consume journey\'s terminal station uses a simplified OMOP-inspired schema: dim_patient, fact_condition, fact_medication_request, fact_observation, and quarantine_log.'
+  },
+  factDimension:{
+    term:'Fact and dimension tables',
+    def:'The two core table types in a star schema warehouse: dimensions describe entities (who/what); facts record events and measurements (what happened, when, to whom).',
+    long:'In a FHIR pipeline warehouse: dim_patient holds demographic attributes (patient_key PK, mrn, name, birth_date, gender) — one row per patient. fact_condition holds diagnosis events (patient_key FK, icd10_code, snomed_code, onset_date, clinical_status) — many rows per patient. fact_medication_request holds medication orders (patient_key, rxnorm_code, medication_display, authored_date). fact_observation holds measurements (patient_key, loinc_code, value_quantity, value_units, effective_date). Fact tables reference dimension tables via surrogate keys (patient_key, not the FHIR resource ID). Population queries are efficient: "all diabetic patients" is SELECT DISTINCT patient_key FROM fact_condition WHERE icd10_code LIKE \'E11%\'.'
+  },
+  idempotency:{
+    term:'Idempotency',
+    def:'The property of an operation that can be safely applied multiple times without changing the outcome beyond the first application.',
+    long:'Critical for FHIR pipeline reliability. A pipeline that restarts after failure must not create duplicate FHIR resources or double-count warehouse rows. Strategies: conditional creates (ifNoneExist) prevent duplicate FHIR resources on the server. Upsert SQL (INSERT ... ON CONFLICT DO UPDATE in PostgreSQL; MERGE in Snowflake/BigQuery) prevents duplicate rows in warehouse tables. Content-hash deduplication (hash the resource body; skip if hash already in the load log) prevents reprocessing unchanged resources that arrived in a re-export. Without idempotency, a partial failure + retry is often worse than the original failure — you end up with silently inflated counts. Design for idempotency before the first production run.'
+  },
+  cascadeCohort:{
+    term:'Cascade Cohort',
+    def:'The five fictional patients whose FHIR data anchors both journeys of the FHIR Pipeline Lab — each designed to exercise a specific pipeline challenge.',
+    long:'P001 Maria Gonzalez, 62, Type 2 diabetes + essential hypertension — the primary readmission risk case; clean US Core conformance; Produce journey submits post-discharge summary to primary care. P002 Robert Kowalski, 71, CHF + atrial fibrillation — incoming record carries a legacy ICD-9 code (428.0, 427.31) requiring ConceptMap crosswalk to ICD-10. P003 Jamal Washington, 45, major depressive disorder + opioid use disorder in remission — the 42 CFR Part 2 candidate; Produce submission requires SUD detail redaction. P004 Emily Chen, 34, no active conditions — healthy control, minimal data, extension-free; the simplest pipeline path. P005 Maria Gonzales, 60, Type 2 diabetes — near-duplicate of P001 (surname spelling variant + similar birth year); handled with a conditional create to let the server\'s deduplication logic decide.'
+  }
+};
+
+// ════════════════════════════════════════════════════════════════
+//  SEGMENTS — 8 segments
+//  Segments 1-3: fully authored
+//  Segments 4-8: functional stubs (Turn 2 and Turn 3 will expand)
+// ════════════════════════════════════════════════════════════════
+const SEGMENTS = [
+
+  // ─── SEGMENT 1: REST + HTTP ─── [FULLY AUTHORED]
+  {
+    id:1, icon:'🌐',
+    title:'How software talks to software',
+    subtitle:'HTTP verbs, status codes, JSON, and the FHIR URL pattern',
+    endGoal:'You\'ll know what GET, POST, 200, 404, and 422 mean in a FHIR context — and you\'ll be able to read a basic FHIR request and response without guessing.',
+    minutes:8,
+    cards:['restApi','httpVerb','statusCode','httpHeader','jsonFormat','bearerToken'],
+    lecture:`
+<p><strong>Sofia Patel</strong>, 55, recently relocated from Phoenix to Portland. Last Tuesday she visited Valley Urgent Care with elevated blood pressure — her Lisinopril refill had been delayed and her systolic had climbed to 148. The clinic adjusted her dosage and created a visit record in their EHR.</p>
+<p>Two days later, Sofia's new primary care physician at Cascade Valley Medical wants to review that urgent care visit before her intake appointment. Both clinics run FHIR-enabled systems. The mechanism that lets one system reach into another and request clinical data is a <button class="card-link" onclick="openCardModal('restApi')">REST API</button> — and the shared language both systems already speak is <strong>HTTP</strong>.</p>
+
+<h4>HTTP — the shared protocol</h4>
+<p>HTTP (Hypertext Transfer Protocol) is the same protocol your browser uses to load webpages. It is also what every FHIR system uses to exchange clinical data. When Sofia's PCP's system wants her Patient resource, it sends an HTTP <em>request</em> to Valley Urgent Care's FHIR server. The server sends back an HTTP <em>response</em>.</p>
+<p>Every request has four parts: a <strong>verb</strong> (what action), a <strong>URL</strong> (which resource), <strong>headers</strong> (metadata), and an optional <strong>body</strong> (data being sent). Every response has: a <strong>status code</strong> (did it work?), <strong>headers</strong>, and an optional <strong>body</strong> (the data or an error explanation).</p>
+
+<h4>The five verbs — what each one does</h4>
+<ul>
+  <li><strong>GET</strong> — read a resource or search for resources. No body. Repeatable without side effects: GETting the same Patient 100 times changes nothing on the server.</li>
+  <li><strong>POST</strong> — create a new resource or submit a Bundle transaction. Has a body. The server assigns the new resource's ID.</li>
+  <li><strong>PUT</strong> — replace a resource entirely. Requires the full resource body — not just the changed fields.</li>
+  <li><strong>DELETE</strong> — remove a resource. Rare in clinical contexts; most production FHIR servers disable it due to regulatory retention requirements.</li>
+  <li><strong>PATCH</strong> — partial update. Changes specific fields without resending the whole resource — useful for correcting a Condition status.</li>
+</ul>
+<p>For a <em>consuming</em> pipeline (reading data you don't control), GET dominates. For a <em>producing</em> pipeline (writing data to an external server), POST and PUT are the workhorses.</p>
+
+<h4>Status codes — the server's answer</h4>
+<p>Every response carries a <button class="card-link" onclick="openCardModal('statusCode')">status code</button>. The first digit tells you the category. The codes you'll see constantly in FHIR work:</p>
+<ul>
+  <li><code>200 OK</code> — resource returned successfully</li>
+  <li><code>201 Created</code> — new resource created; the Location response header holds its URL</li>
+  <li><code>400 Bad Request</code> — malformed JSON or a missing required header</li>
+  <li><code>401 Unauthorized</code> — no valid access token (or token expired)</li>
+  <li><code>403 Forbidden</code> — valid token but insufficient scope</li>
+  <li><code>404 Not Found</code> — no resource with that ID on this server</li>
+  <li><code>422 Unprocessable Entity</code> — FHIR's validation error. The JSON parsed, but the resource content failed profile rules. The response body is always an <code>OperationOutcome</code> naming exactly what failed and why. <strong>This is the most common non-trivial error in FHIR integration work.</strong></li>
+  <li><code>500 Internal Server Error</code> — something broke on the server, not the caller's fault</li>
+</ul>
+
+<h4>Headers — the envelope metadata</h4>
+<p>Every FHIR request carries <button class="card-link" onclick="openCardModal('httpHeader')">headers</button> that govern how the message is interpreted:</p>
+<ul>
+  <li><code>Content-Type: application/fhir+json</code> — required when sending a resource body. Missing this header on a POST causes many servers to reject the request even if the JSON is otherwise valid.</li>
+  <li><code>Accept: application/fhir+json</code> — tells the server to respond in FHIR JSON rather than XML.</li>
+  <li><code>Authorization: Bearer {token}</code> — carries the OAuth 2.0 access token. Required on virtually every request beyond <code>/metadata</code>. Segment 2 explains how to obtain this token.</li>
+</ul>
+
+<h4>JSON — the data format</h4>
+<p>FHIR resources are <button class="card-link" onclick="openCardModal('jsonFormat')">JSON</button> objects. JSON has six value types: strings (<code>"female"</code>), numbers (<code>62</code>), booleans (<code>true</code>), null, objects (<code>{"key":"value"}</code>), and arrays (<code>["item1","item2"]</code>). FHIR resources are deeply nested JSON objects. Three operations cover most navigation: access a field (<code>resource.resourceType</code>), access an array element (<code>resource.name[0].family</code>), check whether a key exists before accessing it.</p>
+
+<h4>The FHIR URL pattern</h4>
+<pre class="code-block"><span class="hl-comment"># Read one specific resource by its ID</span>
+{base}/R4/{resourceType}/{id}
+https://fhir.valley-uc.example/R4/Patient/p-sofia-001
+
+<span class="hl-comment"># Search for resources by attribute (returns a searchset Bundle)</span>
+{base}/R4/{resourceType}?{search parameters}
+https://fhir.valley-uc.example/R4/Patient?family=Patel&birthdate=1970-06-15</pre>
+<p>The <code>/R4/</code> segment in the path identifies the FHIR version. Some servers include it; others use a version-less base URL and declare the version in their CapabilityStatement. When a URL lacks <code>/R4/</code>, check <code>/metadata</code> to confirm what version the server speaks before assuming.</p>
+
+<div class="callout"><span class="callout-icon">💡</span>The <button class="card-link" onclick="openCardModal('bearerToken')">bearer token</button> travels in the Authorization header on every request. It proves the calling system has been granted permission. Segment 2 covers how it's obtained. For now, note the header slot it occupies — every example in this primer will include it.</div>
+    `,
+    beforeAfter:{
+      beforeLabel:'No FHIR API — data stays siloed',
+      beforeContent:`<p style="margin-bottom:8px;color:var(--text)">Without a FHIR API, Sofia's urgent care visit is inaccessible to her PCP's system. The available options:</p>
+<ul style="margin-left:18px;font-size:13px;line-height:1.9;color:var(--text-muted)">
+  <li>Fax — received as PDF; manually transcribed by staff</li>
+  <li>Phone call — verbal summary; no structured data</li>
+  <li>Patient portal printout — PDF; no structured data</li>
+  <li>Direct secure message — delayed; still requires manual entry</li>
+</ul>
+<p style="margin-top:8px;font-size:12px;color:var(--text-dim)">All manual. Hours to days of lag. No machine-readable result.</p>`,
+      afterLabel:'FHIR request + structured response',
+      afterContent:`<pre style="font-family:var(--mono);font-size:11px;line-height:1.85;color:#2a2a2a;background:transparent;margin:0;white-space:pre-wrap"><b>REQUEST</b>
+GET /R4/Patient/p-sofia-001 HTTP/1.1
+Host: fhir.valley-uc.example
+Accept: application/fhir+json
+Authorization: Bearer eyJhb...
+
+<span style="color:#1f6843;font-weight:700">RESPONSE  200 OK</span>
+Content-Type: application/fhir+json
+
+{
+  "resourceType": "Patient",
+  "id": "p-sofia-001",
+  "name": [{"family":"Patel","given":["Sofia"]}],
+  "birthDate": "1970-06-15",
+  "gender": "female"
+  ...
+}</pre>`
+    },
+    pulseChecks:[
+      {
+        question:`Sofia's PCP system needs to read her Patient resource from Valley Urgent Care's FHIR server. The server-assigned ID is <code>p-sofia-001</code>. Which request is correct?`,
+        options:[
+          {key:'A',text:'GET https://fhir.valley-uc.example/R4/Patient/p-sofia-001'},
+          {key:'B',text:'POST https://fhir.valley-uc.example/R4/Patient/p-sofia-001'},
+          {key:'C',text:'GET https://fhir.valley-uc.example/R4/Patient  (no ID, no search parameters)'},
+          {key:'D',text:'PUT https://fhir.valley-uc.example/R4/Patient/p-sofia-001'}
+        ],
+        correctKey:'A',
+        feedback:{
+          correct:'Right. GET is the read-only verb. Including the resource ID at the end of the path targets exactly one resource. POST creates new resources. PUT replaces. GET without an ID and without search parameters would return a searchset Bundle of all Patients the token is permitted to see — not the targeted fetch we need here.',
+          incorrect:'It\'s A. GET is the read-only verb for fetching an existing resource. Appending the ID to the path targets exactly one specific Patient. POST creates, PUT replaces — neither reads. GET without an ID and no search parameters returns an open search Bundle, which is imprecise and returns far more than one record.'
+        }
+      },
+      {
+        question:`Valley Urgent Care's server returns HTTP <code>422</code> when the PCP's system submits an updated Condition resource. What does this mean?`,
+        options:[
+          {key:'A',text:'The server is offline or experiencing an internal error'},
+          {key:'B',text:'The access token has expired or is missing'},
+          {key:'C',text:'The JSON was parsed successfully but the resource content failed profile validation rules'},
+          {key:'D',text:'No Condition resource with that ID exists on the server'}
+        ],
+        correctKey:'C',
+        feedback:{
+          correct:'Right. 422 is FHIR\'s validation error code — the server understood the JSON structure but the content violated profile rules. The response body is an OperationOutcome with issue entries that name the failing element (via FHIRPath expression) and the constraint violated. This is the most informative error code in FHIR integration; the OperationOutcome tells you exactly what to fix.',
+          incorrect:'It\'s C. 422 means the server parsed the JSON successfully but the resource content failed profile validation. Server errors are 5xx. Token problems are 401 (missing/invalid) or 403 (wrong scope). Not Found is 404. 422 specifically means profile conformance failure — the OperationOutcome in the response body identifies the exact element and constraint that failed.'
+        }
+      }
+    ]
+  },
+
+  // ─── SEGMENT 2: OAuth 2.0 ─── [FULLY AUTHORED]
+  {
+    id:2, icon:'🔑',
+    title:'Permission to access data',
+    subtitle:'Access tokens, client credentials flow, scopes, and the JWT client assertion',
+    endGoal:'You\'ll understand why FHIR APIs require tokens, what the client credentials flow looks like step by step, and what a scope string grants.',
+    minutes:9,
+    cards:['oauth2','accessToken','clientCredentials','oauthScope','jwt','tokenEndpoint'],
+    lecture:`
+<p>We know how to <em>fetch</em> Sofia's record once we have a URL. The harder question is: how does Valley Urgent Care's FHIR server know that the PCP's system is who it claims to be — and that it's permitted to access Sofia's records at all?</p>
+<p>The answer is <button class="card-link" onclick="openCardModal('oauth2')">OAuth 2.0</button>. Before any FHIR request, the pipeline must obtain an <button class="card-link" onclick="openCardModal('accessToken')">access token</button> and include it in the Authorization header of every subsequent request.</p>
+
+<h4>Why not passwords?</h4>
+<p>Shared passwords between systems create shared risk. If the PCP's system is compromised, the attacker has full access to Valley Urgent Care's patient data for as long as the password is valid — and shared passwords typically don't expire. They also can't express granular permissions: "read Patient and Condition for the next 15 minutes only."</p>
+<p>OAuth 2.0 solves both problems. The authorization server issues a token with a declared scope and a short lifetime. If stolen, the attacker has limited access for limited time. When it expires, it's worthless. And the scope string encodes exactly what the token permits.</p>
+
+<h4>The client credentials flow — step by step</h4>
+<p>When no user is involved — a batch pipeline, a nightly sync, an automated intake process — use the <button class="card-link" onclick="openCardModal('clientCredentials')">client credentials flow</button>. The complete sequence:</p>
+<ol>
+  <li><strong>Pre-registration (one-time setup):</strong> The PCP's system registers its public key (a JWKS URL) with Valley Urgent Care's authorization server. This is identity establishment — "here is my public key; verify my signatures with it."</li>
+  <li><strong>Build a JWT assertion:</strong> At runtime, the pipeline constructs a <button class="card-link" onclick="openCardModal('jwt')">JWT</button> signed with its private key. The JWT claims: who I am (<code>iss</code>), who I'm requesting from (<code>aud</code> = the token endpoint URL), when this expires (<code>exp</code> = a few minutes from now), a unique ID (<code>jti</code>) to prevent replay attacks.</li>
+  <li><strong>POST to the token endpoint:</strong> Send the signed JWT to the <button class="card-link" onclick="openCardModal('tokenEndpoint')">token endpoint</button> with <code>grant_type=client_credentials</code> and the desired scope.</li>
+  <li><strong>Server verifies:</strong> The authorization server checks the JWT's signature against the registered public key. If valid, it issues a token.</li>
+  <li><strong>Token response:</strong> <code>{"access_token":"eyJhb...","token_type":"bearer","expires_in":900,"scope":"..."}</code></li>
+  <li><strong>Use the token:</strong> Every FHIR request carries <code>Authorization: Bearer eyJhb...</code>. Cache the token; re-request two minutes before <code>expires_in</code> elapses.</li>
+</ol>
+<p>The private key never travels on the wire — only the signed assertion does. An assertion that fails signature verification is rejected before any token is issued.</p>
+
+<h4>Scopes — what the token is allowed to do</h4>
+<p>A <button class="card-link" onclick="openCardModal('oauthScope')">scope</button> is a permission string. SMART v2 syntax: <code>{context}/{ResourceType}.{permissions}</code></p>
+<ul>
+  <li><code>system/Patient.rs</code> — read and search Patient resources, system-wide (all patients, no user context needed)</li>
+  <li><code>system/Condition.rs</code> — read and search Conditions system-wide</li>
+  <li><code>system/MedicationRequest.rs</code> — read and search MedicationRequests system-wide</li>
+  <li><code>system/*.rs</code> — read and search every resource type the server exposes (broad — use only when a narrower scope is genuinely not feasible; will fail most security audits)</li>
+</ul>
+<p>For a pipeline loading data for a cohort of 5 patients: enumerate the specific resource types needed. A security reviewer will ask "why does this system have wildcard access?" Narrow scopes have defensible answers. Wildcards rarely do.</p>
+
+<h4>Token lifetime and the refresh strategy</h4>
+<ul>
+  <li>Request a token at pipeline startup; cache its <code>expires_in</code> timestamp</li>
+  <li>Refresh two minutes before expiry — proactively, not reactively on 401</li>
+  <li>Store the private key in a secrets vault (AWS Secrets Manager, HashiCorp Vault, Azure Key Vault) — never in source code, never in environment variables that may be logged</li>
+  <li>On an unexpected 401 mid-batch, request one new token; if that also fails 401, abort and alert — the problem is configuration, not expiry</li>
+</ul>
+    `,
+    beforeAfter:{
+      beforeLabel:'No token → 401 Unauthorized',
+      beforeContent:`<pre style="font-family:var(--mono);font-size:11px;line-height:1.85;color:#2a2a2a;background:transparent;margin:0;white-space:pre-wrap"><b>REQUEST (no Authorization header)</b>
+GET /R4/Patient/p-sofia-001
+Host: fhir.valley-uc.example
+
+<span style="color:#9c382d;font-weight:700">RESPONSE  401 Unauthorized</span>
+{
+  "resourceType": "OperationOutcome",
+  "issue": [{
+    "severity": "error",
+    "code": "security",
+    "diagnostics": "No valid Bearer token provided"
+  }]
+}</pre>`,
+      afterLabel:'Token obtained → 200 OK',
+      afterContent:`<pre style="font-family:var(--mono);font-size:10.5px;line-height:1.85;color:#2a2a2a;background:transparent;margin:0;white-space:pre-wrap"><b>STEP 1 — get a token</b>
+POST /token
+grant_type=client_credentials
+&scope=system/Patient.rs system/Condition.rs
+&client_assertion_type=urn:ietf:...jwt-bearer
+&client_assertion=&lt;signed JWT&gt;
+
+<span style="color:#1f6843;font-weight:700">200 OK</span>  {"access_token":"eyJhb...","expires_in":900}
+
+<b>STEP 2 — use the token</b>
+GET /R4/Patient/p-sofia-001
+Authorization: Bearer eyJhb...
+
+<span style="color:#1f6843;font-weight:700">200 OK — Patient resource returned</span></pre>`
+    },
+    pulseChecks:[
+      {
+        question:`Sofia's PCP system runs a nightly batch pipeline to pull updated records — no clinician is interacting with it. Which OAuth 2.0 flow should the pipeline use to obtain its access token?`,
+        options:[
+          {key:'A',text:'Authorization code flow — requires a browser redirect to let a user log in'},
+          {key:'B',text:'Implicit flow — sends the token directly in the redirect URL'},
+          {key:'C',text:'Client credentials flow — server-to-server with no user interaction'},
+          {key:'D',text:'Device flow — for devices without a browser or keyboard'}
+        ],
+        correctKey:'C',
+        feedback:{
+          correct:'Right. Client credentials is the server-to-server flow: the pipeline authenticates using its own registered credentials (a signed JWT assertion), not on behalf of a user. Authorization code and implicit flows require browser redirects. Device flow is for constrained IoT devices. Client credentials is correct whenever the system acts autonomously with no user context — which is the case for every nightly batch pipeline.',
+          incorrect:'It\'s C. Authorization code and implicit flows both require a user to interact via a browser. Device flow is for limited-input hardware. Client credentials is the flow for server-to-server systems acting autonomously — the pipeline itself is the client, and it authenticates with its own registered key pair.'
+        }
+      },
+      {
+        question:`The pipeline requests scope <code>system/MedicationRequest.rs</code>. What does this grant?`,
+        options:[
+          {key:'A',text:'Create and delete MedicationRequest resources for all patients'},
+          {key:'B',text:'Read and search MedicationRequest resources for all patients via a system-level token'},
+          {key:'C',text:'Read MedicationRequest resources for one specific patient context only'},
+          {key:'D',text:'Read and search all FHIR resource types system-wide'}
+        ],
+        correctKey:'B',
+        feedback:{
+          correct:'Right. Syntax breakdown: "system" = system-wide context (all patients, no user login required), "MedicationRequest" = only this resource type, ".rs" = read (r) + search (s). No "c" for create, no "u" for update, no "d" for delete. The token cannot touch Patient, Condition, or any other resource type — only MedicationRequest.',
+          incorrect:'It\'s B. SMART v2 scope format is {context}/{Type}.{permissions}. "system" = system-wide (all patients). "rs" = read + search only. No create or delete. "MedicationRequest" is specific to that type only — not a wildcard. system/*.rs would be the wildcard; system/MedicationRequest.rs scopes precisely to one resource type.'
+        }
+      }
+    ]
+  },
+
+  // ─── SEGMENT 3: FHIR Core Model ─── [FULLY AUTHORED]
+  {
+    id:3, icon:'📦',
+    title:'Resources, Bundles, and References',
+    subtitle:'The anatomy of a FHIR resource, the four Bundle types you need, and how resources link',
+    endGoal:'You\'ll be able to read a FHIR Patient resource, identify what Bundle type a situation calls for, and trace a reference from one resource to another.',
+    minutes:10,
+    cards:['fhirR4','fhirResource','fhirBundle','fhirReference','fhirExtension','resourceId'],
+    lecture:`
+<p>When the authorized GET request reaches Valley Urgent Care's server and returns 200 OK, the response body is a JSON object — but not arbitrary JSON. It's a <button class="card-link" onclick="openCardModal('fhirResource')">FHIR resource</button>. Resources are the building blocks of everything in <button class="card-link" onclick="openCardModal('fhirR4')">FHIR R4</button>. Let's open one up.</p>
+
+<h4>The anatomy of every resource</h4>
+<p>Every FHIR R4 resource shares the same outer envelope regardless of type:</p>
+<pre class="code-block">{
+  <span class="hl-key">"resourceType"</span>: <span class="hl-str">"Patient"</span>,         <span class="hl-comment">// always first — drives parsing</span>
+  <span class="hl-key">"id"</span>: <span class="hl-str">"p-sofia-001"</span>,              <span class="hl-comment">// server-assigned, URL-safe</span>
+  <span class="hl-key">"meta"</span>: {
+    <span class="hl-key">"versionId"</span>: <span class="hl-str">"3"</span>,
+    <span class="hl-key">"lastUpdated"</span>: <span class="hl-str">"2026-04-15T14:22:00Z"</span>,
+    <span class="hl-key">"profile"</span>: [
+      <span class="hl-str">"http://hl7.org/fhir/us/core/StructureDefinition/us-core-patient|6.1.0"</span>
+    ]                                  <span class="hl-comment">// profile conformance claim</span>
+  },
+  <span class="hl-comment">// ... type-specific clinical elements below</span>
+}</pre>
+<p>The <code>meta.profile</code> array is where a resource declares which profiles it claims to conform to. A receiving server that sees this claim validates the resource against that profile and returns 422 + OperationOutcome if it fails.</p>
+
+<h4>Resource types that matter in pipeline work</h4>
+<ul>
+  <li><strong>Patient</strong> — the person. Every other resource references Patient directly or indirectly.</li>
+  <li><strong>Condition</strong> — a diagnosis or health concern. Has clinical status (active/resolved), verification status (confirmed/provisional), and one or more codes (ICD-10, SNOMED CT).</li>
+  <li><strong>Observation</strong> — a measurement: lab result, vital sign, social history item. Has a LOINC code (what was measured) and a value (the result).</li>
+  <li><strong>MedicationRequest</strong> — a medication order. Has an RxNorm code, dose instructions, authored date, and a status.</li>
+  <li><strong>Encounter</strong> — a visit: an ED arrival, outpatient appointment, inpatient admission. The container that clinical resources hang off of.</li>
+  <li><strong>CapabilityStatement</strong> — the server's self-description. Segment 4 covers this in detail.</li>
+</ul>
+
+<h4>Bundle types — the four you need</h4>
+<p>A <button class="card-link" onclick="openCardModal('fhirBundle')">Bundle</button> is itself a resource whose job is to hold other resources. The <code>type</code> field determines what the Bundle means:</p>
+<ul>
+  <li><strong>searchset</strong> — returned by every FHIR search. Has a <code>total</code> count; each entry has <code>search.mode</code> of "match" (primary result) or "include" (pulled in via _include/_revinclude).</li>
+  <li><strong>transaction</strong> — atomic multi-resource write: all entries succeed or all fail together. Internal references between entries use <code>urn:uuid:</code> temporary IDs that the server resolves after commit. <em>This is the Produce journey's terminal goal.</em></li>
+  <li><strong>batch</strong> — like transaction, but each entry succeeds or fails independently. Useful when partial success is acceptable.</li>
+  <li><strong>collection</strong> — generic grouping with no transactional semantics. Used to group resources for informational purposes.</li>
+</ul>
+
+<h4>References — how resources link to each other</h4>
+<p>FHIR is a graph. Every Condition has a <code>subject</code> (the Patient), every Observation has a <code>subject</code> (the Patient) and an <code>encounter</code> (the Encounter), every MedicationRequest has a <code>requester</code> (the Practitioner). These links are <button class="card-link" onclick="openCardModal('fhirReference')">References</button>:</p>
+<pre class="code-block">{
+  <span class="hl-key">"resourceType"</span>: <span class="hl-str">"Condition"</span>,
+  <span class="hl-key">"id"</span>: <span class="hl-str">"cond-sofia-htn"</span>,
+  <span class="hl-key">"subject"</span>: {
+    <span class="hl-key">"reference"</span>: <span class="hl-str">"Patient/p-sofia-001"</span>    <span class="hl-comment">// literal ref — same server</span>
+  },
+  <span class="hl-key">"asserter"</span>: {
+    <span class="hl-key">"identifier"</span>: {                           <span class="hl-comment">// logical ref — search by ID</span>
+      <span class="hl-key">"system"</span>: <span class="hl-str">"http://hl7.org/fhir/sid/us-npi"</span>,
+      <span class="hl-key">"value"</span>: <span class="hl-str">"1234567890"</span>
+    }
+  }
+}</pre>
+<p>A <strong>literal reference</strong> (<code>"Patient/p-sofia-001"</code>) is a relative URL resolved on the same server. An <strong>absolute reference</strong> is a full HTTPS URL for cross-server resources. A <strong>logical reference</strong> uses an identifier — the receiver must search by that identifier to resolve it. Unresolvable references (the referenced resource doesn't exist) are called <em>dangling references</em> — detecting them is a core Consume pipeline concern.</p>
+
+<h4>Extensions — when the base spec has no field</h4>
+<p>Some clinical data has no home in the base resource. <button class="card-link" onclick="openCardModal('fhirExtension')">Extensions</button> are FHIR's solution. Sofia's race and ethnicity live in US Core extensions, not in base Patient fields:</p>
+<pre class="code-block">{
+  <span class="hl-key">"extension"</span>: [{
+    <span class="hl-key">"url"</span>: <span class="hl-str">"http://hl7.org/fhir/us/core/StructureDefinition/us-core-race"</span>,
+    <span class="hl-key">"extension"</span>: [
+      { <span class="hl-key">"url"</span>: <span class="hl-str">"ombCategory"</span>,
+        <span class="hl-key">"valueCoding"</span>: { <span class="hl-key">"code"</span>: <span class="hl-str">"2106-3"</span>, <span class="hl-key">"display"</span>: <span class="hl-str">"White"</span> } },
+      { <span class="hl-key">"url"</span>: <span class="hl-str">"text"</span>, <span class="hl-key">"valueString"</span>: <span class="hl-str">"White"</span> }
+    ]
+  }]
+}</pre>
+<p>The race extension is <em>structured</em> — it contains sub-extensions, not a single code. A producer that tries to express race as a bare string fails US Core validation. This pattern — an extension containing further extensions — appears whenever a concept requires more than one data point to express.</p>
+
+<div class="callout"><span class="callout-icon">📌</span><strong>Resource IDs</strong> are <button class="card-link" onclick="openCardModal('resourceId')">server-assigned</button>. On a successful POST, the server returns 201 Created with a Location header containing the new resource's URL. Inside transaction Bundles, temporary <code>urn:uuid:</code> IDs allow entries to reference each other before the server assigns real IDs post-commit.</div>
+    `,
+    beforeAfter:{
+      beforeLabel:'Flat SQL row — local field names',
+      beforeContent:`<pre style="font-family:var(--mono);font-size:11px;line-height:1.85;color:#2a2a2a;background:transparent;margin:0;white-space:pre-wrap">SELECT * FROM patient_registration
+WHERE mrn = 'VUC-0042';
+
+mrn       : VUC-0042
+lastname  : Patel
+firstname : Sofia
+dob       : 06/15/1970
+sex       : F
+race_cd   : 2106-3
+bp_sys    : 148
+dx_code   : R03.0</pre>
+<p style="margin-top:8px;font-size:12px;color:var(--text-dim)">One row, flat, local field names, local format conventions. Not interoperable as-is.</p>`,
+      afterLabel:'FHIR R4 Patient resource (partial)',
+      afterContent:`<pre style="font-family:var(--mono);font-size:10.5px;line-height:1.75;color:#2a2a2a;background:transparent;margin:0;white-space:pre-wrap">{
+  "resourceType": "Patient",
+  "id": "p-sofia-001",
+  "meta": {"profile":["...us-core-patient|6.1.0"]},
+  "identifier": [{
+    "system": "http://valley-uc.example/mrn",
+    "value": "VUC-0042"
+  }],
+  "name": [{"family":"Patel","given":["Sofia"]}],
+  "gender": "female",
+  "birthDate": "1970-06-15",
+  "extension": [{
+    "url": "...us-core-race",
+    "extension": [
+      {"url":"ombCategory","valueCoding":{"code":"2106-3"}},
+      {"url":"text","valueString":"White"}
+    ]
+  }]
+}</pre>`
+    },
+    pulseChecks:[
+      {
+        question:`A Condition resource for Sofia contains <code>"subject": {"reference": "Patient/p-sofia-001"}</code>. What does this element express?`,
+        options:[
+          {key:'A',text:'The condition type is "Patient"'},
+          {key:'B',text:'This Condition belongs to the patient whose server-assigned ID is p-sofia-001'},
+          {key:'C',text:'The patient named Sofia personally created this Condition record'},
+          {key:'D',text:'This Condition links to p-sofia-001 different patient records'}
+        ],
+        correctKey:'B',
+        feedback:{
+          correct:'Right. "Patient/p-sofia-001" is a relative URL — {resourceType}/{id} — that resolves to the Patient resource with ID p-sofia-001 on the same server. The subject element identifies who the Condition belongs to. This is how FHIR\'s graph is formed: resources point at each other via Reference elements.',
+          incorrect:'It\'s B. In FHIR, a Reference element (like "subject") points to another resource. "Patient/p-sofia-001" is a relative URL — resourceType/id — resolving to the Patient resource with that ID. It says "this Condition belongs to that Patient." The resourceType in the reference string identifies what kind of resource is being pointed to, not the condition type itself.'
+        }
+      },
+      {
+        question:`A pipeline needs to submit a Patient, a Condition, and a MedicationRequest in a single operation where all three must succeed or all three must fail. Which Bundle type is correct?`,
+        options:[
+          {key:'A',text:'searchset — returned by search operations'},
+          {key:'B',text:'collection — a generic container for grouping resources'},
+          {key:'C',text:'transaction — atomic multi-resource write; all succeed or all fail'},
+          {key:'D',text:'batch — each entry succeeds or fails independently'}
+        ],
+        correctKey:'C',
+        feedback:{
+          correct:'Right. A transaction Bundle is submitted atomically — the server applies all entries or rolls back all of them. If the Patient creates successfully but the MedicationRequest fails validation, the entire transaction rolls back. This is correct when partial success would leave the system in an inconsistent state. The Produce journey\'s terminal goal is a transaction Bundle POST.',
+          incorrect:'It\'s C. Transaction is the Bundle type for atomic operations — all or nothing. Searchset is returned by search operations, never submitted by clients. Collection has no transactional semantics — entries are independent and there is no rollback. Batch allows partial success, which is inappropriate when all three resources must coexist to be meaningful.'
+        }
+      }
+    ]
+  },
+
+  // ─── SEGMENT 4: Profiles + Conformance ─── [FULLY AUTHORED — Turn 2]
+  {
+    id:4, icon:'🏗️',
+    title:'Profiles and conformance rules',
+    subtitle:'US Core, must-support, CapabilityStatement, and OperationOutcome',
+    endGoal:'You\'ll understand what a profile constrains, what must-support actually requires of a producer, and how to read an OperationOutcome to diagnose a 422 failure.',
+    minutes:9,
+    cards:['fhirProfile','usCore','mustSupport','capabilityStatement','operationOutcome','uscdi'],
+    lecture:`
+<p>A base FHIR Patient resource is permissive — it defines many optional fields and few required ones. It imposes no obligation on race or ethnicity, no particular identifier format, and no requirement to claim any profile at all. What <button class="card-link" onclick="openCardModal('usCore')">US Core 6.1.0</button> adds is a constrained layer: specific elements that must be present when data is available, specific value sets that must be used, and specific extensions that producers are obligated to include. Those constraints live in a <button class="card-link" onclick="openCardModal('fhirProfile')">profile</button>.</p>
+<p>US Core 6.1.0 defines approximately 30 profiles, aligned to <button class="card-link" onclick="openCardModal('uscdi')">USCDI v3</button> data classes — the ONC regulatory mandate. A resource that claims conformance to a US Core profile via <code>meta.profile</code> will be validated against that profile's rules by any compliant server. Validation failure returns 422 + <button class="card-link" onclick="openCardModal('operationOutcome')">OperationOutcome</button>.</p>
+
+<h4>The profile claim and what triggers validation</h4>
+<p>When Sofia's Patient resource includes:</p>
+<pre class="code-block"><span class="hl-key">"meta"</span>: { <span class="hl-key">"profile"</span>: [<span class="hl-str">"http://hl7.org/fhir/us/core/StructureDefinition/us-core-patient|6.1.0"</span>] }</pre>
+<p>...the server reads that as a promise: "this resource conforms to US Core Patient 6.1.0." A compliant server validates the resource against that profile. If it fails — say, the race extension is absent when it should be present — the server returns 422 with an OperationOutcome. A resource without any <code>meta.profile</code> claim is validated only against the base spec; the server won't check US Core rules unless it's configured to enforce them regardless.</p>
+
+<h4>Must-support — the most misunderstood flag</h4>
+<p>Every profile element carries one of three conformance designations: <em>required</em> (cardinality min=1 — always present), <em>must-support</em>, or <em>optional</em>. <button class="card-link" onclick="openCardModal('mustSupport')">Must-support</button> sits between required and optional, and both sides of the exchange carry an obligation:</p>
+<ul>
+  <li><strong>Producer obligation:</strong> if the data is available, include the element. You may not omit it just because it's inconvenient to populate.</li>
+  <li><strong>Consumer obligation:</strong> if the element is received, process it meaningfully. You may not silently discard it.</li>
+</ul>
+<p>A subtle but important case: <em>known-declined data</em>. Suppose Sofia was asked her race and declined to answer. US Core Patient.extension:race is must-support. The data point exists — we know she was asked, we know she declined. The producer must still include the extension, populated with the null-flavor code <code>ASKU</code> (asked but unknown). Omitting the extension because the value is missing violates must-support. This is why a Patient record arriving without any race extension warrants a quality flag: either the data was never collected (possible conformance gap at intake) or the producer omitted it without applying the null-flavor (definite conformance gap).</p>
+
+<h4>The CapabilityStatement — read this before issuing any other request</h4>
+<p>Every FHIR server exposes a <button class="card-link" onclick="openCardModal('capabilityStatement')">CapabilityStatement</button> at <code>GET /metadata</code>. No auth required on most servers. A production pipeline reads this document at startup and validates three things before proceeding:</p>
+<ol>
+  <li><strong>fhirVersion:</strong> must be <code>"4.0.1"</code> for R4. If the server upgraded to R5 or is running R4B, the response format may be incompatible — fail the run.</li>
+  <li><strong>Declared profile URLs:</strong> the <code>rest.resource[*].supportedProfile</code> list should include the US Core profile URLs the pipeline expects. If a profile has been removed or renamed, downstream validation behavior will differ — fail the run.</li>
+  <li><strong>Security scheme:</strong> <code>rest.security.extension</code> contains the SMART URLs — token endpoint, authorize endpoint. Extract these here rather than hardcoding them in the pipeline configuration.</li>
+</ol>
+<p>Consume Station 1 of the FHIR Pipeline Lab is built around this startup gate. A server that passes all three checks gets a green light; anything else aborts with a diagnostic message rather than letting bad data silently propagate.</p>
+
+<h4>Reading an OperationOutcome — the core debugging skill</h4>
+<p>When a FHIR request returns 422 (or any 4xx), the response body is always an OperationOutcome. Knowing where to look makes diagnosis fast:</p>
+<pre class="code-block">{
+  <span class="hl-key">"resourceType"</span>: <span class="hl-str">"OperationOutcome"</span>,
+  <span class="hl-key">"issue"</span>: [{
+    <span class="hl-key">"severity"</span>: <span class="hl-str">"error"</span>,          <span class="hl-comment">// error | warning | information</span>
+    <span class="hl-key">"code"</span>: <span class="hl-str">"required"</span>,           <span class="hl-comment">// required | value | invalid | security ...</span>
+    <span class="hl-key">"diagnostics"</span>: <span class="hl-str">"Patient.name: minimum required = 1, but only found 0"</span>,
+    <span class="hl-key">"expression"</span>: [<span class="hl-str">"Patient.name"</span>]   <span class="hl-comment">// FHIRPath — exact location</span>
+  }]
+}</pre>
+<p>The <code>expression</code> array is the most actionable field — it gives you the FHIRPath location of the failing element so you can navigate directly to it in the resource. The <code>diagnostics</code> string explains why it failed. The <code>code</code> tells you the category: <code>required</code> means a missing element, <code>value</code> means an invalid value (wrong code, wrong format), <code>security</code> means an auth failure. Read issue entries top-to-bottom; fix the first error before investigating the rest — later errors are sometimes cascading symptoms of the first.</p>
+    `,
+    beforeAfter:{
+      beforeLabel:'Unprofiiled base Patient — passes base spec, fails US Core',
+      beforeContent:`<pre style="font-family:var(--mono);font-size:10.5px;line-height:1.75;color:#2a2a2a;background:transparent;margin:0;white-space:pre-wrap">{
+  "resourceType": "Patient",
+  "id": "p-sofia-001",
+  "name": [{"family":"Patel","given":["Sofia"]}],
+  "gender": "female",
+  "birthDate": "1970-06-15"
+  <span style="color:#9c382d;font-style:italic">// no meta.profile claim
+  // no identifier (must-support)
+  // no us-core-race extension (must-support)
+  // no us-core-ethnicity extension (must-support)</span>
+}</pre>
+<p style="font-size:12px;color:var(--text-dim);margin-top:6px">Valid base FHIR. Fails US Core Patient 6.1.0 — missing must-support elements.</p>`,
+      afterLabel:'US Core Patient — profile claim + must-support elements present',
+      afterContent:`<pre style="font-family:var(--mono);font-size:10.5px;line-height:1.75;color:#2a2a2a;background:transparent;margin:0;white-space:pre-wrap">{
+  "resourceType": "Patient",
+  "id": "p-sofia-001",
+  "meta": { "profile": ["...us-core-patient|6.1.0"] },
+  "identifier": [{ <span style="color:#1f6843">"system":"http://valley-uc.example/mrn",
+    "value":"VUC-0042"</span> }],
+  "name": [{"family":"Patel","given":["Sofia"]}],
+  "gender": "female",
+  "birthDate": "1970-06-15",
+  "extension": [
+    { "url": "...us-core-race",
+      "extension": [
+        {"url":"ombCategory","valueCoding":{"code":"2106-3"}},
+        {"url":"text","valueString":"White"}] },
+    { "url": "...us-core-ethnicity",
+      "extension": [
+        {"url":"ombCategory","valueCoding":{"code":"2186-5"}},
+        {"url":"text","valueString":"Not Hispanic or Latino"}] }
+  ]
+}</pre>`
+    },
+    pulseChecks:[
+      {
+        question:`Sofia's Patient resource arrives without a <code>birthDate</code>, even though US Core marks it as must-support. What does this indicate?`,
+        options:[
+          {key:'A',text:'The record is automatically invalid — birthDate has min cardinality 1 in US Core Patient'},
+          {key:'B',text:'The record is valid — must-support only means "send if known," and maybe the birth date was never recorded'},
+          {key:'C',text:'The record is likely a conformance gap — a producer must include birthDate when data is available, and it almost certainly is'},
+          {key:'D',text:'Must-support is a consumer-only obligation — the sending system has no responsibility'}
+        ],
+        correctKey:'C',
+        feedback:{
+          correct:'Right. Must-support creates a producer obligation: if the data exists, send it. A patient in a medical system almost always has a recorded birth date. Absent birthDate is a likely conformance gap, not automatic invalidity — min cardinality allows its absence. But a conforming producer must not omit it when the data is present. A production pipeline routes this record to a quality review queue.',
+          incorrect:'It\'s C. Must-support means: if the data exists, the producer must include it. A patient in an active medical record almost certainly has a birth date on file — its absence is a probable conformance violation. The record is not automatically schema-invalid (min cardinality allows absence) but it\'s a quality flag that warrants investigation.'
+        }
+      },
+      {
+        question:`A POST to the server returns 422 with an OperationOutcome containing <code>"expression": ["Patient.identifier"]</code> and <code>"code": "required"</code>. What does this tell you?`,
+        options:[
+          {key:'A',text:'The Patient.identifier element is missing — the profile requires at least one identifier and none was supplied'},
+          {key:'B',text:'The identifier value is in the wrong format — for example, a non-numeric MRN where a number is required'},
+          {key:'C',text:'The identifier system URL is not recognized by the server\'s terminology service'},
+          {key:'D',text:'The Authorization token does not have permission to set identifiers on Patient resources'}
+        ],
+        correctKey:'A',
+        feedback:{
+          correct:'Right. Code "required" means a required element is absent. Expression "Patient.identifier" tells you exactly where the gap is. The profile (US Core Patient) requires at least one identifier (min cardinality 1) — the submitted resource had zero. Fix: add an identifier element with the patient\'s MRN using the facility\'s system URL.',
+          incorrect:'It\'s A. The code "required" maps to a missing element — not a formatting error (that would be "value"), not a terminology issue, not an auth problem (that would be 403, not 422). The expression "Patient.identifier" pinpoints the exact element. US Core Patient requires min 1 identifier; the resource supplied none.'
+        }
+      }
+    ]
+  },
+
+  // ─── SEGMENT 5: SMART + Bulk Data ─── [FULLY AUTHORED — Turn 2]
+  {
+    id:5, icon:'🔄',
+    title:'SMART on FHIR and bulk data',
+    subtitle:'Backend Services, $export, NDJSON, _include/_revinclude, and conditional create',
+    endGoal:'You\'ll understand the Backend Services auth flow end-to-end, the $export polling sequence, and when to use each access pattern.',
+    minutes:9,
+    cards:['smartFhir','backendServices','bulkExport','ndjson','includeRevinclude','conditionalCreate'],
+    lecture:`
+<p>Segment 2 covered OAuth 2.0 mechanics — tokens, scopes, the client credentials flow. <button class="card-link" onclick="openCardModal('smartFhir')">SMART on FHIR</button> is the healthcare-specific profile that wraps OAuth 2.0 with FHIR-aware conventions: a standardized scope syntax, defined launch contexts (EHR launch, standalone launch, Backend Services), and a discovery mechanism for token endpoint URLs via the CapabilityStatement's security extension. When someone says "this FHIR server uses SMART," they mean OAuth 2.0 structured according to the SMART specification — which is what the FHIR Pipeline Lab uses throughout.</p>
+
+<h4>SMART Backend Services — the pipeline auth flow, in full</h4>
+<p>For server-to-server pipelines with no user interaction, <button class="card-link" onclick="openCardModal('backendServices')">SMART Backend Services</button> is the correct flow. Here's the complete runtime sequence:</p>
+<pre class="code-block"><span class="hl-comment"># ONE-TIME SETUP (before any pipeline runs)</span>
+<span class="hl-comment"># Register your public key (JWKS URL) with the authorization server</span>
+<span class="hl-comment"># The server fetches your public key from this URL to verify your assertions</span>
+
+<span class="hl-comment"># RUNTIME — Step 1: build and sign a JWT assertion</span>
+{
+  "iss": "https://pcp-system.cascade-valley.example",  <span class="hl-comment">// client ID</span>
+  "sub": "https://pcp-system.cascade-valley.example",  <span class="hl-comment">// same as iss</span>
+  "aud": "https://fhir.valley-uc.example/token",       <span class="hl-comment">// token endpoint URL</span>
+  "exp": 1746900000,   <span class="hl-comment">// now + 5 minutes max</span>
+  "jti": "a1b2c3d4-..."  <span class="hl-comment">// unique per request — prevents replay</span>
+}
+<span class="hl-comment"># Sign with RS256 private key (stored in secrets vault)</span>
+
+<span class="hl-comment"># Step 2: POST to token endpoint</span>
+<span class="hl-verb">POST</span> <span class="hl-url">/token</span>
+grant_type=client_credentials
+&scope=system/Patient.rs system/Condition.rs system/Observation.rs
+&client_assertion_type=urn:ietf:params:oauth:client-assertion-type:jwt-bearer
+&client_assertion=&lt;signed JWT&gt;
+
+<span class="hl-ok">200 OK</span>  {"access_token":"eyJhb...","expires_in":900,"token_type":"bearer"}</pre>
+
+<h4>$export — the bulk data sequence</h4>
+<p>Issuing individual GET requests for a large cohort generates thousands of round-trips and stresses the server's connection pool. The FHIR Bulk Data IG defines <button class="card-link" onclick="openCardModal('bulkExport')">$export</button> — an asynchronous job that produces <button class="card-link" onclick="openCardModal('ndjson')">NDJSON</button> files, one per resource type. The Consume journey pulls the Cascade Cohort this way. The three-step sequence:</p>
+<ol>
+  <li><strong>Kick-off:</strong> <code>POST [base]/Group/{id}/$export</code> (or GET with appropriate headers). Response: <code>202 Accepted</code> + <code>Content-Location</code> header pointing to the polling URL.</li>
+  <li><strong>Poll:</strong> <code>GET {polling-url}</code> periodically. While the job runs: <code>202 Accepted</code> (possibly with X-Progress header). When complete: <code>200 OK</code> with a JSON manifest body listing NDJSON file URLs by resource type.</li>
+  <li><strong>Download:</strong> <code>GET</code> each file URL in the manifest. Each file has one FHIR resource per line. Files may be gzip-compressed (.ndjson.gz) — check Content-Encoding.</li>
+</ol>
+<p>Use group-scoped export (<code>/Group/{id}/$export</code>) rather than system-level (<code>/$export</code>) whenever possible. Group scope restricts the export to a defined patient cohort, which is more efficient, more aligned to the minimum-necessary principle, and easier to audit.</p>
+
+<h4>_include and _revinclude — targeted graph traversal</h4>
+<p>When you need related resources in a single search round-trip rather than a bulk export, <button class="card-link" onclick="openCardModal('includeRevinclude')">_include and _revinclude</button> extend the search Bundle to include referenced resources:</p>
+<ul>
+  <li><code>GET Observation?patient=p-sofia-001&amp;_include=Observation:subject</code> — returns Sofia's Observations plus the Patient resource they reference.</li>
+  <li><code>GET Patient?_id=p-sofia-001&amp;_revinclude=Condition:subject</code> — returns Sofia's Patient record plus all Conditions that reference her as subject.</li>
+</ul>
+<p>Included resources appear in the Bundle with <code>search.mode = "include"</code>. Check the CapabilityStatement's <code>rest.resource[*].searchInclude</code> list before relying on _include combinations — not all servers support all combinations.</p>
+
+<h4>Conditional create — preventing duplicates on submission</h4>
+<p>When submitting resources to a server that may already have them, the <button class="card-link" onclick="openCardModal('conditionalCreate')">conditional create</button> pattern prevents duplicates without requiring the client to search first. In a transaction Bundle entry:</p>
+<pre class="code-block">{
+  <span class="hl-key">"request"</span>: {
+    <span class="hl-key">"method"</span>: <span class="hl-str">"POST"</span>,
+    <span class="hl-key">"url"</span>: <span class="hl-str">"Patient"</span>,
+    <span class="hl-key">"ifNoneExist"</span>: <span class="hl-str">"identifier=http://hospital.cascade.example/mrn|10005"</span>
+  }
+}</pre>
+<p>Server behavior: if a Patient with that MRN already exists → return 200 + the existing resource, skip creation. If no match → create and return 201. This is the mechanism the Produce journey uses for P005 Maria Gonzales, whose surname differs from P001 Maria Gonzalez by one letter — rather than forcing a duplicate Patient resource into the system, the conditional create lets the server's deduplication logic decide.</p>
+    `,
+    beforeAfter:{
+      beforeLabel:'$export polling sequence',
+      beforeContent:`<pre style="font-family:var(--mono);font-size:10.5px;line-height:1.85;color:#2a2a2a;background:transparent;margin:0;white-space:pre-wrap"><span style="color:#2c5680;font-weight:700">KICK-OFF</span>
+POST /Group/cascade-cohort/$export
+Authorization: Bearer eyJhb...
+Accept: application/fhir+json
+
+<span style="color:#8e4d10;font-weight:700">202 Accepted</span>
+Content-Location: /export-status/job-abc123
+
+<span style="color:#2c5680;font-weight:700">POLL  (repeat until 200)</span>
+GET /export-status/job-abc123
+→ 202 Accepted  X-Progress: "40% complete"
+→ 202 Accepted  X-Progress: "80% complete"
+→ <span style="color:#1f6843;font-weight:700">200 OK</span>  (job finished)</pre>`,
+      afterLabel:'Manifest → NDJSON download',
+      afterContent:`<pre style="font-family:var(--mono);font-size:10.5px;line-height:1.85;color:#2a2a2a;background:transparent;margin:0;white-space:pre-wrap"><span style="color:#1f6843;font-weight:700">200 OK manifest body:</span>
+{ "output": [
+  {"type":"Patient",   "url":"https://.../Patient.ndjson"},
+  {"type":"Condition", "url":"https://.../Condition.ndjson"},
+  {"type":"Observation","url":"https://.../Observation.ndjson"}
+]}
+
+<span style="color:#2c5680;font-weight:700">DOWNLOAD Patient.ndjson  (one resource per line)</span>
+{"resourceType":"Patient","id":"p001","name":[...],...}
+{"resourceType":"Patient","id":"p002","name":[...],...}
+{"resourceType":"Patient","id":"p003","name":[...],...}
+{"resourceType":"Patient","id":"p004","name":[...],...}
+{"resourceType":"Patient","id":"p005","name":[...],...}</pre>`
+    },
+    pulseChecks:[
+      {
+        question:`A pipeline needs to pull all FHIR data for a cohort of 500 patients efficiently. What is the correct mechanism?`,
+        options:[
+          {key:'A',text:'500 individual GET Patient/{id} requests, then separate searches for each patient\'s Conditions and Observations'},
+          {key:'B',text:'Group-scoped $export — kick off, poll, download NDJSON files by resource type'},
+          {key:'C',text:'A single GET Patient search with _include=* to pull all related resources in one Bundle'},
+          {key:'D',text:'A transaction Bundle POST containing all 500 Patient resources'}
+        ],
+        correctKey:'B',
+        feedback:{
+          correct:'Right. Group-scoped $export is designed exactly for this: asynchronously export all resources for a defined patient cohort into per-resource-type NDJSON files. Individual requests would generate thousands of synchronous round-trips. _include=* is unsupported by most servers. Transaction Bundles write resources — they don\'t read them.',
+          incorrect:'It\'s B. $export (Bulk Data) is the FHIR mechanism for population-level data pulls. It runs asynchronously, produces streaming NDJSON files, and is scoped to a Group that defines the cohort. Individual requests at 500-patient scale are prohibitively slow. _include has server-specific support limits. Transaction Bundles are for writing, not reading.'
+        }
+      },
+      {
+        question:`A transaction Bundle is submitting a new Patient resource for Maria Gonzales (P005). The server may already have an existing Patient for this individual under a slightly different name. Which request field prevents creating a duplicate?`,
+        options:[
+          {key:'A',text:'Setting request.method to "PUT" instead of "POST" forces an update rather than create'},
+          {key:'B',text:'Omitting the id field from the Patient resource tells the server to search for an existing match first'},
+          {key:'C',text:'Setting the Content-Type header to application/merge-patch+json triggers deduplication logic'},
+          {key:'D',text:'Including request.ifNoneExist with a search string — the server only creates if no matching resource exists'}
+        ],
+        correctKey:'D',
+        feedback:{
+          correct:'Right. The ifNoneExist field carries a FHIR search condition (e.g., "identifier=...mrn|10005"). The server evaluates it: if a Patient matching that search already exists, it returns 200 + the existing resource and skips creation. If no match, it creates and returns 201. This is the conditional create pattern — the client doesn\'t need to search separately before submitting.',
+          incorrect:'It\'s D. ifNoneExist is the Bundle entry field that implements conditional create. It carries a search string the server evaluates before deciding whether to create: match found → return existing (200), no match → create (201). PUT without an ID is a different operation. Omitting the id just tells the server to assign one — it doesn\'t trigger deduplication. Content-Type drives format parsing, not deduplication.'
+        }
+      }
+    ]
+  },
+
+  // ─── SEGMENT 6: Clinical Terminologies ─── [FULLY AUTHORED — Turn 2]
+  {
+    id:6, icon:'🏷️',
+    title:'Clinical terminologies',
+    subtitle:'ICD-10-CM, SNOMED CT, LOINC, RxNorm, ConceptMap, ValueSet, and binding strength',
+    endGoal:'You\'ll know which code system belongs on which FHIR element, how to read a coded Condition or Observation, and what happens when a code fails a required ValueSet binding.',
+    minutes:9,
+    cards:['icd10cm','snomedCt','loincCode','rxnorm','conceptMap','valueSet','bindingStrength'],
+    lecture:`
+<p>Sofia's hypertension diagnosis is not stored in Valley Urgent Care's system as the string "high blood pressure." It's stored as a structured code — <code>I10</code> from ICD-10-CM — so that any receiving system, regardless of what EHR it runs or what language its clinicians speak, can interpret it unambiguously, count it across thousands of patients, and combine it with data from other organizations. This is what coded clinical data makes possible.</p>
+
+<h4>The four code systems that cover most FHIR pipeline work</h4>
+<p><button class="card-link" onclick="openCardModal('icd10cm')">ICD-10-CM</button> is the US standard for coding diagnoses. Every US Core Condition resource needs at least one ICD-10-CM code. Code structure: 1 letter + 2 mandatory digits + optional decimal + up to 4 more characters. Sofia's diagnoses:</p>
+<ul>
+  <li><code>I10</code> — Essential hypertension (confirmed diagnosis)</li>
+  <li><code>R03.0</code> — Elevated blood-pressure reading without confirmed diagnosis (what urgent care used at intake)</li>
+</ul>
+<p><button class="card-link" onclick="openCardModal('snomedCt')">SNOMED CT</button> is the preferred clinical concept system for US Core Condition.code when clinical detail matters. A Condition should carry <em>both</em> a SNOMED concept (clinical accuracy) and an ICD-10 code (billing requirement) when both are available. Sofia's hypertension: SNOMED <code>38341003</code> (Hypertensive disorder, systemic arterial). SNOMED concept IDs are integers — their values carry no structural meaning.</p>
+<p><button class="card-link" onclick="openCardModal('loincCode')">LOINC</button> identifies what was measured in an Observation. Sofia's urgent care visit generated two vital sign Observations — each needs a LOINC code in <code>Observation.code.coding</code>:</p>
+<ul>
+  <li><code>8480-6</code> — Systolic blood pressure (her reading: 148 mmHg)</li>
+  <li><code>8462-4</code> — Diastolic blood pressure</li>
+</ul>
+<p>US Core vital sign profiles bind these Observation.code elements to specific LOINC codes at <em>required</em> strength — a systolic BP Observation without LOINC <code>8480-6</code> fails US Core validation.</p>
+<p><button class="card-link" onclick="openCardModal('rxnorm')">RxNorm</button> codes medications. Sofia's Lisinopril MedicationRequest needs an RxNorm code in <code>medication.coding</code>. A MedicationRequest documented only as the free-text string "Lisinopril 10mg" fails US Core conformance — the RxNorm code is required.</p>
+
+<h4>ConceptMap — the formal crosswalk</h4>
+<p>When source data uses one code system and the target expects another, a <button class="card-link" onclick="openCardModal('conceptMap')">ConceptMap</button> provides the machine-readable mapping. The <code>$translate</code> terminology operation executes it:</p>
+<pre class="code-block"><span class="hl-comment"># P002 Kowalski's CHF arrived with legacy ICD-9 code 428.0</span>
+<span class="hl-comment"># Consume Station 7 must crosswalk it to ICD-10-CM</span>
+<span class="hl-verb">POST</span> <span class="hl-url">/ConceptMap/$translate</span>
+{ "code": <span class="hl-str">"428.0"</span>, "system": <span class="hl-str">"http://hl7.org/fhir/sid/icd-9-cm"</span>,
+  "targetSystem": <span class="hl-str">"http://hl7.org/fhir/sid/icd-10-cm"</span> }
+
+<span class="hl-ok">200 OK</span>
+{ "result": true, "match": [{ "code": <span class="hl-str">"I50.9"</span>, "equivalence": <span class="hl-str">"wider"</span> }] }</pre>
+<p>The <code>equivalence</code> field matters: <code>"wider"</code> means I50.9 (Heart failure, unspecified) is <em>broader</em> than old 428.0 — some clinical specificity was lost. This is documented in the pipeline's transformation log. A crosswalk with <code>"unmatched"</code> equivalence means no mapping exists — the record routes to the quarantine queue.</p>
+
+<h4>ValueSets and binding strength</h4>
+<p>A <button class="card-link" onclick="openCardModal('valueSet')">ValueSet</button> defines which codes are valid in a given context. Profiles bind coded elements to ValueSets at a <button class="card-link" onclick="openCardModal('bindingStrength')">binding strength</button> that determines how strictly the constraint is enforced:</p>
+<ul>
+  <li><strong>Required:</strong> the code must come from the ValueSet. The server will reject any code not in the set with 422. Observation.status, Condition.clinicalStatus, and Condition.verificationStatus are all required-bound.</li>
+  <li><strong>Extensible:</strong> use a code from the ValueSet if one applies; use a local code only if the ValueSet has no applicable concept. Common trap: a local code passes schema validation but the receiving system doesn't recognize it — leading to silent data loss in downstream analytics.</li>
+  <li><strong>Preferred / Example:</strong> guidance only, not enforced during validation.</li>
+</ul>
+<div class="callout"><span class="callout-icon">⚠️</span><strong>The extensible trap:</strong> a Condition arriving with a local diagnosis code not in the US Core Condition.code ValueSet passes schema validation — the JSON structure is correct. But downstream analytics may not map it to any standard concept, and multi-site queries filtering by ICD-10 code will miss it entirely. Extensible binding means the server won't fail you — but interoperability breaks silently.</div>
+    `,
+    beforeAfter:{
+      beforeLabel:'Free-text diagnosis — not queryable',
+      beforeContent:`<pre style="font-family:var(--mono);font-size:11px;line-height:1.85;color:#2a2a2a;background:transparent;margin:0;white-space:pre-wrap">EHR problem list entry:
+diagnosis: "High blood pressure"
+date: "April 2024"
+provider: "Dr. Chen"
+
+<span style="color:#9c382d;font-style:italic">Cannot be combined across systems.
+Cannot be counted in a population query.
+Cannot be billed without a diagnosis code.
+"High blood pressure" ≠ "HTN" ≠ "Essential HTN"
+— all mean the same thing; analytics can't know that.</span></pre>`,
+      afterLabel:'FHIR Condition — coded, queryable, billable',
+      afterContent:`<pre style="font-family:var(--mono);font-size:10.5px;line-height:1.75;color:#2a2a2a;background:transparent;margin:0;white-space:pre-wrap">{
+  "resourceType": "Condition",
+  "clinicalStatus": { "coding":[{
+    "system":"...condition-clinical",
+    "code":<span style="color:#1f6843;font-weight:700">"active"</span>}] },
+  "verificationStatus": { "coding":[{
+    "system":"...condition-ver-status",
+    "code":<span style="color:#1f6843;font-weight:700">"confirmed"</span>}] },
+  "code": { "coding": [
+    { "system":"http://hl7.org/fhir/sid/icd-10-cm",
+      "code":<span style="color:#1f6843;font-weight:700">"I10"</span>,
+      "display":"Essential hypertension" },
+    { "system":"http://snomed.info/sct",
+      "code":<span style="color:#1f6843;font-weight:700">"38341003"</span>,
+      "display":"Hypertensive disorder" }
+  ]},
+  "subject":{"reference":"Patient/p-sofia-001"}
+}</pre>`
+    },
+    pulseChecks:[
+      {
+        question:`Sofia's systolic blood pressure reading needs to be stored as a FHIR Observation. Which code system provides the "what was measured" identifier for <code>Observation.code</code>?`,
+        options:[
+          {key:'A',text:'ICD-10-CM — the US standard for coding diagnoses'},
+          {key:'B',text:'RxNorm — the US standard for medication codes'},
+          {key:'C',text:'LOINC — the standard for identifying lab tests and vital signs'},
+          {key:'D',text:'SNOMED CT — the comprehensive clinical concept vocabulary'}
+        ],
+        correctKey:'C',
+        feedback:{
+          correct:'Right. LOINC identifies what was observed or measured — lab tests, vital signs, survey responses. Systolic blood pressure = LOINC 8480-6. US Core vital sign profiles bind Observation.code to specific LOINC codes at required strength; a systolic BP Observation without LOINC 8480-6 fails validation. ICD-10-CM codes diagnoses on Conditions. RxNorm codes medications on MedicationRequests. SNOMED CT is secondary on Observation.code in US Core.',
+          incorrect:'It\'s C. LOINC (Logical Observation Identifiers Names and Codes) is the standard for identifying what was measured. Systolic blood pressure = LOINC 8480-6. ICD-10-CM codes diagnoses. RxNorm codes medications. SNOMED CT codes clinical concepts broadly but is not the required primary system for US Core vital sign Observations — LOINC is.'
+        }
+      },
+      {
+        question:`A Condition resource arrives with <code>clinicalStatus</code> coded as <code>"current"</code>. The US Core Condition profile binds this element to ConditionClinicalStatusCodes at <strong>required</strong> strength. The ValueSet contains only: active, recurrence, relapse, inactive, remission, resolved. What happens?`,
+        options:[
+          {key:'A',text:'The server accepts it — required binding is a strong suggestion, not a hard rule'},
+          {key:'B',text:'The server returns 422 — "current" is not in the required ValueSet and validation fails'},
+          {key:'C',text:'The server returns 200 but logs a warning — required binding only blocks writes in strict-validation mode'},
+          {key:'D',text:'The server automatically maps "current" to "active" using its built-in terminology service'}
+        ],
+        correctKey:'B',
+        feedback:{
+          correct:'Right. Required binding strength means the submitted code must appear in the ValueSet — no exceptions, no semantic approximations. "current" is not one of the six allowed values. The server returns 422 + OperationOutcome with an issue entry citing Condition.clinicalStatus and the violated constraint. Fix: use "active" (the correct equivalent from the ValueSet).',
+          incorrect:'It\'s B. Required binding is enforced at validation time, not advisory. A code not in the required ValueSet returns 422 — not a warning, not an auto-correction. Servers do not map between semantically similar codes. Required means required: submit "active", "inactive", "resolved", or one of the other four allowed values. "current" is not in the set.'
+        }
+      }
+    ]
+  },
+
+  // ─── SEGMENT 7: EHR / HIE / HIPAA ─── [FULLY AUTHORED — Turn 3]
+  {
+    id:7, icon:'🏥',
+    title:'The healthcare landscape',
+    subtitle:'EHRs, HIEs, HIPAA, PHI, Safe Harbor de-identification, and 42 CFR Part 2',
+    endGoal:'You\'ll understand why data governance shapes every FHIR pipeline design decision — from scope selection to log sanitization to de-identification strategy.',
+    minutes:8,
+    cards:['ehrSystem','hie','hipaa','phi','safeHarbor','cfr42part2'],
+    lecture:`
+<p>Every FHIR exchange involves real software systems, run by real organizations, subject to real law. The technical patterns of the previous six segments don't exist in a vacuum — they're shaped by the healthcare landscape they operate in. This segment places that context around Sofia's data journey and the Cascade Cohort's data that the lab uses.</p>
+
+<h4>EHRs — where the data originates</h4>
+<p>An <button class="card-link" onclick="openCardModal('ehrSystem')">EHR</button> is the primary clinical software system in a healthcare organization — where Sofia's vital signs were documented, her Lisinopril was ordered, and her ICD-10 codes were assigned. Every FHIR API in the real world is ultimately backed by data that originated in an EHR.</p>
+<p>ONC's certification program (HTI-1 final rule) requires certified EHRs to expose FHIR R4 / US Core APIs and to support SMART on FHIR authorization. This is why FHIR is now accessible from major EHRs — not because vendors chose to build it, but because federal certification requires it. Implementation quality varies: the same US Core profile may pass validation against one vendor's API and fail against another's due to implementation differences. Testing against a specific vendor's sandbox before production is non-negotiable.</p>
+
+<h4>HIEs — how data crosses organizational boundaries</h4>
+<p>When Sofia's data needs to travel from Valley Urgent Care to Cascade Valley Medical, it doesn't always go directly. Regional <button class="card-link" onclick="openCardModal('hie')">HIEs</button> (Health Information Exchanges) aggregate clinical data from multiple participating organizations and make it available for authorized queries. A query to the Cascade Regional HIE (the fictional network used in the FHIR Pipeline Lab) returns data contributed by many sources — not just one organization's EHR.</p>
+<p>Pipeline implication: data arriving from an HIE may have lower conformance quality than data from a single EHR. The HIE aggregates records produced by many different EHR systems with different implementation quality levels. Expect missing must-support elements, legacy code systems, and inconsistent extension patterns — design your pipeline's quarantine logic with this in mind.</p>
+
+<h4>PHI — what's regulated and why it matters to pipelines</h4>
+<p>Every FHIR Patient resource is <button class="card-link" onclick="openCardModal('phi')">PHI</button> (Protected Health Information) by definition. HIPAA defines 18 identifier categories whose presence makes data PHI: names, geographic subdivisions smaller than state, all dates except year (birth, admission, discharge, death), phone numbers, fax numbers, email addresses, SSNs, MRNs, health plan beneficiary numbers, account numbers, certificate/license numbers, VINs, device identifiers, URLs, IP addresses, biometric identifiers, full-face photos, and any other unique identifying code.</p>
+<p>A Patient resource contains at minimum: a name (identifier 1), an MRN (identifier 8), a birth date (identifier 3), and a gender. It's PHI. So are the Condition, Observation, and MedicationRequest resources that reference it — they inherit PHI status from the patient link. Every component of a FHIR pipeline that touches these resources is operating on regulated data.</p>
+
+<h4>HIPAA — three rules that shape pipeline design</h4>
+<p><button class="card-link" onclick="openCardModal('hipaa')">HIPAA</button> has three rules that directly affect FHIR pipeline engineers:</p>
+<ul>
+  <li><strong>Privacy Rule</strong> — defines PHI and establishes the <em>minimum necessary</em> principle: request only the data the pipeline actually needs. This drives scope design: <code>system/Patient.rs system/Condition.rs</code> is defensible; <code>system/*.rs</code> is not if the pipeline only uses two resource types.</li>
+  <li><strong>Security Rule</strong> — requires encryption in transit (HTTPS, enforced by TLS on every FHIR request) and at rest (warehouse storage, staging files, backup media). Also requires access controls (who can query the warehouse?) and audit logging (what did each system access, when?). Log sanitization falls here: log files that contain full resource bodies are PHI and require the same protections as the data itself. Strip PHI from logs before they reach centralized logging infrastructure.</li>
+  <li><strong>Breach Notification Rule</strong> — if PHI is compromised, the covered entity must notify affected individuals, HHS, and in some cases the media within 60 days. A pipeline misconfiguration that exposes a staging bucket publicly is a HIPAA breach — not just a security incident.</li>
+</ul>
+
+<h4>Safe Harbor de-identification — producing research-ready data</h4>
+<p>When the pipeline's output will be used for research without patient authorization, <button class="card-link" onclick="openCardModal('safeHarbor')">Safe Harbor de-identification</button> removes all 18 identifier categories. The key transformations:</p>
+<ul>
+  <li>Names → removed</li>
+  <li>All dates → year only (birth year is retained; month and day are removed)</li>
+  <li>ZIP codes → 3-digit prefix only (if the prefix covers &lt;20,000 people, suppress entirely)</li>
+  <li>All other identifiers (MRN, SSN, phone, email, IP, device ID...) → removed</li>
+</ul>
+<p>The result is no longer PHI and may be shared for research without patient authorization. The FHIR Observation values (BP readings, lab results) are retained — only the identifiers are stripped. This produces a research dataset where you can study hypertension treatment patterns across a population without being able to identify any individual.</p>
+
+<h4>42 CFR Part 2 — stricter than HIPAA for SUD records</h4>
+<p><button class="card-link" onclick="openCardModal('cfr42part2')">42 CFR Part 2</button> governs substance use disorder (SUD) treatment records. It imposes restrictions that HIPAA's treatment-payment-operations exception does not override: SUD treatment records cannot be disclosed to another provider — even for direct treatment of the same patient — without explicit written patient consent, unless a narrow emergency exception applies.</p>
+<p>In the Cascade Cohort, P003 Jamal Washington has opioid use disorder in remission. His buprenorphine/naloxone prescription and his MDD + OUD Condition records are Part 2-protected. The Produce journey models submitting his outpatient note to the regional HIE — but first, the pipeline must redact the OUD Condition and the buprenorphine MedicationRequest from the submission Bundle. Submitting them without consent would violate 42 CFR Part 2 regardless of whether the HIE uses FHIR or any other format.</p>
+<div class="callout"><span class="callout-icon">📌</span><strong>Design takeaway:</strong> FHIR APIs don't automatically enforce Part 2 restrictions. A query for all of a patient's Conditions will return OUD records unless the server has been configured to suppress them based on consent status. Never assume the FHIR server is doing this for you — the pipeline must apply Part 2 filtering logic explicitly.</div>
+    `,
+    beforeAfter:{
+      beforeLabel:'PHI-containing Patient resource',
+      beforeContent:`<pre style="font-family:var(--mono);font-size:10.5px;line-height:1.75;color:#2a2a2a;background:transparent;margin:0;white-space:pre-wrap">{
+  "resourceType": "Patient",
+  "id": "p-sofia-001",
+  "identifier": [{"value": <span style="color:#9c382d;font-weight:700">"VUC-0042"</span>}],  ← MRN (PHI #8)
+  "name": [{"family": <span style="color:#9c382d;font-weight:700">"Patel"</span>, "given": [<span style="color:#9c382d;font-weight:700">"Sofia"</span>]}],   ← Name (PHI #1)
+  "birthDate": <span style="color:#9c382d;font-weight:700">"1970-06-15"</span>,              ← Full date (PHI #3)
+  "address": [{"postalCode": <span style="color:#9c382d;font-weight:700">"97201"</span>}],    ← ZIP (PHI #3)
+  "telecom": [{"value": <span style="color:#9c382d;font-weight:700">"503-555-0142"</span>}]   ← Phone (PHI #5)
+}</pre>
+<p style="margin-top:8px;font-size:12px;color:var(--text-dim)">Contains ≥5 of HIPAA's 18 identifier categories. PHI. Regulated.</p>`,
+      afterLabel:'Safe Harbor de-identified — no longer PHI',
+      afterContent:`<pre style="font-family:var(--mono);font-size:10.5px;line-height:1.75;color:#2a2a2a;background:transparent;margin:0;white-space:pre-wrap">{
+  "resourceType": "Patient",
+  "id": <span style="color:#1f6843;font-weight:700">"anon-7f3a2b"</span>,     ← MRN replaced with anon ID
+  <span style="color:#7a8b9c;font-style:italic">// name: removed</span>
+  "birthDate": <span style="color:#1f6843;font-weight:700">"1970"</span>,          ← Year only
+  "address": [{"postalCode": <span style="color:#1f6843;font-weight:700">"972"</span>}], ← 3-digit prefix only
+  <span style="color:#7a8b9c;font-style:italic">// telecom: removed</span>
+  "gender": "female"            ← retained (not an identifier)
+}</pre>
+<p style="margin-top:8px;font-size:12px;color:var(--text-dim)">All 18 HIPAA identifiers removed or generalized. No longer PHI. Usable for research without patient authorization.</p>`
+    },
+    pulseChecks:[
+      {
+        question:`Sofia's pipeline logs every resource request with its full FHIR URL, timestamp, and the full resource body for debugging. What HIPAA problem does this create?`,
+        options:[
+          {key:'A',text:'No problem — HIPAA only restricts what data the pipeline fetches, not what it logs'},
+          {key:'B',text:'The log files contain PHI — they require the same access controls, encryption at rest, and retention policies as the FHIR data itself'},
+          {key:'C',text:'Logging resource bodies is required by HIPAA for audit trail purposes'},
+          {key:'D',text:'Only the Authorization token in the log is regulated under HIPAA'}
+        ],
+        correctKey:'B',
+        feedback:{
+          correct:'Right. Log files that contain patient names, birth dates, diagnoses, or any of HIPAA\'s 18 identifier categories are themselves PHI. They require encryption at rest, access controls, retention limits, and breach notification obligations — the same protections as the primary data store. Full resource body logging is one of the most common HIPAA compliance gaps in FHIR pipeline implementations.',
+          incorrect:'It\'s B. Any log file containing PHI — patient names, MRNs, birth dates, diagnoses, or any of HIPAA\'s 18 identifier categories — is regulated PHI. Full FHIR resource bodies almost always contain multiple PHI identifiers. Those logs need encryption, access controls, retention policies, and audit trails identical to the primary data store. HIPAA applies to PHI wherever it lives, including log files.'
+        }
+      },
+      {
+        question:`Cascade Cohort P003 Jamal Washington has opioid use disorder in remission. His care team wants to include his full medication list (including buprenorphine/naloxone) in a summary sent via FHIR to another treating provider. Under 42 CFR Part 2, what is required?`,
+        options:[
+          {key:'A',text:'Nothing additional — HIPAA\'s treatment exception permits sharing clinical data between treating providers without consent'},
+          {key:'B',text:'The receiving provider must be in the same health system — Part 2 only restricts sharing across organizations'},
+          {key:'C',text:'Explicit written patient consent is required before the SUD records can be disclosed to another provider, even for treatment'},
+          {key:'D',text:'Part 2 applies only to inpatient admissions — outpatient SUD records are covered by HIPAA alone'}
+        ],
+        correctKey:'C',
+        feedback:{
+          correct:'Right. 42 CFR Part 2 requires explicit written patient consent for each disclosure of SUD treatment records — even to another treating provider. HIPAA\'s treatment-payment-operations exception does not override Part 2. This is why the FHIR Pipeline Lab\'s Produce journey must redact P003\'s OUD Condition and buprenorphine MedicationRequest from the HIE submission Bundle before sending, unless Jamal has signed a Part 2-compliant consent.',
+          incorrect:'It\'s C. 42 CFR Part 2 imposes stricter requirements than HIPAA for substance use disorder records. HIPAA\'s treatment exception — which normally lets providers share data freely for care coordination — does not apply to Part 2-protected SUD records. Explicit patient consent is required for each disclosure, regardless of whether the recipient is a treating provider, regardless of organizational boundaries, and regardless of encounter type.'
+        }
+      }
+    ]
+  },
+
+  // ─── SEGMENT 8: Data Engineering + SQL ─── [FULLY AUTHORED — Turn 3]
+  {
+    id:8, icon:'🧱',
+    title:'Data pipelines and the lab ahead',
+    subtitle:'ETL/ELT, data quality, OMOP, fact and dimension tables, idempotency — and the Cascade Cohort',
+    endGoal:'You\'ll know where data engineering tooling fits in a FHIR pipeline, understand the warehouse schema the Consume journey builds, and meet the five patients whose data anchors the FHIR Pipeline Lab.',
+    minutes:8,
+    cards:['etlPipeline','dataQuality','omopCdm','factDimension','idempotency','cascadeCohort'],
+    lecture:`
+<p>We've followed Sofia's data from Valley Urgent Care's EHR through HTTP requests, OAuth tokens, FHIR resources, US Core profiles, coded terminologies, HIE routing, and HIPAA compliance decisions. That's the extraction and transport layer. This segment covers where the data lands: a warehouse designed for analytics, care management dashboards, and model training — and the engineering patterns that keep it reliable under real-world conditions.</p>
+
+<h4>ELT — the modern FHIR pipeline pattern</h4>
+<p>Traditional ETL (Extract, Transform, Load) transforms data before it enters the warehouse. Modern FHIR pipelines increasingly use <button class="card-link" onclick="openCardModal('etlPipeline')">ELT</button> (Extract, Load, Transform): raw NDJSON files from Bulk Data exports land in a staging schema first, then SQL transformations — typically written as dbt models — flatten them into structured clinical tables inside the warehouse.</p>
+<p>ELT's advantage: the raw NDJSON is preserved. If a FHIR profile changes, or if you discover a parsing bug three months in, you can reprocess from the raw files without re-extracting from the source server. The extraction step (which hits the FHIR API) is expensive and rate-limited; the transformation step (which runs inside the warehouse) is cheap and parallelizable. Preserve the raw; transform it in place.</p>
+
+<h4>Data quality flags and the quarantine queue</h4>
+<p>Not every FHIR resource that arrives from an HIE is clean. The Cascade Cohort includes real-world quality challenges: a legacy ICD-9 code that needs a crosswalk, a possible duplicate patient record, a missing must-support element. Rather than letting bad data silently reach warehouse fact tables where it corrupts downstream counts, a well-designed pipeline applies <button class="card-link" onclick="openCardModal('dataQuality')">data quality flags</button> and routes problematic records to a quarantine queue.</p>
+<p>The quarantine log is not a disposal bin — it's a holding pattern. Every flagged record has a <code>stage</code> (which pipeline step detected the problem), a <code>reason</code> (the specific failure), and a <code>flagged_at</code> timestamp. A human reviewer processes the queue. Most quarantine records are resolvable: a missing birth date can be filled by querying the source EHR; a legacy code can be crosswalked via ConceptMap. Only records that cannot be resolved without clinical review are escalated.</p>
+
+<h4>The OMOP-inspired warehouse schema</h4>
+<p>The Consume journey's terminal warehouse uses an <button class="card-link" onclick="openCardModal('omopCdm')">OMOP-inspired</button> star schema. OMOP CDM (Observational Medical Outcomes Partnership Common Data Model) is the analytical standard that enables multi-site research — data from different hospitals in the same schema, queryable with the same SQL. The FHIR Pipeline Lab uses a simplified version:</p>
+<ul>
+  <li><strong>dim_patient</strong> — one row per patient; surrogate key (<code>patient_key</code>), MRN, name, birth date, gender, race, ethnicity</li>
+  <li><strong>fact_condition</strong> — one row per diagnosis per patient; patient_key FK, ICD-10 code, SNOMED code, onset date, clinical status, verification status</li>
+  <li><strong>fact_medication_request</strong> — one row per medication order; patient_key FK, RxNorm code, display name, authored date, status</li>
+  <li><strong>fact_observation</strong> — one row per measurement; patient_key FK, LOINC code, value, units, effective date, observation status</li>
+  <li><strong>quarantine_log</strong> — one row per flagged record; source resource ID, resource type, stage, reason, flagged_at</li>
+</ul>
+<p>Population queries are efficient: "all patients with active Type 2 diabetes" is <code>SELECT DISTINCT patient_key FROM fact_condition WHERE icd10_code LIKE 'E11%' AND clinical_status = 'active'</code>. The <button class="card-link" onclick="openCardModal('factDimension')">fact/dimension design</button> means you join once to dim_patient to get demographics, then query the relevant fact table for the clinical event.</p>
+
+<h4>Idempotency — safe retries under failure</h4>
+<p>Pipelines fail. A network timeout, a FHIR server 503, a warehouse connection drop. A pipeline that can't be safely restarted after failure isn't production-ready. <button class="card-link" onclick="openCardModal('idempotency')">Idempotency</button> — the property that applying an operation multiple times produces the same result as applying it once — is the engineering solution.</p>
+<p>Three implementation strategies the Consume journey uses:</p>
+<ul>
+  <li><strong>Upsert SQL</strong>: <code>INSERT INTO dim_patient (...) ON CONFLICT (mrn) DO UPDATE SET ...</code> — if the patient row exists, update it; if not, insert. Safe to run 10 times; produces the same result as running once.</li>
+  <li><strong>Content-hash deduplication</strong>: hash each NDJSON resource body; skip if the hash is already in the load log. Prevents reprocessing resources that haven't changed since the last export.</li>
+  <li><strong>Conditional create</strong> (Produce side): <code>ifNoneExist</code> in the transaction Bundle entry prevents duplicate FHIR resources on the target server.</li>
+</ul>
+<p>Design for idempotency before the first production run. Retrofitting it after discovering duplicate counts in a live dashboard is painful and time-consuming.</p>
+
+<h3>Meet the Cascade Cohort</h3>
+<p>Sofia Patel brought you to this point. The FHIR Pipeline Lab uses a different set of patients — the <button class="card-link" onclick="openCardModal('cascadeCohort')">Cascade Cohort</button> — five fictional individuals whose records are specifically designed to exercise the pipeline challenges this primer has prepared you for.</p>
+<div class="callout" style="margin-top:0">
+  <p style="margin-bottom:8px"><strong>P001 — Maria Gonzalez</strong>, 62, Type 2 diabetes + essential hypertension.<br>
+  The index admission readmission risk case. Clean US Core conformance. Her data is what the pipeline looks like when everything goes right — the baseline against which the other patients' challenges stand out.</p>
+  <p style="margin-bottom:8px"><strong>P002 — Robert Kowalski</strong>, 71, CHF + atrial fibrillation.<br>
+  His incoming record carries a legacy ICD-9 code (428.0 for CHF, 427.31 for A-fib). Consume Station 7 applies the ConceptMap crosswalk you learned about in Segment 6.</p>
+  <p style="margin-bottom:8px"><strong>P003 — Jamal Washington</strong>, 45, major depressive disorder + opioid use disorder in remission.<br>
+  The 42 CFR Part 2 candidate from Segment 7. The Produce journey's submission logic for his note requires redacting OUD records before HIE routing.</p>
+  <p style="margin-bottom:8px"><strong>P004 — Emily Chen</strong>, 34, no active conditions.<br>
+  The healthy control. Minimal data, no extensions beyond the required minimum. The simplest pipeline path — useful for testing your baseline logic before the complex cases.</p>
+  <p style="margin-bottom:0"><strong>P005 — Maria Gonzales</strong>, 60, Type 2 diabetes.<br>
+  Note the surname spelling: Gonzales, not Gonzalez. Similar birth year to P001. The record linkage challenge from Segment 5 — handled with a conditional create using ifNoneExist on the MRN identifier.</p>
+</div>
+<p>The CapabilityStatement startup gate, the Backend Services token flow, the transaction Bundle terminal goal, the ICD-9 ConceptMap crosswalk, the PHI log sanitization, the conditional create for P005 — you've seen all of these as concepts. In the lab, you'll make decisions about each of them as a practitioner. Open the lab when you're ready.</p>
+    `,
+    beforeAfter:{
+      beforeLabel:'Raw NDJSON from $export',
+      beforeContent:`<pre style="font-family:var(--mono);font-size:11px;line-height:1.85;color:#2a2a2a;background:transparent;margin:0;white-space:pre-wrap">Patient.ndjson:
+{"resourceType":"Patient","id":"p001","name":[{"family":"Gonzalez","given":["Maria"]}],...}
+{"resourceType":"Patient","id":"p002","name":[{"family":"Kowalski","given":["Robert"]}],...}
+{"resourceType":"Patient","id":"p005","name":[{"family":"Gonzales","given":["Maria"]}],...}
+... (one JSON object per line per resource type)</pre>
+<p style="margin-top:8px;font-size:12px;color:var(--text-dim)">Raw, unflattened, one FHIR resource per line. Not yet queryable as clinical facts. P005 is a near-duplicate of P001 — the pipeline must detect this before loading.</p>`,
+      afterLabel:'Warehouse tables — flattened and queryable',
+      afterContent:`<pre style="font-family:var(--mono);font-size:10.5px;line-height:1.85;color:#2a2a2a;background:transparent;margin:0;white-space:pre-wrap">dim_patient:
+patient_key | mrn       | family_name | birth_date | gender
+1           | CRH-10001 | Gonzalez    | 1963-04-12 | female
+2           | CRH-10002 | Kowalski    | 1954-08-30 | male
+
+fact_condition:
+patient_key | icd10_code | snomed_code | onset_date | status
+1           | E11.9      | 44054006    | 2019-03-01 | active
+1           | I10        | 38341003    | 2018-07-15 | active
+2           | I50.9      | 84114007    | 2021-06-10 | active
+
+quarantine_log:
+resource_id | resource_type | stage    | reason
+p005        | Patient       | linkage  | possible_duplicate:p001</pre>`
+    },
+    pulseChecks:[
+      {
+        question:`A FHIR pipeline runs nightly. On Monday it loads 500 Patient resources into dim_patient. On Tuesday the same export is re-downloaded due to a validation error found Monday night, and the same 500 resources are loaded again. What property ensures the Tuesday load doesn't create 1,000 rows in dim_patient?`,
+        options:[
+          {key:'A',text:'Referential integrity — foreign keys prevent duplicate rows'},
+          {key:'B',text:'Idempotency — each load operation produces the same result on repeated application'},
+          {key:'C',text:'Normalization — a normalized schema structurally prevents duplicate patient rows'},
+          {key:'D',text:'The FHIR server prevents re-export of already-delivered resources'}
+        ],
+        correctKey:'B',
+        feedback:{
+          correct:'Right. Idempotency means the operation produces the same result whether applied once or many times. An upsert (INSERT ... ON CONFLICT DO UPDATE in PostgreSQL; MERGE in Snowflake) achieves this: if the patient_key already exists, update the row; if not, insert. The Tuesday reload updates 500 existing rows rather than creating 500 duplicate ones. Referential integrity and normalization prevent different classes of errors — they don\'t address duplicate loads.',
+          incorrect:'It\'s B. Idempotency is what makes a repeated load safe. The standard implementation is an upsert: match on a unique key (FHIR resource ID or MRN), update the row if it exists, insert if it doesn\'t. Referential integrity governs relationships between tables, not duplicates within a table. Normalization prevents certain structural anomalies. FHIR servers don\'t track downstream warehouse loads.'
+        }
+      },
+      {
+        question:`P002 Kowalski's CHF record arrives from the HIE with ICD-9 code <code>428.0</code> in Condition.code. The pipeline's ConceptMap $translate call returns <code>{"equivalence": "unmatched"}</code> for a code in the same group. How should the pipeline handle the unmatched Condition?`,
+        options:[
+          {key:'A',text:'Load it into fact_condition with the original ICD-9 code — it\'s still clinically valid even if it can\'t be crosswalked'},
+          {key:'B',text:'Drop it silently — a record with no valid ICD-10 code has no value in the warehouse'},
+          {key:'C',text:'Replace the code with a generic "unspecified" ICD-10 code so the record can load'},
+          {key:'D',text:'Route it to the quarantine_log with reason "code_unmatched:icd9_to_icd10" for manual review'}
+        ],
+        correctKey:'D',
+        feedback:{
+          correct:'Right. An unmatched ConceptMap result means no automated path to a standard code — but the clinical data is still real and valuable. Loading with an ICD-9 code corrupts the warehouse schema. Dropping loses clinical data. Substituting a generic code introduces inaccuracy. Quarantine preserves the record, prevents corruption, and creates a reviewable audit trail.',
+          incorrect:'It\'s D. When $translate returns "unmatched", there is no automated path to a valid ICD-10 code. Loading the ICD-9 code into an ICD-10 column corrupts analytics. Dropping the record loses clinical data. Substituting a generic code introduces inaccuracy that could affect research or care decisions. Quarantine preserves the data, prevents corruption, and creates a reviewable audit trail — all three goals met without discarding or distorting the clinical record.'
+        }
+      }
+    ]
+  }
+
+]; // end SEGMENTS
+
+// ════════════════════════════════════════════════════════════════
+//  STATE MANAGEMENT
+// ════════════════════════════════════════════════════════════════
+const STATE_KEY = 'fhir_r4_primer_v1_state';
+let state;
+
+function defaultState(){
+  return {
+    version:1,
+    currentSegment:1,
+    completed:[],
+    pulseAnswers:{},
+    pulseRevealed:[],
+    pulseRetries:{},
+    startedAt:Date.now(),
+    lastVisited:Date.now(),
+    welcomeBackShown:false
+  };
+}
+
+function loadState(){
+  try{
+    const raw = localStorage.getItem(STATE_KEY);
+    if(!raw) return defaultState();
+    return Object.assign(defaultState(), JSON.parse(raw));
+  }catch(e){
+    console.warn('State load failed:', e);
+    return defaultState();
+  }
+}
+
+function saveState(){
+  state.lastVisited = Date.now();
+  try{ localStorage.setItem(STATE_KEY, JSON.stringify(state)); }
+  catch(e){ console.warn('State save failed:', e); }
+}
+
+function resetProgress(){
+  if(!confirm('Start over? All your progress through the primer will be cleared.')) return;
+  localStorage.removeItem(STATE_KEY);
+  location.reload();
+}
+
+function isSegmentUnlocked(id){ return id === 1 || state.completed.includes(id - 1); }
+function isSegmentComplete(id){ return state.completed.includes(id); }
+
+function totalRemainingMinutes(){
+  return SEGMENTS.filter(s => !state.completed.includes(s.id)).reduce((sum,s) => sum + s.minutes, 0);
+}
+
+function formatRelativeTime(ts){
+  const ms = Date.now() - ts;
+  const hours = Math.floor(ms / 3600000);
+  const days = Math.floor(hours / 24);
+  if(days >= 2) return `${days} days ago`;
+  if(days === 1) return 'yesterday';
+  if(hours >= 2) return `${hours} hours ago`;
+  if(hours === 1) return '1 hour ago';
+  return 'recently';
+}
+
+// ════════════════════════════════════════════════════════════════
+//  RENDERING
+// ════════════════════════════════════════════════════════════════
+
+function renderProgressBar(){
+  const bar = document.getElementById('progressBar');
+  let html = '';
+  SEGMENTS.forEach(seg => {
+    const unlocked = isSegmentUnlocked(seg.id);
+    const done = isSegmentComplete(seg.id);
+    const active = state.currentSegment === seg.id;
+    let cls = 'seg-pill';
+    if(active) cls += ' active';
+    else if(done) cls += ' done';
+    else if(!unlocked) cls += ' locked';
+    const onclick = unlocked ? `goToSegment(${seg.id})` : '';
+    html += `<button class="${cls}" onclick="${onclick}" ${unlocked?'':'disabled'} title="${esc(seg.title)}">
+      <span class="seg-num">${seg.id}</span>
+      <span class="seg-icon">${seg.icon}</span>
+    </button>`;
+  });
+  const remaining = totalRemainingMinutes();
+  if(remaining > 0) html += `<span class="time-remaining">~${remaining} min remaining</span>`;
+  bar.innerHTML = html;
+}
+
+function renderHero(){
+  const hero = document.getElementById('heroSection');
+  if(state.currentSegment === 1 && state.completed.length === 0){
+    hero.innerHTML = `
+      <section class="hero">
+        <div class="hero-sub">Before you begin · Foundation</div>
+        <h1>Welcome to the FHIR R4 Primer</h1>
+        <p>This primer is your starting point before the FHIR Pipeline Lab. Over 8 short segments — about an hour total — we'll build a foundation in the six knowledge domains the lab assumes you already understand: REST APIs, OAuth 2.0, FHIR's core model, US Core conformance, bulk data patterns, clinical terminologies, the healthcare regulatory landscape, and the data engineering patterns the pipeline uses at its terminal stage.</p>
+        <p>You'll follow one patient — <strong>Sofia Patel</strong>, 55, who just moved from Phoenix to Portland and visited an urgent care clinic with elevated blood pressure — as her data travels through the FHIR ecosystem. By the end of Segment 7, you'll have seen every concept the lab uses, in clinical context. Segment 8 introduces the five patients whose data anchors the actual lab.</p>
+        <div class="hero-cta">
+          <button class="btn primary" onclick="goToSegment(1);scrollToTop();">Start Segment 1 →</button>
+        </div>
+      </section>
+    `;
+  } else {
+    hero.innerHTML = '';
+  }
+}
+
+function renderActionBar(){
+  const bar = document.getElementById('actionBar');
+  bar.innerHTML = `
+    <div class="action-bar">
+      <div class="left-actions">
+        <button class="btn secondary" onclick="openCardLibrary()">📚 Card library</button>
+        <button class="btn secondary" onclick="replaySegment(${state.currentSegment})">🔄 Replay this segment</button>
+      </div>
+      <div class="right-actions">
+        <button class="btn ghost" onclick="goToPrevSegment()" ${state.currentSegment === 1 ? 'disabled' : ''}>← Previous</button>
+      </div>
+    </div>
+  `;
+}
+
+function renderSegment(id){
+  const seg = SEGMENTS.find(s => s.id === id);
+  if(!seg) return;
+  const container = document.getElementById('segmentContainer');
+  const done = isSegmentComplete(seg.id);
+  const isLast = seg.id === SEGMENTS.length;
+
+  let html = `
+    <section class="segment">
+      <div class="segment-header">
+        <div class="segment-meta">
+          <span class="seg-step">Segment ${seg.id} of ${SEGMENTS.length}</span>
+          <span>~${seg.minutes} min</span>
+          ${done ? '<span style="color:var(--green);font-weight:700">✓ Completed</span>' : ''}
+        </div>
+        <div class="segment-title">
+          <span class="seg-icon-large">${seg.icon}</span>
+          ${esc(seg.title)}
+        </div>
+        <div class="segment-subtitle">${esc(seg.subtitle)}</div>
+        <div class="end-goal">
+          <div class="end-goal-label">End goal</div>
+          <div class="end-goal-text">${esc(seg.endGoal)}</div>
+        </div>
+      </div>
+      <div class="lecture">${seg.lecture}</div>
+  `;
+
+  if(seg.beforeAfter){
+    html += `
+      <div class="ba-block">
+        <div class="ba-panel ba-before">
+          <div class="ba-label">${esc(seg.beforeAfter.beforeLabel)}</div>
+          <div class="ba-content">${seg.beforeAfter.beforeContent}</div>
+        </div>
+        <div class="ba-arrow">→</div>
+        <div class="ba-panel ba-after">
+          <div class="ba-label">${esc(seg.beforeAfter.afterLabel)}</div>
+          <div class="ba-content">${seg.beforeAfter.afterContent}</div>
+        </div>
+      </div>
+    `;
+  }
+
+  seg.pulseChecks.forEach((pc, idx) => {
+    html += renderPulseCheckHTML(seg.id, idx, pc);
+  });
+
+  html += `
+      <div class="seg-nav">
+        <div class="seg-nav-left">
+          ${seg.id > 1 ? `<button class="btn ghost" onclick="goToPrevSegment()">← Previous segment</button>` : '<span></span>'}
+        </div>
+        <div class="seg-nav-right">
+          ${!isLast
+            ? `<button class="btn primary" onclick="markCompleteAndContinue(${seg.id})">${done ? 'Continue to' : 'Mark complete &amp; continue to'} segment ${seg.id + 1} →</button>`
+            : `<button class="btn primary" onclick="markCompleteAndContinue(${seg.id})">${done ? 'Finish primer →' : 'Mark complete &amp; finish primer →'}</button>`
+          }
+        </div>
+      </div>
+    </section>
+  `;
+
+  container.innerHTML = html;
+}
+
+function renderPulseCheckHTML(segId, idx, pc){
+  const key = `s${segId}_p${idx}`;
+  const userAnswer = state.pulseAnswers[key];
+  const wasRevealed = state.pulseRevealed.includes(key);
+  const answered = userAnswer !== undefined;
+  const isCorrect = userAnswer === pc.correctKey;
+
+  let optionsHTML = '';
+  pc.options.forEach(opt => {
+    let cls = 'pulse-option';
+    let clickAttr = `onclick="handlePulseAnswer(${segId},${idx},'${opt.key}')"`;
+    if(answered || wasRevealed){
+      cls += ' disabled';
+      clickAttr = '';
+      if(opt.key === pc.correctKey) cls += ' correct';
+      else if(opt.key === userAnswer && !isCorrect) cls += ' wrong';
+    }
+    optionsHTML += `<button class="${cls}" ${clickAttr}>
+      <span class="pulse-key">${opt.key}</span>
+      <span>${opt.text}</span>
+    </button>`;
+  });
+
+  let feedbackHTML = '';
+  if(answered || wasRevealed){
+    let fbCls = 'pulse-feedback visible';
+    let fbContent = '';
+    if(wasRevealed && !answered){
+      fbCls += ' revealed';
+      fbContent = `<strong>Answer revealed:</strong> ${pc.feedback.incorrect}`;
+    } else if(isCorrect){
+      fbCls += ' correct';
+      fbContent = `<strong>✓ Correct.</strong> ${pc.feedback.correct}`;
+    } else {
+      fbCls += ' incorrect';
+      fbContent = `<strong>Not quite.</strong> ${pc.feedback.incorrect}`;
+    }
+    feedbackHTML = `<div class="${fbCls}">${fbContent}</div>`;
+  }
+
+  let actionsHTML = (!answered && !wasRevealed)
+    ? `<div class="pulse-actions"><button class="pulse-link" onclick="revealPulseAnswer(${segId},${idx})">Reveal answer</button></div>`
+    : `<div class="pulse-actions"><button class="pulse-link" onclick="retryPulseCheck(${segId},${idx})">🔄 Try again</button></div>`;
+
+  return `
+    <div class="pulse-check">
+      <div class="pulse-header">
+        <span class="pulse-icon">💭</span>
+        <span class="pulse-label">Pulse check</span>
+      </div>
+      <div class="pulse-question">${pc.question}</div>
+      <div class="pulse-options">${optionsHTML}</div>
+      ${feedbackHTML}
+      ${actionsHTML}
+    </div>
+  `;
+}
+
+function renderCardsSidebar(){
+  const sidebar = document.getElementById('cardsSidebar');
+  const seg = SEGMENTS.find(s => s.id === state.currentSegment);
+  if(!seg || !seg.cards || seg.cards.length === 0){ sidebar.innerHTML = ''; return; }
+  let html = `<div class="cards-panel">
+    <h3>Cards · Segment ${seg.id}</h3>
+    <div class="cards-sub">Tap any term to open its full definition</div>`;
+  seg.cards.forEach(cid => {
+    const card = CARDS[cid];
+    if(!card) return;
+    html += `<div class="card-item" onclick="openCardModal('${cid}')">
+      <span class="card-item-term">${esc(card.term)}</span>
+      <span class="card-item-expand">›</span>
+    </div>`;
+  });
+  html += '</div>';
+  sidebar.innerHTML = html;
+}
+
+// ════════════════════════════════════════════════════════════════
+//  MODALS
+// ════════════════════════════════════════════════════════════════
+function openCardModal(cardId){
+  const card = CARDS[cardId];
+  if(!card) return;
+  document.getElementById('modalTitle').textContent = card.term;
+  let html = `<div class="card-modal-term">${esc(card.term)}</div>`;
+  if(card.expansion) html += `<div class="card-modal-expansion">${esc(card.expansion)}</div>`;
+  html += `<div class="card-modal-def">${esc(card.def)}</div>`;
+  if(card.long) html += `<div class="card-modal-long">${esc(card.long)}</div>`;
+  document.getElementById('modalBody').innerHTML = html;
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+function openCardLibrary(){
+  const visibleIds = new Set([state.currentSegment, ...state.completed]);
+  const visibleSegs = SEGMENTS.filter(s => visibleIds.has(s.id)).sort((a,b) => a.id - b.id);
+  document.getElementById('modalTitle').textContent = '📚 Card library';
+  let html = `<div style="font-size:13px;color:var(--text-muted);margin-bottom:14px">Definitions you've encountered so far. Cards from later segments unlock as you progress.</div>`;
+  html += `<div class="modal-search"><input type="text" id="cardLibrarySearch" placeholder="Search terms..." oninput="filterCardLibrary()"></div>`;
+  html += `<div id="cardLibraryContent">`;
+  let total = 0;
+  visibleSegs.forEach(seg => {
+    if(!seg.cards || seg.cards.length === 0) return;
+    html += `<div class="lib-segment-group" data-seg-id="${seg.id}">
+      <div class="lib-segment-header">${seg.icon} Segment ${seg.id}: ${esc(seg.title)}</div>`;
+    seg.cards.forEach(cid => {
+      const card = CARDS[cid];
+      if(!card) return;
+      total++;
+      html += `<div class="lib-card" data-term="${esc(card.term.toLowerCase())}" data-def="${esc(card.def.toLowerCase())}">
+        <div class="lib-card-term">${esc(card.term)}</div>
+        ${card.expansion ? `<div class="lib-card-expansion">${esc(card.expansion)}</div>` : ''}
+        <div class="lib-card-def">${esc(card.def)}</div>
+      </div>`;
+    });
+    html += '</div>';
+  });
+  if(total === 0) html += `<div style="text-align:center;color:var(--text-dim);padding:30px 0;font-size:13px">No cards yet — complete Segment 1 to begin building your library.</div>`;
+  html += '</div>';
+  document.getElementById('modalBody').innerHTML = html;
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+function filterCardLibrary(){
+  const q = (document.getElementById('cardLibrarySearch').value || '').toLowerCase().trim();
+  document.querySelectorAll('.lib-card').forEach(card => {
+    const matches = !q || (card.dataset.term||'').includes(q) || (card.dataset.def||'').includes(q);
+    card.style.display = matches ? '' : 'none';
+  });
+  document.querySelectorAll('.lib-segment-group').forEach(group => {
+    const visible = group.querySelectorAll('.lib-card:not([style*="display: none"])').length;
+    group.style.display = visible > 0 ? '' : 'none';
+  });
+}
+
+function closeModal(){
+  document.getElementById('modalOverlay').classList.remove('open');
+}
+
+// ════════════════════════════════════════════════════════════════
+//  HANDLERS
+// ════════════════════════════════════════════════════════════════
+function handlePulseAnswer(segId, idx, key){
+  const k = `s${segId}_p${idx}`;
+  state.pulseAnswers[k] = key;
+  saveState();
+  renderSegment(segId);
+}
+
+function revealPulseAnswer(segId, idx){
+  const k = `s${segId}_p${idx}`;
+  if(!state.pulseRevealed.includes(k)) state.pulseRevealed.push(k);
+  saveState();
+  renderSegment(segId);
+}
+
+function retryPulseCheck(segId, idx){
+  const k = `s${segId}_p${idx}`;
+  delete state.pulseAnswers[k];
+  state.pulseRevealed = state.pulseRevealed.filter(x => x !== k);
+  state.pulseRetries[k] = (state.pulseRetries[k] || 0) + 1;
+  saveState();
+  renderSegment(segId);
+}
+
+function markCompleteAndContinue(segId){
+  if(!state.completed.includes(segId)) state.completed.push(segId);
+  saveState();
+  if(segId < SEGMENTS.length){
+    state.currentSegment = segId + 1;
+    saveState();
+    fullRender();
+    scrollToTop();
+  } else {
+    fullRender();
+  }
+}
+
+function goToSegment(id){
+  if(!isSegmentUnlocked(id)) return;
+  state.currentSegment = id;
+  saveState();
+  fullRender();
+  scrollToTop();
+}
+
+function goToPrevSegment(){
+  if(state.currentSegment > 1) goToSegment(state.currentSegment - 1);
+}
+
+function replaySegment(segId){
+  if(!confirm('Replay this segment? This resets pulse check answers for this segment only — your overall progress and other segments stay intact.')) return;
+  Object.keys(state.pulseAnswers).forEach(k => { if(k.startsWith(`s${segId}_p`)) delete state.pulseAnswers[k]; });
+  state.pulseRevealed = state.pulseRevealed.filter(k => !k.startsWith(`s${segId}_p`));
+  saveState();
+  renderSegment(segId);
+  scrollToTop();
+}
+
+// ════════════════════════════════════════════════════════════════
+//  WELCOME-BACK BANNER
+// ════════════════════════════════════════════════════════════════
+function maybeShowWelcomeBack(){
+  const hoursAway = (Date.now() - state.lastVisited) / 3600000;
+  if(hoursAway > 4 && state.completed.length > 0 && !state.welcomeBackShown){
+    const seg = SEGMENTS.find(s => s.id === state.currentSegment);
+    const banner = document.getElementById('welcomeBackBanner');
+    banner.style.display = 'block';
+    banner.innerHTML = `<div class="welcome-back">
+      <div class="welcome-back-text">
+        Welcome back. You were on <strong>Segment ${seg.id}: ${esc(seg.title)}</strong> ${formatRelativeTime(state.lastVisited)}.
+      </div>
+      <button class="btn primary" onclick="dismissWelcomeBack()">Continue →</button>
+    </div>`;
+    state.welcomeBackShown = true;
+    saveState();
+  }
+}
+
+function dismissWelcomeBack(){
+  document.getElementById('welcomeBackBanner').style.display = 'none';
+  scrollToTop();
+}
+
+// ════════════════════════════════════════════════════════════════
+//  FULL RENDER + INIT
+// ════════════════════════════════════════════════════════════════
+function fullRender(){
+  renderProgressBar();
+  renderHero();
+  renderActionBar();
+  renderSegment(state.currentSegment);
+  renderCardsSidebar();
+
+  const beginBtn = document.getElementById('beginLabBtn');
+  if(state.completed.length >= SEGMENTS.length){
+    beginBtn.disabled = false;
+    beginBtn.style.opacity = '1';
+    beginBtn.style.cursor = 'pointer';
+  } else {
+    beginBtn.disabled = true;
+    beginBtn.style.opacity = '.4';
+    beginBtn.style.cursor = 'not-allowed';
+  }
+}
+
+function scrollToTop(){ window.scrollTo({top:0,behavior:'smooth'}); }
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+
+function init(){
+  state = loadState();
+  if(Date.now() - state.lastVisited > 1800000) state.welcomeBackShown = false;
+  fullRender();
+  maybeShowWelcomeBack();
+  document.addEventListener('keydown', e => { if(e.key === 'Escape') closeModal(); });
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>

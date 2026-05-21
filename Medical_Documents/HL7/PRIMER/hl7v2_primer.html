@@ -1,0 +1,1725 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>HL7 v2 Primer — Before You Begin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;600;700&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#7d8b9d;--header-bg:#1e4670;
+  --surface:#d3dde8;--surface-raised:#c8d3e0;--surface-inset:#a8b4c2;
+  --border:#8693a3;--border-accent:#5d6e85;--border-focus:#1e4670;
+  --text:#2a2a2a;--text-muted:#4a5260;--text-dim:#6b7280;
+  --accent:#7a5418;--accent-glow:rgba(184,134,42,.12);--accent-dim:#5d3f10;--accent-badge:#b8862a;
+  --green:#1f6843;--green-bg:rgba(31,104,67,.12);
+  --red:#9c382d;--red-bg:rgba(156,56,45,.10);
+  --orange:#8e4d10;--orange-bg:rgba(142,77,16,.10);
+  --blue:#2c5680;--blue-bg:rgba(44,86,128,.10);
+  --purple:#553a80;--purple-bg:rgba(85,58,128,.10);
+  --cyan:#155f6e;--cyan-bg:rgba(21,95,110,.10);
+  --radius:8px;--radius-lg:12px;
+  --mono:'JetBrains Mono',monospace;--serif:'Crimson Pro',Georgia,serif;--sans:'DM Sans',system-ui,sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:#1e4670;color:var(--text);font-family:var(--sans);font-size:15px;line-height:1.7;min-height:100vh}
+
+/* ── Header ── */
+.header{background:var(--header-bg);border-bottom:2px solid var(--accent);padding:20px 28px 16px;color:#f0f4fa}
+.header-top{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.header-brand{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.header-brand h1{font-family:var(--serif);font-size:26px;font-weight:700;color:#f4c97c;letter-spacing:.3px}
+.header-brand .pipe-motif{font-family:var(--mono);color:#a8b8c8;font-size:20px;letter-spacing:2px}
+.header-brand .subtitle{font-family:var(--sans);font-size:13px;color:#cfd8e3;font-weight:400;margin-left:4px}
+.header-credit{font-size:11px;color:#a8b8c8;font-family:var(--mono)}
+
+/* ── Welcome-back banner ── */
+.welcome-back{background:rgba(184,134,42,.18);border:1px solid var(--accent-badge);
+  padding:10px 18px;margin-top:14px;border-radius:var(--radius);display:flex;align-items:center;
+  justify-content:space-between;gap:12px;flex-wrap:wrap}
+.welcome-back-text{color:#f0f4fa;font-size:13px}
+.welcome-back-text strong{color:#f4c97c}
+
+/* ── Segment Progress Bar ── */
+.progress-bar{position:sticky;top:0;z-index:90;background:rgba(125,139,157,.95);backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border);padding:10px 20px;overflow-x:auto;white-space:nowrap;
+  display:flex;gap:6px;align-items:center}
+.progress-bar::-webkit-scrollbar{height:4px}
+.progress-bar::-webkit-scrollbar-thumb{background:var(--border-accent);border-radius:2px}
+.seg-pill{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:18px;
+  font-family:var(--mono);font-size:11px;font-weight:600;cursor:pointer;
+  background:#73798a;color:#000;border:1px solid #525861;transition:all .15s;flex-shrink:0}
+.seg-pill .seg-num{font-family:var(--mono);font-size:10px;color:#000;font-weight:700}
+.seg-pill .seg-icon{font-size:14px}
+.seg-pill:hover{background:#8a92a0;color:#000;border-color:#5d6470}
+.seg-pill.done{background:#5cae6a;color:#000;border-color:#3d9555}
+.seg-pill.done:hover{background:#7cc188;color:#000;border-color:#5cae6a}
+.seg-pill.active{background:#4a90c2;color:#000;border-color:#3a7aa6}
+.seg-pill.active:hover{background:#5fa0d0;color:#000;border-color:#4a90c2}
+.seg-pill.done.active{background:#4a90c2;color:#000;border-color:#3a7aa6}
+.seg-pill.locked{background:#5d6470;color:#3a3a3a;border-color:#4a5058;cursor:not-allowed;opacity:.5}
+.seg-pill.locked:hover{background:#5d6470;color:#3a3a3a;border-color:#4a5058}
+.time-remaining{margin-left:auto;font-family:var(--mono);font-size:10px;color:#0d2640;
+  padding:4px 10px;background:rgba(255,255,255,.15);border-radius:10px;flex-shrink:0}
+
+/* ── Main layout ── */
+main{max-width:1200px;margin:0 auto;padding:24px 28px;display:grid;grid-template-columns:1fr 280px;gap:28px}
+@media (max-width:920px){main{grid-template-columns:1fr;padding:16px}}
+
+.content-col{min-width:0}
+.sidebar-col{position:relative}
+
+/* ── Hero ── */
+.hero{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);
+  padding:32px 28px;margin-bottom:24px}
+.hero h1{font-family:var(--serif);font-size:34px;font-weight:700;color:var(--text);margin-bottom:10px}
+.hero .hero-sub{font-family:var(--mono);font-size:12px;color:var(--accent-dim);
+  letter-spacing:1px;text-transform:uppercase;margin-bottom:16px}
+.hero p{color:var(--text-muted);margin-bottom:14px;font-size:15px;line-height:1.75}
+.hero-cta{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap}
+
+/* ── Action Bar ── */
+.action-bar{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;
+  margin-bottom:20px;padding:10px 14px;background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius)}
+.action-bar .left-actions,.action-bar .right-actions{display:flex;gap:8px;flex-wrap:wrap}
+
+/* ── Buttons ── */
+.btn{font-family:var(--mono);font-size:12px;font-weight:600;padding:8px 18px;border-radius:var(--radius);
+  border:1px solid var(--border);cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:6px;
+  background:#b8862a;color:#000;border-color:#b8862a}
+.btn:hover{background:#cc9633;color:#000;border-color:#cc9633}
+.btn.primary{background:var(--accent-badge);color:#000;border-color:var(--accent-badge);font-weight:700}
+.btn.primary:hover{box-shadow:0 2px 16px var(--accent-glow);background:#cc9633;color:#000}
+.btn.primary:disabled{opacity:.35;cursor:not-allowed;box-shadow:none}
+.btn.secondary{background:#b8862a;color:#000;border-color:#b8862a}
+.btn.ghost{background:transparent;color:var(--text);border-color:var(--border)}
+.btn.ghost:hover{background:var(--surface-inset);color:var(--text);border-color:var(--border-accent)}
+
+/* ── Segment Container ── */
+.segment{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);
+  padding:28px 32px;margin-bottom:24px}
+@media (max-width:920px){.segment{padding:20px 18px}}
+
+.segment-header{margin-bottom:20px;padding-bottom:18px;border-bottom:1px solid var(--border)}
+.segment-meta{font-family:var(--mono);font-size:11px;color:var(--text-dim);letter-spacing:1px;
+  text-transform:uppercase;margin-bottom:8px;display:flex;gap:14px;flex-wrap:wrap}
+.segment-meta .seg-step{color:var(--accent-dim);font-weight:700}
+.segment-title{font-family:var(--serif);font-size:28px;font-weight:700;color:var(--text);
+  margin-bottom:6px;display:flex;align-items:center;gap:12px}
+.segment-title .seg-icon-large{font-size:30px}
+.segment-subtitle{color:var(--text-muted);font-size:14px;margin-bottom:14px}
+
+/* End-goal callout */
+.end-goal{background:var(--accent-glow);border-left:3px solid var(--accent-badge);
+  padding:12px 16px;margin-top:14px;border-radius:0 var(--radius) var(--radius) 0}
+.end-goal-label{font-family:var(--mono);font-size:10px;color:var(--accent-dim);
+  letter-spacing:1.2px;text-transform:uppercase;font-weight:700;margin-bottom:4px}
+.end-goal-text{color:var(--text);font-size:14px;font-style:italic}
+
+/* Lecture content */
+.lecture{font-size:15px;color:var(--text);line-height:1.8}
+.lecture h3{font-family:var(--serif);font-size:20px;font-weight:700;color:var(--text);
+  margin:24px 0 10px}
+.lecture h4{font-family:var(--sans);font-size:15px;font-weight:700;color:var(--accent-dim);
+  margin:18px 0 8px;letter-spacing:.3px}
+.lecture p{margin-bottom:14px;color:var(--text-muted)}
+.lecture p strong{color:var(--text)}
+.lecture ul,.lecture ol{margin:10px 0 14px 24px;color:var(--text-muted)}
+.lecture li{margin-bottom:6px}
+.lecture code{font-family:var(--mono);font-size:12.5px;background:var(--surface-inset);color:var(--accent);
+  padding:2px 6px;border-radius:4px;border:1px solid var(--border)}
+.lecture .callout{background:#e0e0e0;border:1px solid #b0b0b0;border-radius:var(--radius);
+  padding:14px 18px;margin:16px 0;font-size:14px;color:#000}
+.lecture .callout strong{color:#000}
+.lecture .callout-icon{font-size:18px;margin-right:6px}
+
+/* Code/message blocks */
+.code-block{font-family:var(--mono);font-size:12.5px;background:#1e2d3e;color:#e8eef5;
+  padding:14px 16px;border-radius:var(--radius);margin:12px 0;overflow-x:auto;line-height:1.7;
+  border:1px solid #2a3f56}
+.code-block .hl-segname{color:#f4c97c;font-weight:700}
+.code-block .hl-pipe{color:#7a8b9c}
+.code-block .hl-component-sep{color:#9aa9b8}
+.code-block .hl-value{color:#d4dde6}
+.code-block .hl-empty{color:#5a6878;font-style:italic}
+.code-block .hl-new{background:rgba(244,201,124,.15);padding:0 2px;border-radius:2px}
+
+/* Field annotation table */
+.field-table{width:100%;border-collapse:collapse;margin:14px 0;font-size:13px;
+  background:var(--surface-raised);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.field-table th{background:var(--surface-inset);color:var(--text);padding:8px 12px;text-align:left;
+  font-family:var(--mono);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;
+  border-bottom:1px solid var(--border)}
+.field-table td{padding:8px 12px;border-bottom:1px solid var(--border);color:var(--text-muted);vertical-align:top}
+.field-table td:first-child{font-family:var(--mono);font-weight:700;color:var(--accent-dim);white-space:nowrap}
+.field-table td:nth-child(2){font-family:var(--mono);color:var(--text);font-size:12px}
+.field-table tr:last-child td{border-bottom:none}
+
+/* Before/After panels */
+.ba-block{display:grid;grid-template-columns:1fr auto 1fr;gap:14px;margin:18px 0;align-items:stretch}
+@media (max-width:680px){.ba-block{grid-template-columns:1fr;gap:8px}}
+.ba-panel{background:var(--surface-raised);border:1px solid var(--border);border-radius:var(--radius);
+  padding:14px;display:flex;flex-direction:column}
+.ba-label{font-family:var(--mono);font-size:10px;color:var(--text-dim);letter-spacing:1.5px;
+  text-transform:uppercase;font-weight:700;margin-bottom:8px}
+.ba-before .ba-label{color:var(--blue)}
+.ba-after .ba-label{color:var(--green)}
+.ba-content{font-size:13px;color:var(--text);line-height:1.7;flex:1}
+.ba-content code,.ba-content pre{font-family:var(--mono);font-size:12px;color:var(--accent);
+  background:var(--surface-inset);padding:2px 5px;border-radius:3px;display:inline-block;
+  word-break:break-all;white-space:pre-wrap}
+.ba-content pre{display:block;padding:8px 10px;margin-top:6px}
+.ba-arrow{display:flex;align-items:center;justify-content:center;color:var(--accent-badge);
+  font-size:24px;font-weight:700;font-family:var(--mono)}
+@media (max-width:680px){.ba-arrow{transform:rotate(90deg);padding:4px 0}}
+
+/* Pulse Check */
+.pulse-check{background:#e0e0e0;border:1px solid #b0b0b0;border-radius:var(--radius-lg);
+  padding:18px 22px;margin:22px 0;color:#000}
+.pulse-header{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.pulse-icon{font-size:18px}
+.pulse-label{font-family:var(--mono);font-size:11px;color:#000;letter-spacing:1.5px;
+  text-transform:uppercase;font-weight:700}
+.pulse-question{font-size:15px;color:#000;margin-bottom:14px;line-height:1.6}
+.pulse-question code{font-family:var(--mono);font-size:12.5px;background:#fff;color:var(--accent);
+  padding:2px 5px;border-radius:3px;border:1px solid #b0b0b0}
+.pulse-options{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
+.pulse-option{display:flex;align-items:flex-start;gap:10px;padding:10px 14px;background:var(--surface-raised);
+  border:1px solid var(--border);border-radius:var(--radius);cursor:pointer;transition:all .15s;
+  color:#000;font-size:13.5px;line-height:1.5;text-align:left}
+.pulse-option:hover{background:var(--surface);border-color:var(--border-accent)}
+.pulse-option.correct{background:rgba(31,104,67,.18);border-color:var(--green);color:#000}
+.pulse-option.wrong{background:rgba(156,56,45,.15);border-color:var(--red);color:#000}
+.pulse-option.disabled{cursor:not-allowed;opacity:.6}
+.pulse-option.disabled.correct,.pulse-option.disabled.wrong{opacity:1}
+.pulse-key{font-family:var(--mono);font-weight:700;font-size:12px;color:#000;
+  min-width:22px;height:22px;display:flex;align-items:center;justify-content:center;
+  border:1px solid var(--border);border-radius:4px;flex-shrink:0;background:var(--surface)}
+.pulse-feedback{padding:12px 14px;border-radius:var(--radius);font-size:13.5px;line-height:1.6;
+  margin-top:10px;color:#000;display:none}
+.pulse-feedback.visible{display:block}
+.pulse-feedback.correct{background:rgba(31,104,67,.15);border:1px solid var(--green)}
+.pulse-feedback.incorrect{background:rgba(156,56,45,.12);border:1px solid var(--red)}
+.pulse-feedback.revealed{background:rgba(44,86,128,.12);border:1px solid var(--blue)}
+.pulse-feedback strong{color:#000}
+.pulse-actions{display:flex;gap:10px;margin-top:10px;flex-wrap:wrap}
+.pulse-link{font-family:var(--mono);font-size:11px;color:var(--accent-dim);font-weight:600;
+  background:none;border:none;cursor:pointer;text-decoration:underline;padding:4px 0}
+.pulse-link:hover{color:var(--accent)}
+
+/* Cards Sidebar */
+.cards-panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);
+  padding:18px;position:sticky;top:80px}
+.cards-panel h3{font-family:var(--mono);font-size:11px;color:var(--accent-dim);
+  letter-spacing:1.5px;text-transform:uppercase;font-weight:700;margin-bottom:6px}
+.cards-panel .cards-sub{font-size:11.5px;color:var(--text-dim);margin-bottom:14px;line-height:1.5}
+.card-item{padding:8px 12px;background:var(--surface-raised);border:1px solid var(--border);
+  border-radius:var(--radius);margin-bottom:6px;cursor:pointer;transition:all .15s;font-size:13px;
+  color:var(--text);display:flex;justify-content:space-between;align-items:center;gap:8px}
+.card-item:hover{background:var(--surface-inset);border-color:var(--border-accent)}
+.card-item-term{font-weight:600}
+.card-item-expand{font-size:10px;color:var(--text-dim);font-family:var(--mono)}
+
+/* Modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;display:none;
+  align-items:center;justify-content:center;padding:20px}
+.modal-overlay.open{display:flex}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);
+  max-width:680px;width:100%;max-height:85vh;display:flex;flex-direction:column;
+  box-shadow:0 8px 32px rgba(0,0,0,.4)}
+.modal-header{padding:18px 22px;border-bottom:1px solid var(--border);display:flex;
+  justify-content:space-between;align-items:center;gap:12px}
+.modal-title{font-family:var(--serif);font-size:20px;font-weight:700;color:var(--text)}
+.modal-close{background:none;border:1px solid var(--border);color:var(--text);font-size:18px;
+  width:32px;height:32px;border-radius:50%;cursor:pointer;display:flex;align-items:center;
+  justify-content:center;transition:all .15s}
+.modal-close:hover{background:var(--surface-inset);border-color:var(--border-accent)}
+.modal-body{padding:18px 22px;overflow-y:auto;flex:1}
+.modal-search{margin-bottom:14px}
+.modal-search input{width:100%;padding:8px 12px;font-family:var(--sans);font-size:14px;
+  background:var(--surface-raised);border:1px solid var(--border);border-radius:var(--radius);
+  color:var(--text)}
+.modal-search input:focus{outline:none;border-color:var(--border-focus)}
+
+/* Card library content */
+.lib-segment-group{margin-bottom:18px}
+.lib-segment-header{font-family:var(--mono);font-size:11px;color:var(--accent-dim);
+  letter-spacing:1.5px;text-transform:uppercase;font-weight:700;margin-bottom:8px;
+  padding-bottom:6px;border-bottom:1px solid var(--border)}
+.lib-card{background:var(--surface-raised);border:1px solid var(--border);border-radius:var(--radius);
+  padding:12px 14px;margin-bottom:8px}
+.lib-card-term{font-family:var(--sans);font-weight:700;font-size:14px;color:var(--text);margin-bottom:4px}
+.lib-card-expansion{font-family:var(--mono);font-size:11px;color:var(--text-dim);font-style:italic;margin-bottom:6px}
+.lib-card-def{font-size:13px;color:var(--text-muted);line-height:1.6}
+
+/* Single card modal */
+.card-modal-term{font-family:var(--mono);font-size:11px;color:var(--accent-dim);
+  letter-spacing:1.5px;text-transform:uppercase;font-weight:700;margin-bottom:6px}
+.card-modal-expansion{font-family:var(--mono);font-size:13px;color:var(--text-dim);
+  font-style:italic;margin-bottom:10px}
+.card-modal-def{font-size:14.5px;color:var(--text);line-height:1.7;margin-bottom:12px}
+.card-modal-long{font-size:13.5px;color:var(--text-muted);line-height:1.7;
+  padding-top:12px;border-top:1px solid var(--border)}
+
+/* Footer */
+.footer{padding:30px 28px;text-align:center;border-top:1px solid rgba(255,255,255,.1)}
+.footer-actions{display:flex;gap:14px;justify-content:center;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+.footer-credit{font-family:var(--mono);font-size:11px;color:#a8b8c8}
+
+/* Segment navigation footer (within segment) */
+.seg-nav{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:24px;
+  padding-top:18px;border-top:1px solid var(--border);flex-wrap:wrap}
+.seg-nav-left,.seg-nav-right{display:flex;gap:10px;flex-wrap:wrap}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-top">
+    <div class="header-brand">
+      <h1>HL7 v2 Primer</h1>
+      <span class="pipe-motif">|^~\&amp;|</span>
+      <span class="subtitle">Before You Begin · A beginner's foundation</span>
+    </div>
+    <div class="header-credit">Developed by: Joe Williams</div>
+  </div>
+  <div id="welcomeBackBanner" style="display:none"></div>
+  <div class="progress-bar" id="progressBar"></div>
+</header>
+
+<main>
+  <div class="content-col">
+    <div id="heroSection"></div>
+    <div id="actionBar"></div>
+    <div id="segmentContainer"></div>
+  </div>
+  <aside class="sidebar-col">
+    <div id="cardsSidebar"></div>
+  </aside>
+</main>
+
+<footer class="footer">
+  <div class="footer-actions">
+    <button class="btn ghost" onclick="resetProgress()">↺ Start over</button>
+    <button class="btn primary" id="beginTutorialBtn" onclick="alert('Once published, this would link to hl7v2_message_to_model.html — Station 1 awaits.')">Begin the main tutorial →</button>
+  </div>
+  <div class="footer-credit">HL7 v2 Primer · Developed by: Joe Williams</div>
+</footer>
+
+<div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modalTitle">Modal</div>
+      <button class="modal-close" onclick="closeModal()" aria-label="Close">×</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════════════════════════════════════
+//  CARDS — Single source of truth for all definitions
+// ════════════════════════════════════════════════════════════════
+const CARDS = {
+  ehr: {
+    term: 'EHR',
+    expansion: 'Electronic Health Record',
+    def: 'The hospital\'s primary clinical software where patient charts, encounters, orders, results, and notes all live.',
+    long: 'A digital version of a patient\'s paper chart. Major vendors: Epic, Oracle Health (Cerner), Meditech, Allscripts. The EHR is typically the central system that other hospital systems exchange data with.'
+  },
+  interop: {
+    term: 'Interoperability',
+    def: 'The ability of different software systems to exchange data with each other and use it correctly.',
+    long: 'In healthcare, this means a lab analyzer\'s result can flow into the EHR, then into a billing system, then into a public-health database — each system understanding what the data means.'
+  },
+  standardsBased: {
+    term: 'Standards-based messaging',
+    def: 'Communication between systems using a published, agreed-upon format that any participating system can read and write.',
+    long: 'Without standards, every pair of systems would need a custom translator. Standards reduce this from N² interfaces to N — every system implements the standard once.'
+  },
+  hl7v2Concept: {
+    term: 'HL7 v2',
+    expansion: 'Health Level 7, version 2',
+    def: 'The dominant messaging standard for healthcare data exchange in the US since the late 1980s.',
+    long: 'Pipe-delimited text format. "Health Level 7" refers to layer 7 of the OSI networking model — the application layer. Versions in use range from 2.3 (legacy) through 2.5.1 (most common today) to 2.8 (newer).'
+  },
+  encounter: {
+    term: 'Encounter',
+    def: 'A single visit — one continuous episode of care at a healthcare facility.',
+    long: 'Each encounter has its own ID. An ED visit, an outpatient appointment, and an inpatient admission are each separate encounters. The same patient has many encounters over their lifetime.'
+  },
+  event: {
+    term: 'Event (data sense)',
+    def: 'A discrete moment that something happened in the clinical workflow, and that needs to be communicated to other systems.',
+    long: 'In HL7 v2, events are categorized (registration, order, result, etc.) and identified by codes (A01, A04, R01...). One clinical activity (an ED visit) typically produces many events.'
+  },
+  adt: {
+    term: 'ADT',
+    expansion: 'Admission, Discharge, Transfer',
+    def: 'A category of HL7 v2 messages covering patient movement: arriving, being admitted, transferring rooms, leaving.',
+    long: 'ADT messages have trigger event codes: A01 = inpatient admission, A02 = transfer, A03 = discharge, A04 = outpatient/ED arrival, A08 = update demographics, and many more.'
+  },
+  ordersResults: {
+    term: 'Orders / Results',
+    def: 'Two complementary message categories: an Order requests something be done; a Result reports what came back.',
+    long: 'A doctor orders a CBC blood test (Order = ORM message). The lab runs it and sends back values (Result = ORU message). Orders and Results are separate events, often hours apart.'
+  },
+  prelimFinal: {
+    term: 'Preliminary vs final',
+    def: 'A two-stage lifecycle for lab results: an early "preliminary" reading, then a verified "final" reading.',
+    long: 'In an ED, doctors often need values quickly to make decisions. A preliminary value lets them act; the final value confirms or corrects after the lab tech reviews. Both are sent as separate messages.'
+  },
+  tcpip: {
+    term: 'TCP/IP',
+    def: 'The standard networking protocol used to send data between computers on a network.',
+    long: 'Same protocol your laptop uses to load webpages. In healthcare, it\'s the underlying transport for almost all interface traffic. You don\'t need to be a network engineer to work with HL7 v2.'
+  },
+  mllp: {
+    term: 'MLLP',
+    expansion: 'Minimal Lower Layer Protocol',
+    def: 'A thin wrapper around TCP that adds start/end markers around each HL7 v2 message.',
+    long: 'A message starts with a vertical-tab character (0x0B) and ends with file-separator + carriage-return (0x1C 0x0D). Without these markers, a TCP receiver couldn\'t tell where one message ends and the next begins.'
+  },
+  interface: {
+    term: 'Interface',
+    def: 'A connection between two software systems for exchanging data.',
+    long: 'In healthcare IT, "interface" usually means an HL7 v2 messaging connection. A typical hospital has 50-300 active interfaces between its various systems.'
+  },
+  segment: {
+    term: 'Segment',
+    def: 'One line of an HL7 v2 message, beginning with a 3-letter code that identifies its purpose.',
+    long: 'Examples: MSH (Message Header), PID (Patient Identification), PV1 (Patient Visit), OBX (Observation/Result). Segments are separated by carriage returns (or newlines) within a message.'
+  },
+  field: {
+    term: 'Field',
+    def: 'One slice of a segment, separated from neighbors by the pipe character `|`.',
+    long: 'Counted from the segment name. MSH-1 is the field separator itself. MSH-7 is the message timestamp. Field positions are fixed by the spec.'
+  },
+  component: {
+    term: 'Component',
+    def: 'A sub-piece of a field, separated by the caret character `^`.',
+    long: 'For example, a name field uses components: `Okonkwo^Helen^M` is family name, given name, middle initial. Components let one field carry structured information.'
+  },
+  encodingChars: {
+    term: 'Encoding characters',
+    def: 'The four delimiters used inside an HL7 v2 message: `^` (component), `~` (repetition), `\\` (escape), `&` (sub-component).',
+    long: 'Declared in MSH-2 as the literal string `^~\\&`. Every message uses these same characters; they\'re shown so the receiver knows what to expect.'
+  },
+  msh: {
+    term: 'MSH',
+    expansion: 'Message Header',
+    def: 'The first segment of every HL7 v2 message. Acts as the envelope: who sent it, who receives it, what type, when, what version.',
+    long: 'MSH is required and always first. The receiving system reads MSH to decide what to do with the rest of the message. Without a valid MSH, the receiver should reject the message.'
+  },
+  msgType: {
+    term: 'Message type',
+    def: 'The category of message, like ADT, ORM, ORU.',
+    long: 'Lives in MSH-9 as the first component. Tells the receiver what general kind of message this is (registration, order, result, etc.).'
+  },
+  triggerEvent: {
+    term: 'Trigger event',
+    def: 'The specific event that caused this message to fire, like A04 (outpatient registration) or R01 (general lab result).',
+    long: 'Lives in MSH-9 as the second component. Together with the message type, it precisely identifies what happened. ADT^A01 ≠ ADT^A04 even though both are ADT.'
+  },
+  msgStructure: {
+    term: 'Message structure',
+    def: 'The layout template that defines which segments this kind of message can contain and in what order.',
+    long: 'Lives in MSH-9 as the third component (e.g., `ADT_A01`). Different events sometimes share the same structure — A01, A04, A08 all use ADT_A01 structure.'
+  },
+  msgControlId: {
+    term: 'Message control ID',
+    def: 'A unique identifier for this specific message, used for tracking and acknowledgment.',
+    long: 'Lives in MSH-10. Must be unique per sending system. When the receiver sends back an acknowledgment (ACK), it references this ID so the sender knows exactly which message was acknowledged.'
+  },
+  processingId: {
+    term: 'Processing ID',
+    def: 'Single character indicating environment: `P` = production, `D` = debug, `T` = training.',
+    long: 'Lives in MSH-11. Never confuse a `T` (training) message with a `P` (production) message — billing the wrong patient because a test message was processed in production is a real disaster.'
+  },
+
+  // ─── Segment 5 cards ───
+  evn: {
+    term: 'EVN',
+    expansion: 'Event Type',
+    def: 'A segment giving extra detail about the event that triggered the message: when it actually occurred, who entered it.',
+    long: 'EVN-1 repeats the event code from MSH-9 (yes, redundant — that\'s normal HL7 v2). EVN-2 is the event\'s actual occurrence time, which can differ from the message generation time in MSH-7 if there\'s a delay.'
+  },
+  pid: {
+    term: 'PID',
+    expansion: 'Patient Identification',
+    def: 'The segment carrying the patient\'s identifying information: name, MRN, date of birth, sex, address.',
+    long: 'PID is required in any patient-related message. The receiver uses PID to match the message to a patient record, either an existing one or by creating a new one.'
+  },
+  mrn: {
+    term: 'MRN',
+    expansion: 'Medical Record Number',
+    def: 'A patient\'s permanent identifier at one healthcare facility. Doesn\'t change between visits.',
+    long: 'Every facility issues its own MRNs. Helen has one MRN at Riverside Memorial; if she also visits a different hospital, she has a different MRN there. Cross-facility identity matching is its own complex problem (covered in Station 7 of the main tutorial).'
+  },
+  composite: {
+    term: 'Composite field',
+    def: 'A field that holds multiple structured pieces, separated by `^`.',
+    long: 'Names, addresses, IDs, and many other complex values are composite fields. Each component has a fixed positional meaning per the HL7 v2 spec.'
+  },
+  subcomponent: {
+    term: 'Sub-component',
+    def: 'A piece of a component, separated by `&`.',
+    long: 'Rare in everyday messages. Used when a component itself needs structured sub-pieces — for example, a complex address with internal building/floor details.'
+  },
+  assigningAuthority: {
+    term: 'Assigning authority',
+    def: 'The organization that issued an identifier — usually a facility, system, or namespace.',
+    long: 'In `MRN78421^^^RIVERSIDE^MR`, "RIVERSIDE" is the assigning authority. Tells you which facility minted this MRN, which matters when patients move between systems.'
+  },
+  identifierType: {
+    term: 'Identifier type',
+    def: 'A code indicating what kind of ID this is: MR (medical record), SS (social security), DL (driver license), etc.',
+    long: 'In `MRN78421^^^RIVERSIDE^MR`, "MR" indicates this is a Medical Record number. Same patient could have multiple IDs of different types in different fields or repetitions.'
+  },
+
+  // ─── Segment 6 cards ───
+  pv1: {
+    term: 'PV1',
+    expansion: 'Patient Visit',
+    def: 'The segment describing the encounter: where, what kind of visit, attending physician, visit number, admit time.',
+    long: 'PV1 has 50+ defined fields, most optional. A real PV1 typically populates 5-15 of them. The rest stay empty but the positions must be preserved.'
+  },
+  patientClass: {
+    term: 'Patient class',
+    def: 'A single character indicating visit type: `E` = Emergency, `O` = Outpatient, `I` = Inpatient, `R` = Recurring.',
+    long: 'Lives in PV1-2. Determines a lot of downstream behavior — billing rules, length-of-stay tracking, bed assignment, regulatory reporting.'
+  },
+  visitNumber: {
+    term: 'Visit number',
+    def: 'A unique identifier for one specific encounter — different from the patient\'s MRN.',
+    long: 'MRN identifies the person; visit number identifies one episode of care. Helen\'s MRN stays the same forever; her visit number changes for every visit. Lives in PV1-19.'
+  },
+  admitDateTime: {
+    term: 'Admit date/time',
+    def: 'When the visit officially started.',
+    long: 'Lives in PV1-44. For an A04 (outpatient/ED), this is when registration completed. For an A01 (inpatient), this is when the bed assignment occurred.'
+  },
+  abstractStructure: {
+    term: 'Abstract message structure',
+    def: 'The HL7 v2 spec\'s template defining which segments a message of a given type can contain, and in what order.',
+    long: 'Published by HL7 International for every message structure (ADT_A01, ORU_R01, etc.). Tells you what\'s required, optional, and repeatable — the blueprint for valid messages.'
+  },
+  structureNotation: {
+    term: '[ ] and { } notation',
+    def: 'In abstract message structures: `[ ]` means optional, `{ }` means repeating.',
+    long: 'A segment with no brackets is required exactly once. `[ FOO ]` means optional, zero or one. `{ FOO }` means required, one or more. `[ { FOO } ]` means optional, zero or more.'
+  },
+
+  // ─── Segment 7 cards ───
+  codedData: {
+    term: 'Coded data',
+    def: 'Information stored as a standardized code rather than free text, so it can be combined and analyzed across systems.',
+    long: 'Same diagnosis written by different doctors at different hospitals would all map to the same ICD-10 code, making counting and analysis possible.'
+  },
+  codingSystem: {
+    term: 'Coding system',
+    def: 'A controlled vocabulary published by an authority — like ICD-10 from WHO/CMS or LOINC from Regenstrief.',
+    long: 'Each system has its own scope: ICD-10 for diagnoses, LOINC for lab tests, CPT for procedures, SNOMED CT for clinical concepts broadly, RxNorm for medications, CVX for vaccines.'
+  },
+  icd10cm: {
+    term: 'ICD-10-CM',
+    expansion: 'International Classification of Diseases, 10th revision, Clinical Modification',
+    def: 'The US standard for coding diagnoses. About 70,000 codes.',
+    long: 'Helen\'s "non-cardiac chest pain" maps to R07.89. CMS requires ICD-10-CM for billing claims. Coding system identifier in HL7 v2: `I10`.'
+  },
+  cpt: {
+    term: 'CPT',
+    expansion: 'Current Procedural Terminology',
+    def: 'The US standard for coding procedures and services performed by clinicians.',
+    long: 'Helen\'s EKG = CPT 93000. Maintained by the American Medical Association. Required for billing professional services.'
+  },
+  loinc: {
+    term: 'LOINC',
+    expansion: 'Logical Observation Identifiers Names and Codes',
+    def: 'The standard for identifying lab tests, vital signs, and clinical observations.',
+    long: 'A troponin test = LOINC 6598-7. Free, maintained by Regenstrief Institute. Used in OBX segments to identify what observation a value represents.'
+  },
+  snomed: {
+    term: 'SNOMED CT',
+    expansion: 'Systematized Nomenclature of Medicine — Clinical Terms',
+    def: 'A vast clinical vocabulary covering diseases, findings, procedures, body structures, organisms, and more — about 350,000 concepts.',
+    long: 'More expressive than ICD-10 (clinical detail) and broader than LOINC (lab-only). Increasingly used for clinical data exchange. Coding system identifier: `SCT`.'
+  },
+  rxnorm: {
+    term: 'RxNorm',
+    expansion: 'Medication terminology',
+    def: 'The US standard for naming medications in interoperable ways.',
+    long: 'Maintained by the National Library of Medicine. Provides codes for ingredients, dose forms, and clinical drugs at various levels of specificity. Used in pharmacy messaging.'
+  },
+
+  // ─── Segment 8 cards ───
+  interfaceEngine: {
+    term: 'Interface engine',
+    def: 'Specialized software that receives, routes, transforms, and forwards HL7 v2 messages between systems.',
+    long: 'Common products: Mirth Connect (NextGen), Rhapsody, Cloverleaf, Corepoint. Sits in the middle of the message flow, applying transformation logic and routing rules.'
+  },
+  sql: {
+    term: 'SQL',
+    expansion: 'Structured Query Language',
+    def: 'The language used to query and manipulate data stored in relational databases.',
+    long: 'Comes in for analytics: once messages have been parsed and stored in a database, SQL is how you ask questions like "how many ED visits last month had chest pain as the chief complaint?" Part 2 of the main tutorial uses SQL extensively.'
+  },
+  python: {
+    term: 'Python',
+    def: 'A general-purpose programming language widely used for data engineering and analytics in healthcare.',
+    long: 'The "glue" language: scripts that move data between systems, transform formats, run quality checks, and orchestrate pipelines. Common libraries: pandas (tabular data), requests (APIs), and the dbt-Python interaction patterns.'
+  },
+  dbt: {
+    term: 'dbt',
+    expansion: 'data build tool',
+    def: 'A tool that lets you define data transformations as SQL queries with dependencies, testing, and version control.',
+    long: 'Modern analytics-engineering standard. Stations A1-A5 of the main tutorial show how to build encounter-level analytics datasets using dbt models on top of the parsed HL7 v2 message stream.'
+  },
+  fhir: {
+    term: 'FHIR',
+    expansion: 'Fast Healthcare Interoperability Resources',
+    def: 'The newer HL7 standard, designed for modern web APIs (JSON, REST). Gaining ground but not replacing v2 quickly.',
+    long: 'Pronounced "fire". Stations 11-13 of the main tutorial cover converting HL7 v2 messages to FHIR resources. Required by US regulations for certain data exchange (USCDI, US Core profiles), but most clinical messaging in US hospitals still uses v2.'
+  }
+};
+
+// ════════════════════════════════════════════════════════════════
+//  SEGMENTS — Lecture data for each of the 8 segments
+// ════════════════════════════════════════════════════════════════
+const SEGMENTS = [
+  // ─── SEGMENT 1 ───
+  {
+    id: 1, icon: '🏥',
+    title: 'What healthcare interoperability is',
+    subtitle: 'Why we need standards at all',
+    endGoal: 'You\'ll know why hospitals can\'t just email each other patient data, and why standards exist.',
+    minutes: 6,
+    cards: ['ehr', 'interop', 'standardsBased', 'hl7v2Concept'],
+    lecture: `
+<p>Imagine a 64-year-old woman named <strong>Helen Okonkwo</strong>. She walks into the emergency department of Riverside Memorial Hospital at 14:32 on a Tuesday afternoon, complaining of chest pain that started two hours ago.</p>
+<p>Within seconds of her arrival, her name and basic information will need to travel across <em>several different software systems</em>: registration creates her record, the EHR will track her clinical care, the lab will process blood draws, the pharmacy will manage any medications, billing will eventually generate a claim, and possibly her primary care doctor's office across town will be notified.</p>
+<h4>The scale of the problem</h4>
+<p>A typical US hospital runs <strong>50-300 different software applications</strong>. They were built at different times, by different vendors, in different programming languages. They store data in different shapes — one system might call her last name <code>last_name</code>, another <code>patientLastName</code>, a third <code>SURNAME</code>, a fourth <code>family</code>.</p>
+<p>The naive solution — "let everyone use the same database" — is impossible. Vendors don't share internal data structures. Hospitals can't replace systems wholesale (a major EHR replacement costs tens of millions and takes years). Regulations require certain systems to be auditable separately. And clinical workflows often depend on systems being specialized for their domain.</p>
+<h4>The real-world solution</h4>
+<p>What works in practice is <strong>standards-based messaging</strong>. Every system stores data however it wants internally. But when one system needs to send information to another, it converts that information into a <strong>standard format</strong> that the receiving system also speaks. Both systems agree on the format <em>at the boundary</em>, even though their internal storage is completely different.</p>
+<p>HL7 v2 is the dominant such standard in US hospitals. It has been since the late 1980s. Newer alternatives exist (FHIR is the most prominent), but HL7 v2 still moves the vast majority of clinical messages today and is unlikely to disappear soon — replacement costs are simply too high.</p>
+<p>That's what this primer is about: getting you familiar enough with HL7 v2 — and the clinical workflows that produce its messages — to start the main tutorial without feeling lost.</p>
+    `,
+    beforeAfter: null,
+    pulseChecks: [
+      {
+        question: `A hospital wants its lab system to share results with its EHR. The lab stores patient names as <code>last_name</code>, <code>first_name</code>. The EHR stores them as <code>patientLastName</code>, <code>patientFirstName</code>. What does a standard like HL7 v2 do?`,
+        options: [
+          {key:'A', text:'Force both systems to rename their internal fields'},
+          {key:'B', text:'Define a shared format used only when systems exchange data, leaving each system\'s internal storage alone'},
+          {key:'C', text:'Make the lab system upgrade to match the EHR'},
+          {key:'D', text:'Encrypt the data so the field names don\'t matter'}
+        ],
+        correctKey: 'B',
+        feedback: {
+          correct: 'Right. Standards live at the boundary between systems. Each system keeps its own internal storage; the standard defines what data looks like only at the moment of exchange.',
+          incorrect: 'It\'s B. Systems don\'t change their internal storage to use a standard — that would be enormously disruptive. The standard only describes the format used <em>during</em> exchange. Each system translates its internal format to and from the standard at the boundary.'
+        }
+      }
+    ]
+  },
+
+  // ─── SEGMENT 2 ───
+  {
+    id: 2, icon: '🚑',
+    title: 'The trip through the hospital',
+    subtitle: 'An ED visit as a sequence of data events',
+    endGoal: 'You\'ll be able to describe Helen\'s ED visit as data events firing across systems, not just as clinical activities.',
+    minutes: 10,
+    cards: ['encounter', 'event', 'adt', 'ordersResults', 'prelimFinal'],
+    lecture: `
+<p>Helen has just walked into the ED. Let's follow her through the next few hours. Each step in her clinical experience corresponds to one or more <em>events</em> in the data layer — and many of those events become HL7 v2 messages.</p>
+<h4>14:32 · Registration</h4>
+<p>The registration clerk creates an <strong>encounter</strong> in the EHR. An encounter is a single visit — a discrete unit that all subsequent activity will hang off of. The registration system fires an event: "outpatient registration." This event becomes an HL7 v2 message that gets sent to the EHR, the billing system, and possibly other downstream consumers.</p>
+<h4>14:38 · Triage</h4>
+<p>A nurse takes vitals: BP 168/95, heart rate 92, pain level 7/10. The vitals get recorded in the EHR. Some hospitals fire messages for these (vitals as observations); some keep them internal. Either way, this is the start of clinical activity for the encounter.</p>
+<h4>14:50 · Physician orders</h4>
+<p>The ED physician orders an EKG and basic labs. Each <strong>order</strong> is a discrete event. The order routes to the lab system (for blood draws) and the cardiology system (for the EKG). Each routing is a message.</p>
+<h4>15:05 · Specimen collected</h4>
+<p>Blood is drawn. The lab system receives the specimen, processes it, and runs the tests.</p>
+<h4>15:20 · Preliminary results</h4>
+<p>The lab analyzer sends a "result" message — but it's <strong>preliminary</strong>. The lab tech hasn't reviewed it yet, but the doctor can see the value and act on it.</p>
+<h4>15:35 · Final results</h4>
+<p>A second message updates the prior result to "final" — the lab tech has now confirmed.</p>
+<h4>16:10 · EKG read</h4>
+<p>Normal sinus rhythm. The cardiology system sends a result message back.</p>
+<h4>16:25 · Diagnosis</h4>
+<p>The doctor diagnoses non-cardiac chest pain. This becomes a diagnosis event, with an ICD-10 code attached (we'll get to coding later).</p>
+<h4>16:40 · Discharge</h4>
+<p>Helen is discharged with instructions. A discharge message fires.</p>
+<h4>17:00 · Billing complete</h4>
+<p>The billing system has now received everything it needs to generate a claim.</p>
+<h3>Why this matters</h3>
+<p>Each line above is potentially a <strong>separate HL7 v2 message</strong>. A typical ED visit produces 15-30 messages. Some hospitals produce 50+. Each message is a discrete event, traveling between systems, contributing to the picture each system maintains of Helen's encounter.</p>
+<p>HL7 v2 organizes these into broad <strong>categories</strong>:</p>
+<ul>
+<li><strong>ADT</strong> (Admission/Discharge/Transfer): registration, transfers, discharge, demographic updates</li>
+<li><strong>Orders</strong> (ORM): a request to do something — draw labs, perform a procedure</li>
+<li><strong>Results</strong> (ORU): the answer that comes back</li>
+<li><strong>Pharmacy</strong>: medication orders, dispensing, administration</li>
+<li><strong>Billing</strong>: claims, payments, charges</li>
+</ul>
+<p>One last subtle point: messages can arrive <em>out of order</em>. The lab analyzer might send results before the order acknowledgment finishes propagating elsewhere. Time matters, and the systems have to handle out-of-order messages gracefully. We'll come back to this in the main tutorial.</p>
+    `,
+    beforeAfter: {
+      beforeLabel: 'Clinical view',
+      beforeContent: '<p style="font-style:italic">Helen, 64, walks into the ED at 14:32 with chest pain. Over the next 4 hours she is triaged, gets an EKG and blood work, is diagnosed with non-cardiac chest pain, and is discharged.</p>',
+      afterLabel: 'Data view',
+      afterContent: `<pre style="font-family:var(--mono);font-size:11.5px;line-height:1.8;color:#000;background:transparent;margin:0;white-space:pre-wrap">14:32 → ADT^A04   (registration)
+14:38 → OBX       (vitals, optional)
+14:50 → ORM^O01   (order: EKG)
+14:50 → ORM^O01   (order: labs)
+15:05 → (specimen)
+15:20 → ORU^R01   (lab, preliminary)
+15:35 → ORU^R01   (lab, final)
+16:10 → ORU^R01   (EKG result)
+16:25 → ADT^A08   (dx update)
+16:40 → ADT^A03   (discharge)</pre>`
+    },
+    pulseChecks: [
+      {
+        question: `Helen's EKG is ordered at 14:50 but the actual EKG is read at 16:10. From the messaging system\'s perspective, how many distinct events typically happen around this EKG?`,
+        options: [
+          {key:'A', text:'One — the EKG itself'},
+          {key:'B', text:'Two — the order and the result'},
+          {key:'C', text:'Three — the order, the performance, and the result'},
+          {key:'D', text:'It\'s impossible to say without seeing the messages'}
+        ],
+        correctKey: 'B',
+        feedback: {
+          correct: 'Right. Orders and results are separate events. The order fires when the doctor places it; the result fires when the EKG is read. The performance itself usually doesn\'t generate its own message.',
+          incorrect: 'It\'s B. Orders and results are separate events, often hours apart. The actual performance happens between but doesn\'t typically generate its own message in HL7 v2.'
+        }
+      },
+      {
+        question: `Helen\'s blood test comes back at 15:20 marked "preliminary" and at 15:35 marked "final." Why send two messages?`,
+        options: [
+          {key:'A', text:'Lab systems are inefficient'},
+          {key:'B', text:'Doctors often need preliminary values quickly to make decisions, even before final review'},
+          {key:'C', text:'HL7 v2 requires it'},
+          {key:'D', text:'Insurance companies require both'}
+        ],
+        correctKey: 'B',
+        feedback: {
+          correct: 'Exactly. In an ED, doctors often act on time-sensitive information. The preliminary value lets them begin acting; the final value confirms or corrects after the tech\'s review. Both are valuable.',
+          incorrect: 'It\'s B. Clinical reality drives this. Preliminary values let doctors act quickly on lab data before the lab tech\'s final review. The lifecycle of a single result is its own important concept.'
+        }
+      }
+    ]
+  },
+
+  // ─── SEGMENT 3 ───
+  {
+    id: 3, icon: '🔌',
+    title: 'Why systems need to talk',
+    subtitle: 'Where networking fits (briefly)',
+    endGoal: 'You\'ll know where TCP and a thing called MLLP fit in, without needing to be a network engineer.',
+    minutes: 7,
+    cards: ['tcpip', 'mllp', 'interface'],
+    lecture: `
+<p>Let's step back. The registration system in Helen's hospital is on one server. The lab system is on another. The billing system is on a third. They might be in different buildings, or different cities. For one to send a message to another, <strong>they need a network connection</strong>.</p>
+<h4>It's just TCP</h4>
+<p>The connection between any two healthcare systems uses the same networking foundation as the rest of the internet — TCP/IP. The same kind of connection your laptop uses to load a webpage. In healthcare, it\'s used differently, but the foundation is the same.</p>
+<h4>MLLP — a thin wrapper</h4>
+<p>Most HL7 v2 messages travel over a connection style called <strong>MLLP</strong> (Minimal Lower Layer Protocol). It\'s just TCP with a few extra characters around each message to mark where it begins and ends.</p>
+<p>Why is this needed? Because TCP delivers a stream of bytes — it has no concept of "here\'s where one HL7 v2 message ends and the next begins." MLLP wraps each message with a start byte and an end byte so the receiver can split the stream into discrete messages. That\'s really the whole job of MLLP.</p>
+<div class="callout"><span class="callout-icon">💡</span><strong>You don\'t need to know the byte values right now.</strong> You\'ll see them in Station 1 of the main tutorial. Just know that MLLP exists and that it\'s how HL7 v2 messages travel between systems.</div>
+<h4>Where this fits in your future learning</h4>
+<p>Station 1 of the main tutorial is entirely about MLLP — receiving messages, framing, acknowledgments. Right now, just know:</p>
+<ul>
+<li>Messages travel between systems over a network connection</li>
+<li>The connection is usually TCP wrapped in MLLP</li>
+<li>This happens between every pair of systems in Helen\'s story — registration ↔ EHR ↔ lab ↔ pharmacy ↔ billing — every single one is a network connection</li>
+</ul>
+<h4>What you don\'t need to know yet</h4>
+<p>You don\'t need to know how TCP works at the packet level. You don\'t need to know how to configure a firewall. You don\'t need to write socket code. Healthcare interface engineers do touch these things occasionally, but the main tutorial covers what they actually do — you don\'t need to be a network engineer.</p>
+    `,
+    beforeAfter: null,
+    pulseChecks: [
+      {
+        question: `If the lab system loses its network connection to the EHR for 30 minutes, what typically happens to the messages the lab generated during that outage?`,
+        options: [
+          {key:'A', text:'They\'re permanently lost'},
+          {key:'B', text:'They queue up locally and send when the connection returns'},
+          {key:'C', text:'They route to a backup hospital'},
+          {key:'D', text:'The lab system shuts down'}
+        ],
+        correctKey: 'B',
+        feedback: {
+          correct: 'Right. Most interface engines and source systems queue messages locally and retry when the connection returns. Reliability through queuing is a core principle.',
+          incorrect: 'It\'s B. Healthcare systems are designed for reliability. Messages queue locally during outages and retry when the connection comes back. Networks fail often, but messages should not be lost.'
+        }
+      }
+    ]
+  },
+
+  // ─── SEGMENT 4 ───
+  {
+    id: 4, icon: '✉️',
+    title: 'Your first HL7 v2 message',
+    subtitle: 'The MSH header — dissecting the envelope',
+    endGoal: 'You\'ll be able to read the first line of an HL7 v2 message and explain what every part of it does.',
+    minutes: 12,
+    cards: ['segment', 'field', 'component', 'encodingChars', 'msh', 'msgType', 'triggerEvent', 'msgStructure', 'msgControlId', 'processingId'],
+    lecture: `
+<p>When Helen\'s registration finished, the registration system generated an HL7 v2 message and sent it to the EHR. Here\'s the first line:</p>
+<pre class="code-block"><span class="hl-segname">MSH</span><span class="hl-pipe">|</span>^~\\&amp;<span class="hl-pipe">|</span><span class="hl-value">REGISTRATION</span><span class="hl-pipe">|</span><span class="hl-value">RIVERSIDE</span><span class="hl-pipe">|</span><span class="hl-value">EHR</span><span class="hl-pipe">|</span><span class="hl-value">RIVERSIDE</span><span class="hl-pipe">|</span><span class="hl-value">20240312143215</span><span class="hl-pipe">|</span><span class="hl-empty">|</span><span class="hl-value">ADT^A04^ADT_A01</span><span class="hl-pipe">|</span><span class="hl-value">MSG00012345</span><span class="hl-pipe">|</span><span class="hl-value">P</span><span class="hl-pipe">|</span><span class="hl-value">2.5.1</span></pre>
+<div class="callout"><span class="callout-icon">😌</span><strong>Don\'t panic.</strong> We\'re going to take this apart slowly. By the end of this segment, every character will make sense.</div>
+<h4>First, the structure</h4>
+<p>An HL7 v2 message is plain text. Each line is a <strong>segment</strong>. Each segment starts with a 3-letter code that identifies its purpose — here, <code>MSH</code> means "Message Header."</p>
+<p>Within a segment, the pipe character <code>|</code> is a <strong>field separator</strong>. Everything between two pipes is one field. Counting from the segment name, MSH has 11 fields visible above.</p>
+<p>And within some fields, you\'ll see other delimiters. The caret <code>^</code> separates <strong>components</strong>. We\'ll see this in action below.</p>
+<h4>Now field by field</h4>
+<p>Walking through the MSH segment slowly:</p>
+<table class="field-table">
+<tr><th>Field</th><th>Value</th><th>Meaning</th></tr>
+<tr><td>MSH-1</td><td>|</td><td>The field separator itself. Every other separator follows this one.</td></tr>
+<tr><td>MSH-2</td><td>^~\\&amp;</td><td>The four <strong>encoding characters</strong>: <code>^</code> for components, <code>~</code> for repetitions, <code>\\</code> for escapes, <code>&amp;</code> for sub-components. Declared once, here.</td></tr>
+<tr><td>MSH-3</td><td>REGISTRATION</td><td>Sending application — which system generated this message.</td></tr>
+<tr><td>MSH-4</td><td>RIVERSIDE</td><td>Sending facility — which physical site (Riverside in this case).</td></tr>
+<tr><td>MSH-5</td><td>EHR</td><td>Receiving application — who this message is for.</td></tr>
+<tr><td>MSH-6</td><td>RIVERSIDE</td><td>Receiving facility.</td></tr>
+<tr><td>MSH-7</td><td>20240312143215</td><td>Timestamp the message was generated. <strong>YYYYMMDDHHMMSS</strong> — March 12, 2024 at 14:32:15.</td></tr>
+<tr><td>MSH-8</td><td><em>(empty)</em></td><td>Security field — almost always blank.</td></tr>
+<tr><td>MSH-9</td><td>ADT^A04^ADT_A01</td><td><strong>Message type, trigger event, and structure</strong> — see below.</td></tr>
+<tr><td>MSH-10</td><td>MSG00012345</td><td>Unique message control ID. Used for tracking and acknowledgment.</td></tr>
+<tr><td>MSH-11</td><td>P</td><td>Processing ID: <code>P</code> = production. Other values: <code>D</code> = debug, <code>T</code> = training.</td></tr>
+<tr><td>MSH-12</td><td>2.5.1</td><td>HL7 v2 version. Helen\'s hospital uses 2.5.1, which is common.</td></tr>
+</table>
+<h4>The MSH-9 detail</h4>
+<p>MSH-9 packs three things into one field, separated by carets — that\'s the <strong>component</strong> structure I mentioned earlier:</p>
+<ul>
+<li><code>ADT</code> — the <strong>message type</strong> (Admission/Discharge/Transfer)</li>
+<li><code>A04</code> — the <strong>trigger event</strong> (outpatient/ED arrival)</li>
+<li><code>ADT_A01</code> — the <strong>message structure</strong> (the layout template — which segments are allowed and in what order)</li>
+</ul>
+<p>About the trigger event specifically: <code>A04</code> means "the patient arrived as a one-time or recurring outpatient." For an ED visit, this is exactly the right code — Helen is being registered, not admitted to a bed. (If she were being admitted as an inpatient, the code would be <code>A01</code> — different event, different downstream effects.)</p>
+<h4>Step back</h4>
+<p>This single line tells the receiving system everything about the <em>envelope</em> of the message: who sent it, who it\'s for, when, what version, what type. Helen\'s actual patient information isn\'t in MSH at all — it\'s coming in the next segments. Without a valid MSH, the receiver should reject the message before even trying to parse the rest.</p>
+    `,
+    beforeAfter: {
+      beforeLabel: 'Plain English intent',
+      beforeContent: '<p style="font-style:italic">"The registration system at Riverside needs to tell the EHR: I\'m sending you an outpatient ED registration that occurred at 2:32 PM on March 12, 2024. Tracking ID is MSG00012345. This is real production data, version 2.5.1."</p>',
+      afterLabel: 'HL7 v2 expression',
+      afterContent: `<pre style="font-family:var(--mono);font-size:11px;line-height:1.7;color:#000;background:transparent;margin:0;white-space:pre-wrap;word-break:break-all">MSH|^~\\&amp;|REGISTRATION|RIVERSIDE|
+EHR|RIVERSIDE|20240312143215||
+ADT^A04^ADT_A01|MSG00012345|P|2.5.1</pre>`
+    },
+    pulseChecks: [
+      {
+        question: `In the message above, the field <code>20240312143215</code> represents what?`,
+        options: [
+          {key:'A', text:'The patient\'s date of birth'},
+          {key:'B', text:'The time the message was created'},
+          {key:'C', text:'The time the patient arrived'},
+          {key:'D', text:'The hospital\'s identifier'}
+        ],
+        correctKey: 'B',
+        feedback: {
+          correct: 'Right. MSH-7 is the message generation timestamp — when the registration system fired off this transmission. We won\'t see the patient until the next segment.',
+          incorrect: 'It\'s B. MSH-7 is the message-generation timestamp, not anything about the patient yet. The patient\'s information is in segments we haven\'t introduced.'
+        }
+      },
+      {
+        question: `What\'s the difference between trigger events <strong>A01</strong> and <strong>A04</strong>?`,
+        options: [
+          {key:'A', text:'Version numbers — A04 is newer'},
+          {key:'B', text:'A01 is for inpatient admissions, A04 is for outpatient/ED arrivals'},
+          {key:'C', text:'A04 is a backup of A01'},
+          {key:'D', text:'They\'re the same thing'}
+        ],
+        correctKey: 'B',
+        feedback: {
+          correct: 'Exactly. A01 = inpatient admission (the patient is getting a bed). A04 = outpatient or ED arrival (no bed yet). Same message type (ADT), different trigger events, different downstream behaviors.',
+          incorrect: 'It\'s B. Trigger events distinguish different kinds of registrations within the ADT category. A01 is for inpatient bed admission. A04 (Helen\'s case) is outpatient — including ED arrivals.'
+        }
+      }
+    ]
+  },
+
+  // ─── SEGMENT 5 ───
+  {
+    id: 5, icon: '👤',
+    title: 'Adding the patient',
+    subtitle: 'PID + EVN segments',
+    endGoal: 'You\'ll be able to read the patient identification block of Helen\'s message.',
+    minutes: 9,
+    cards: ['evn', 'pid', 'mrn', 'composite', 'subcomponent', 'assigningAuthority', 'identifierType'],
+    lecture: `
+<p>We have the envelope (MSH). Now we add the next two segments: <strong>EVN</strong> (event details) and <strong>PID</strong> (patient identification). Helen\'s message is growing:</p>
+<pre class="code-block"><span class="hl-segname">MSH</span><span class="hl-pipe">|</span>^~\\&amp;<span class="hl-pipe">|</span>REGISTRATION<span class="hl-pipe">|</span>RIVERSIDE<span class="hl-pipe">|</span>EHR<span class="hl-pipe">|</span>RIVERSIDE<span class="hl-pipe">|</span>20240312143215<span class="hl-pipe">||</span>ADT^A04^ADT_A01<span class="hl-pipe">|</span>MSG00012345<span class="hl-pipe">|</span>P<span class="hl-pipe">|</span>2.5.1
+<span class="hl-new"><span class="hl-segname">EVN</span><span class="hl-pipe">|</span>A04<span class="hl-pipe">|</span>20240312143215<span class="hl-pipe">|||</span>CLERK002^Garcia^Maria</span>
+<span class="hl-new"><span class="hl-segname">PID</span><span class="hl-pipe">|</span>1<span class="hl-pipe">||</span>MRN78421^^^RIVERSIDE^MR<span class="hl-pipe">||</span>Okonkwo^Helen^M<span class="hl-pipe">||</span>19601015<span class="hl-pipe">|</span>F<span class="hl-pipe">|||</span>742 Oak Lane^^Riverside^CA^92501<span class="hl-pipe">||</span>(555)123-4567</span></pre>
+<p>The two new lines (highlighted) carry the event details and the patient information. Let\'s walk through them.</p>
+<h4>The EVN segment</h4>
+<table class="field-table">
+<tr><th>Field</th><th>Value</th><th>Meaning</th></tr>
+<tr><td>EVN-1</td><td>A04</td><td>Event type — repeats the trigger event from MSH-9. Yes, this is redundant. It\'s normal in HL7 v2.</td></tr>
+<tr><td>EVN-2</td><td>20240312143215</td><td><strong>When the event actually occurred</strong> (Helen arrived). May differ from MSH-7 (when the message was generated) if there was a delay.</td></tr>
+<tr><td>EVN-3</td><td><em>(empty)</em></td><td>Date/time message was planned — rarely used.</td></tr>
+<tr><td>EVN-4</td><td><em>(empty)</em></td><td>Reason code — rarely used.</td></tr>
+<tr><td>EVN-5</td><td>CLERK002^Garcia^Maria</td><td>The operator who entered this. Note the <code>^</code> separating ID, family name, given name — this is a <strong>composite field</strong> with three components.</td></tr>
+</table>
+<h4>The PID segment — patient identification</h4>
+<table class="field-table">
+<tr><th>Field</th><th>Value</th><th>Meaning</th></tr>
+<tr><td>PID-1</td><td>1</td><td>Set ID — almost always 1.</td></tr>
+<tr><td>PID-2</td><td><em>(empty)</em></td><td>Patient ID (deprecated — modern messages skip this).</td></tr>
+<tr><td>PID-3</td><td>MRN78421^^^RIVERSIDE^MR</td><td><strong>The medical record number.</strong> See breakdown below.</td></tr>
+<tr><td>PID-4</td><td><em>(empty)</em></td><td>Alternate patient ID (deprecated).</td></tr>
+<tr><td>PID-5</td><td>Okonkwo^Helen^M</td><td>Patient name: family <code>^</code> given <code>^</code> middle initial.</td></tr>
+<tr><td>PID-6</td><td><em>(empty)</em></td><td>Mother\'s maiden name (often blank).</td></tr>
+<tr><td>PID-7</td><td>19601015</td><td>Date of birth: October 15, 1960. Helen is 64.</td></tr>
+<tr><td>PID-8</td><td>F</td><td>Administrative sex (F = female). HL7 v2 uses simple codes here. Modern systems also support gender-identity in other fields.</td></tr>
+<tr><td>PID-9–10</td><td><em>(empty)</em></td><td>Race and other deprecated/optional fields.</td></tr>
+<tr><td>PID-11</td><td>742 Oak Lane^^Riverside^CA^92501</td><td>Address: street <code>^^</code> city <code>^</code> state <code>^</code> ZIP. (Component 2 is "other designation" — apt number, etc. — and is empty here.)</td></tr>
+<tr><td>PID-12</td><td><em>(empty)</em></td><td>County code (optional).</td></tr>
+<tr><td>PID-13</td><td>(555)123-4567</td><td>Home phone.</td></tr>
+</table>
+<h4>That MRN field, in detail</h4>
+<p>Look closely at <code>MRN78421^^^RIVERSIDE^MR</code>. This 5-component pattern is the standard way to express any healthcare identifier in HL7 v2:</p>
+<ol>
+<li><strong>MRN78421</strong> — the actual ID</li>
+<li><em>(empty)</em> — check digit (rarely used)</li>
+<li><em>(empty)</em> — check digit scheme (rarely used)</li>
+<li><strong>RIVERSIDE</strong> — the <strong>assigning authority</strong> (which facility issued the ID)</li>
+<li><strong>MR</strong> — the <strong>identifier type</strong> ("Medical Record")</li>
+</ol>
+<div class="callout"><span class="callout-icon">💡</span><strong>Empty components are normal — here\'s why.</strong> Composite fields use <em>positional notation</em>: each <code>^</code> separates a specific component. If component 2 isn\'t used but component 4 is, you have to keep the empty positions so component 4 lands in the right place. The <code>^^^</code> in the middle of <code>MRN78421^^^RIVERSIDE^MR</code> isn\'t an error — it\'s placeholder positions.</div>
+<h4>Step back — what we know now</h4>
+<p>We now have a complete picture of <em>who</em> arrived at the ED, <em>when</em>, and <em>who registered her</em>:</p>
+<ul>
+<li>The envelope says: registration system → EHR, March 12 14:32, ADT^A04, message ID MSG00012345, production, v2.5.1</li>
+<li>The event says: A04 occurred at 14:32, entered by clerk Maria Garcia</li>
+<li>The patient says: Helen M. Okonkwo, MRN 78421 at Riverside, born 1960-10-15, female, 742 Oak Lane Riverside CA 92501, phone (555)123-4567</li>
+</ul>
+<p>What we don\'t know yet: <em>which kind of visit</em> (ED? clinic? observation?) and <em>which physician</em>. That\'s coming next, in the PV1 segment.</p>
+    `,
+    beforeAfter: {
+      beforeLabel: 'Plain English',
+      beforeContent: '<p style="font-style:italic;margin-bottom:8px">"The patient is Helen M. Okonkwo, MRN 78421 at Riverside Memorial. Born October 15, 1960. Female. Lives at 742 Oak Lane in Riverside, CA 92501. Phone (555)123-4567."</p>',
+      afterLabel: 'PID segment',
+      afterContent: `<pre style="font-family:var(--mono);font-size:11px;line-height:1.7;color:#000;background:transparent;margin:0;white-space:pre-wrap;word-break:break-all">PID|1||MRN78421^^^RIVERSIDE^MR||
+Okonkwo^Helen^M||19601015|F|||
+742 Oak Lane^^Riverside^CA^92501||
+(555)123-4567</pre>`
+    },
+    pulseChecks: [
+      {
+        question: `Helen\'s MRN appears as <code>MRN78421^^^RIVERSIDE^MR</code>. Why are there empty components in the middle?`,
+        options: [
+          {key:'A', text:'The system made a mistake'},
+          {key:'B', text:'Those positions hold optional data that wasn\'t filled in'},
+          {key:'C', text:'The system is encrypting fields'},
+          {key:'D', text:'HL7 v2 requires exactly 5 components for IDs'}
+        ],
+        correctKey: 'B',
+        feedback: {
+          correct: 'Right. Composite fields use fixed positions. Optional components are skipped but the separators stay so later components land in the right place.',
+          incorrect: 'It\'s B. HL7 v2 composite fields use positional notation: each <code>^</code> separates a specific component. If positions 2 and 3 are optional and unused, they\'re skipped but the separators remain so positions 4 and 5 still mean what the spec says they mean.'
+        }
+      },
+      {
+        question: `Looking at the PID segment, what does the value <code>F</code> in PID-8 mean?`,
+        options: [
+          {key:'A', text:'False'},
+          {key:'B', text:'Female (administrative sex)'},
+          {key:'C', text:'Final'},
+          {key:'D', text:'Foreign'}
+        ],
+        correctKey: 'B',
+        feedback: {
+          correct: 'Right. PID-8 is administrative sex, and HL7 v2 uses simple letter codes: F = Female, M = Male, O = Other, U = Unknown.',
+          incorrect: 'It\'s B. PID-8 is administrative sex, and the codes are simple letters: F (female), M (male), O (other), U (unknown). Modern systems also capture gender identity in other fields, but PID-8 itself uses these legacy single-letter codes.'
+        }
+      }
+    ]
+  },
+  // ─── SEGMENT 6 ───
+  {
+    id: 6, icon: '🛏️',
+    title: 'Adding the visit',
+    subtitle: 'PV1 + abstract message structure',
+    endGoal: 'You\'ll be able to read a complete ADT^A04 message and understand what the receiving system learns from it.',
+    minutes: 9,
+    cards: ['pv1', 'patientClass', 'visitNumber', 'admitDateTime', 'abstractStructure', 'structureNotation'],
+    lecture: `
+<p>We have the envelope (MSH), the event (EVN), the patient (PID). The last major piece is the <strong>visit</strong> itself — the PV1 segment.</p>
+<h4>A minimal PV1 first</h4>
+<p>Before showing the full thing, here\'s the minimum useful version:</p>
+<pre class="code-block"><span class="hl-segname">PV1</span><span class="hl-pipe">|</span>1<span class="hl-pipe">|</span>E<span class="hl-pipe">|</span>ED^^^RIVERSIDE</pre>
+<ul>
+<li><code>PV1</code> — segment name</li>
+<li><code>1</code> — set ID</li>
+<li><code>E</code> — <strong>patient class</strong>: E = Emergency. Other codes: <code>O</code> = Outpatient, <code>I</code> = Inpatient, <code>R</code> = Recurring</li>
+<li><code>ED^^^RIVERSIDE</code> — assigned location: ED at Riverside</li>
+</ul>
+<p>That\'s already enough to communicate "an emergency visit at the Riverside ED." But real PV1 segments usually include more.</p>
+<h4>The full PV1 from Helen\'s message</h4>
+<pre class="code-block"><span class="hl-segname">PV1</span><span class="hl-pipe">|</span>1<span class="hl-pipe">|</span>E<span class="hl-pipe">|</span>ED^^^RIVERSIDE<span class="hl-pipe">||||</span>PHYS445^Khan^Sara^MD<span class="hl-pipe">|||||||||||</span>V12345<span class="hl-pipe">|||||||||||||||||||||||||</span>20240312143215</pre>
+<p>Yes, all those empty fields are real. PV1 has <strong>50+ defined fields</strong>, almost all optional. A typical message populates 5-15 of them; the rest stay empty because positions matter.</p>
+<table class="field-table">
+<tr><th>Field</th><th>Value</th><th>Meaning</th></tr>
+<tr><td>PV1-1</td><td>1</td><td>Set ID — almost always 1.</td></tr>
+<tr><td>PV1-2</td><td>E</td><td><strong>Patient class</strong>: E = Emergency.</td></tr>
+<tr><td>PV1-3</td><td>ED^^^RIVERSIDE</td><td>Assigned location: ED department at Riverside.</td></tr>
+<tr><td>PV1-4–6</td><td><em>(empty)</em></td><td>Admission type, pre-admit, prior location — not used here.</td></tr>
+<tr><td>PV1-7</td><td>PHYS445^Khan^Sara^MD</td><td><strong>Attending physician</strong>: ID, family name, given name, degree.</td></tr>
+<tr><td>PV1-8–18</td><td><em>(empty)</em></td><td>Referring/consulting providers, hospital service, type, etc.</td></tr>
+<tr><td>PV1-19</td><td>V12345</td><td><strong>Visit number</strong> — see below.</td></tr>
+<tr><td>PV1-20–43</td><td><em>(empty)</em></td><td>Financial class, charge codes, ID numbers — many billing-related fields.</td></tr>
+<tr><td>PV1-44</td><td>20240312143215</td><td><strong>Admit date/time</strong> — when this visit officially started.</td></tr>
+</table>
+<h4>MRN vs visit number — important distinction</h4>
+<p>Helen\'s MRN is <code>MRN78421</code>. Her visit number is <code>V12345</code>. <strong>These mean different things</strong>:</p>
+<ul>
+<li>The <strong>MRN</strong> identifies <em>Helen as a person</em> at this hospital. She\'s had this MRN since she was first registered, possibly years ago. She\'ll have the same MRN forever (as long as the hospital exists).</li>
+<li>The <strong>visit number</strong> identifies <em>this specific encounter</em>. If Helen comes back next month for a different problem, she\'ll have the same MRN but a <em>different</em> visit number.</li>
+</ul>
+<p>Mixing these up is a real source of bugs in healthcare interfaces. "Patient" and "visit" are different things.</p>
+<h4>The complete ADT^A04 message</h4>
+<p>Now let\'s look at the whole thing — every line we\'ve built up so far:</p>
+<pre class="code-block"><span class="hl-segname">MSH</span><span class="hl-pipe">|</span>^~\\&amp;<span class="hl-pipe">|</span>REGISTRATION<span class="hl-pipe">|</span>RIVERSIDE<span class="hl-pipe">|</span>EHR<span class="hl-pipe">|</span>RIVERSIDE<span class="hl-pipe">|</span>20240312143215<span class="hl-pipe">||</span>ADT^A04^ADT_A01<span class="hl-pipe">|</span>MSG00012345<span class="hl-pipe">|</span>P<span class="hl-pipe">|</span>2.5.1
+<span class="hl-segname">EVN</span><span class="hl-pipe">|</span>A04<span class="hl-pipe">|</span>20240312143215<span class="hl-pipe">|||</span>CLERK002^Garcia^Maria
+<span class="hl-segname">PID</span><span class="hl-pipe">|</span>1<span class="hl-pipe">||</span>MRN78421^^^RIVERSIDE^MR<span class="hl-pipe">||</span>Okonkwo^Helen^M<span class="hl-pipe">||</span>19601015<span class="hl-pipe">|</span>F<span class="hl-pipe">|||</span>742 Oak Lane^^Riverside^CA^92501<span class="hl-pipe">||</span>(555)123-4567
+<span class="hl-segname">PV1</span><span class="hl-pipe">|</span>1<span class="hl-pipe">|</span>E<span class="hl-pipe">|</span>ED^^^RIVERSIDE<span class="hl-pipe">||||</span>PHYS445^Khan^Sara^MD<span class="hl-pipe">|||||||||||</span>V12345<span class="hl-pipe">|||||||||||||||||||||||||</span>20240312143215</pre>
+<p><strong>Read it as a sentence:</strong> "On March 12, 2024 at 14:32, Helen Okonkwo (MRN 78421, born 1960-10-15) was registered as an Emergency-class outpatient at the Riverside ED, attending physician Dr. Sara Khan, visit number V12345."</p>
+<p>That\'s it. Every system downstream now has enough to do its work — billing, lab, pharmacy, the EHR\'s patient timeline. They\'ll all reference this same visit number and MRN as more messages flow in.</p>
+<h4>The abstract message structure</h4>
+<p>The HL7 v2 specification defines an <strong>abstract message structure</strong> for every message type — a template showing which segments are allowed, in what order, and which are optional. Here\'s a simplified ADT^A04 structure:</p>
+<table class="field-table">
+<tr><th>Segment</th><th>Notation</th><th>Meaning</th></tr>
+<tr><td>MSH</td><td><em>(none)</em></td><td>Required, exactly once</td></tr>
+<tr><td>EVN</td><td><em>(none)</em></td><td>Required, exactly once</td></tr>
+<tr><td>PID</td><td><em>(none)</em></td><td>Required, exactly once</td></tr>
+<tr><td>[ PD1 ]</td><td>[ ]</td><td>Optional (additional demographics)</td></tr>
+<tr><td>[ { NK1 } ]</td><td>[ { } ]</td><td>Optional, repeating (next of kin — zero or more)</td></tr>
+<tr><td>PV1</td><td><em>(none)</em></td><td>Required, exactly once</td></tr>
+<tr><td>[ PV2 ]</td><td>[ ]</td><td>Optional (additional visit info)</td></tr>
+<tr><td>[ { OBX } ]</td><td>[ { } ]</td><td>Optional, repeating (observations)</td></tr>
+<tr><td>[ { AL1 } ]</td><td>[ { } ]</td><td>Optional, repeating (allergies)</td></tr>
+<tr><td>[ { DG1 } ]</td><td>[ { } ]</td><td>Optional, repeating (diagnoses)</td></tr>
+</table>
+<div class="callout"><span class="callout-icon">📖</span><strong>How to read the notation:</strong> brackets <code>[ ]</code> mean optional. Braces <code>{ }</code> mean repeating. <code>[ { NK1 } ]</code> = optional and repeating, so zero or more. <code>{ FOO }</code> with no brackets = required and repeating, so one or more. No brackets at all = required, exactly once.</div>
+<p>Helen\'s message had no NK1, no AL1, no DG1, no OBX. That\'s valid — those are all optional. A registration message for a different patient might include allergies, next-of-kin, even diagnoses if known on arrival.</p>
+    `,
+    beforeAfter: {
+      beforeLabel: 'Helen at registration',
+      beforeContent: '<p style="font-style:italic;margin-bottom:8px">"On March 12 at 14:32, Helen Okonkwo, MRN 78421, registered as an Emergency-class patient at the Riverside ED. Her attending physician is Dr. Sara Khan. This is visit V12345 for her."</p>',
+      afterLabel: 'Complete ADT^A04 message',
+      afterContent: `<pre style="font-family:var(--mono);font-size:9.5px;line-height:1.6;color:#000;background:transparent;margin:0;white-space:pre-wrap;word-break:break-all">MSH|^~\\&amp;|REGISTRATION|RIVERSIDE|EHR|RIVERSIDE|20240312143215||ADT^A04^ADT_A01|MSG00012345|P|2.5.1
+EVN|A04|20240312143215|||CLERK002^Garcia^Maria
+PID|1||MRN78421^^^RIVERSIDE^MR||Okonkwo^Helen^M||19601015|F|||742 Oak Lane^^Riverside^CA^92501||(555)123-4567
+PV1|1|E|ED^^^RIVERSIDE||||PHYS445^Khan^Sara^MD|||||||||||V12345|||||||||||||||||||||||||20240312143215</pre>`
+    },
+    pulseChecks: [
+      {
+        question: `Helen\'s MRN is <code>MRN78421</code>. Her visit number is <code>V12345</code>. If she returns to the ED in 6 months for a different problem, which will be the same?`,
+        options: [
+          {key:'A', text:'Both will be the same'},
+          {key:'B', text:'Both will be different'},
+          {key:'C', text:'MRN same, visit number different'},
+          {key:'D', text:'MRN different, visit number same'}
+        ],
+        correctKey: 'C',
+        feedback: {
+          correct: 'Exactly. Helen as a person has one MRN, forever. Each visit gets its own visit number. This distinction is fundamental — getting it wrong creates messy data.',
+          incorrect: 'It\'s C. The MRN identifies Helen as a person — she has one MRN at this hospital for life. The visit number is per-encounter; each ED visit, each admission, each clinic appointment gets its own.'
+        }
+      },
+      {
+        question: `In the abstract message structure for ADT^A04, you see <code>[ { NK1 } ]</code>. What does this mean?`,
+        options: [
+          {key:'A', text:'NK1 is required'},
+          {key:'B', text:'NK1 is optional, exactly one if present'},
+          {key:'C', text:'NK1 is optional, can be zero or more'},
+          {key:'D', text:'NK1 is required, can repeat'}
+        ],
+        correctKey: 'C',
+        feedback: {
+          correct: 'Right. <code>[ ]</code> means optional, <code>{ }</code> means repeating. So <code>[ { NK1 } ]</code> means optional and repeating: zero or more.',
+          incorrect: 'It\'s C. The brackets stack: outer <code>[ ]</code> makes it optional, inner <code>{ }</code> makes it repeating. So you can have zero NK1 segments (Helen\'s case) or many (a patient with multiple emergency contacts) — both are valid.'
+        }
+      }
+    ]
+  },
+  // ─── SEGMENT 7 ───
+  {
+    id: 7, icon: '📚',
+    title: 'Coding systems',
+    subtitle: 'Why every clinical concept has a code',
+    endGoal: 'You\'ll know what coded data means in healthcare and where codes appear in HL7 v2 messages.',
+    minutes: 7,
+    cards: ['codedData', 'codingSystem', 'icd10cm', 'cpt', 'loinc', 'snomed', 'rxnorm'],
+    lecture: `
+<p>Helen\'s case progressed: she got an EKG, blood drawn, and was diagnosed with non-cardiac chest pain. When the doctor entered "non-cardiac chest pain" in the EHR, the system didn\'t store those words. It stored a code — <strong>R07.89</strong>, the ICD-10-CM code for "Other chest pain."</p>
+<p>This pattern is everywhere in healthcare: every clinical concept gets a code from a controlled vocabulary. Why? Because data needs to be <strong>poolable</strong> across systems and institutions.</p>
+<h4>The poolability problem</h4>
+<p>Imagine a public health analyst trying to count chest pain visits across 200 hospitals. If hospital A wrote "non-cardiac chest pain," hospital B wrote "atypical chest pain NOS," and hospital C wrote "chest pain - not MI," counting becomes impossible without standard codes.</p>
+<p>Codes solve this. The same diagnosis, recorded by different doctors at different hospitals using different EHRs, all maps to the same R07.89. Now the analyst can count.</p>
+<h4>The major coding systems</h4>
+<p>Different vocabularies cover different domains:</p>
+<ul>
+<li><strong>ICD-10-CM</strong> — diagnoses (about 70,000 codes, used for billing in the US)</li>
+<li><strong>CPT</strong> — procedures and services (Helen\'s EKG = CPT 93000)</li>
+<li><strong>LOINC</strong> — lab tests, vitals, observations (a troponin test = LOINC 6598-7)</li>
+<li><strong>SNOMED CT</strong> — broad clinical concepts (about 350,000 — diseases, findings, anatomy, organisms)</li>
+<li><strong>RxNorm</strong> — medications</li>
+<li><strong>CVX</strong> — vaccines</li>
+</ul>
+<p>You don\'t need to memorize codes. You need to know that they exist, where they live in messages, and that translating between them is a specific job an interface engineer does.</p>
+<h4>Where codes appear in HL7 v2</h4>
+<p>Coded values use a specific composite-field structure: <strong>code ^ description ^ coding system identifier</strong>. For example, Helen\'s diagnosis in a DG1 segment looks like:</p>
+<pre class="code-block"><span class="hl-segname">DG1</span><span class="hl-pipe">|</span>1<span class="hl-pipe">||</span>R07.89^Other chest pain^I10</pre>
+<ul>
+<li><code>R07.89</code> — the code itself</li>
+<li><code>Other chest pain</code> — a human-readable description (for display)</li>
+<li><code>I10</code> — the coding system identifier (here, ICD-10-CM)</li>
+</ul>
+<p>You\'ll see this same shape — code ^ description ^ system — over and over in HL7 v2 messages. Lab results in OBX segments use it for the test name (with LOINC). Order entries use it for the ordered service (with CPT). Diagnoses use it (with ICD-10 or SNOMED). The pattern is universal.</p>
+<h4>Why this matters for the main tutorial</h4>
+<p>Station 4 of the main tutorial is entirely about coding systems and translation between them — what happens when a hospital uses local codes that need to map to standard ones, or when a sending system uses ICD-9 and the receiver uses ICD-10. You don\'t need to memorize anything; you just need to know the shape of coded data.</p>
+    `,
+    beforeAfter: {
+      beforeLabel: 'Doctor\'s free text',
+      beforeContent: '<p style="font-style:italic">"Non-cardiac chest pain" — written by the ED physician in the chart.</p><p style="font-size:11px;color:var(--text-dim);margin-top:8px">Different doctors at different hospitals would write this differently. Hard to count.</p>',
+      afterLabel: 'Coded representation',
+      afterContent: `<pre style="font-family:var(--mono);font-size:11.5px;line-height:1.7;color:#000;background:transparent;margin:0;white-space:pre-wrap">DG1|1||R07.89^Other chest pain^I10</pre><p style="font-size:11px;color:var(--text-dim);margin-top:8px">Same diagnosis everywhere uses the same code. Now poolable.</p>`
+    },
+    pulseChecks: [
+      {
+        question: `Why doesn\'t healthcare just use plain English text for diagnoses, procedures, and lab tests?`,
+        options: [
+          {key:'A', text:'Computers can\'t store text'},
+          {key:'B', text:'HL7 v2 doesn\'t allow text'},
+          {key:'C', text:'Standardized codes let data from different sources be combined and analyzed'},
+          {key:'D', text:'Doctors prefer codes'}
+        ],
+        correctKey: 'C',
+        feedback: {
+          correct: 'Right. Coding is what makes data poolable across systems and institutions. Plain text is fine for clinical notes, but for structured analytics, billing, and quality reporting, codes are essential.',
+          incorrect: 'It\'s C. Healthcare absolutely uses plain text for clinical notes and other narrative data. But for structured data — diagnoses, procedures, labs — codes let analysts combine data from many sources, count things accurately, and report on populations. Without codes, every hospital\'s data would be an island.'
+        }
+      }
+    ]
+  },
+  // ─── SEGMENT 8 ───
+  {
+    id: 8, icon: '🧭',
+    title: 'What comes next',
+    subtitle: 'Positioning SQL, Python, dbt + handoff to the main tutorial',
+    endGoal: 'You\'ll know where the rest of the data engineering toolset fits, and you\'ll be ready to start the main tutorial.',
+    minutes: 6,
+    cards: ['interfaceEngine', 'sql', 'python', 'dbt', 'fhir'],
+    lecture: `
+<p>Step back. We\'ve traced Helen\'s ED visit through one HL7 v2 message — a complete ADT^A04 — and discussed how the rest of her encounter (orders, results, diagnosis, discharge) generates more messages of various types. We\'ve seen how segments fit together, how composite fields carry structured information, how coded values shape the data, and where networking sits underneath it all.</p>
+<p>In a real hospital, that stream of HL7 v2 messages is just the beginning of a longer data pipeline. Here\'s where the rest fits.</p>
+<h4>Receiving and processing the messages — Stations 1-7 of the main tutorial</h4>
+<p>An <strong>interface engine</strong> is specialized middleware (Mirth Connect, Rhapsody, Cloverleaf, Corepoint) that listens on TCP ports for MLLP-wrapped HL7 v2 messages, parses them, applies routing logic, runs validation, performs transformations (like coding system crosswalks), matches patient identities, and forwards messages to downstream systems.</p>
+<ul>
+<li><strong>Stations 1-3</strong> — receiving, parsing, and routing. This is where TCP/MLLP comes in directly.</li>
+<li><strong>Stations 4-6</strong> — vocabulary translation, validation, transformation. Code crosswalks live here.</li>
+<li><strong>Station 7</strong> — patient matching (the same person showing up from different sources getting resolved to one identity).</li>
+</ul>
+<h4>Privacy and compliance — Stations 8-10</h4>
+<p>PHI handling, minimum-necessary review, and 42 CFR Part 2 (substance-use disorder records) get isolated handling.</p>
+<h4>Modern format conversion — Stations 11-13</h4>
+<p>Converting HL7 v2 messages to <strong>FHIR</strong> resources for systems that expect modern web-API formats. FHIR is gaining ground but won\'t replace v2 in most US hospitals for years.</p>
+<h4>Then comes Part 2 of the main tutorial — analytics</h4>
+<p>This is where the other tools we\'ve only mentioned in passing finally come in:</p>
+<ul>
+<li><strong>SQL</strong> appears when parsed messages get stored in a database and you start asking analytical questions ("how many ED visits last month had chest pain as a chief complaint?")</li>
+<li><strong>Python</strong> appears as the glue language for data transformation and pipeline orchestration</li>
+<li><strong>dbt</strong> appears as the analytics-engineering tool for building reliable, testable, modular SQL transformations on top of the message stream</li>
+<li><strong>Great Expectations</strong> appears for systematic data-quality testing</li>
+</ul>
+<p>You don\'t need deep knowledge of any of these to start the main tutorial. Part 1 (Stations 1-13) uses none of them — it\'s about HL7 v2 itself. Part 2 (Stations A1-A5) uses SQL and dbt, but by the time you\'re there, you\'ll have enough context to follow along even if SQL is new to you.</p>
+<h4>The big picture</h4>
+<pre class="code-block">[Source systems: registration, lab, pharmacy, etc.]
+            │  HL7 v2 messages over MLLP/TCP
+            ↓
+[Interface engine]  ← Stations 1-7 of the main tutorial
+            │  parse, validate, transform, route
+            ↓
+[EHR + analytics warehouse]  ← Stations 11-13 (FHIR), Part 2 (SQL/dbt)
+            │  structured data
+            ↓
+[Dashboards, reports, ML models, claims]</pre>
+<h4>Recap quiz</h4>
+<p>Before you finish, let\'s confirm the foundations are solid. The pulse checks below are quick recaps across all 8 segments. Don\'t worry — these are non-scored, like every other pulse check in the primer. The point is to surface anything that didn\'t click, not to grade you.</p>
+<p>If most of these feel right, you\'re ready. <strong>Open the main tutorial at Station 1: MLLP & Message Receipt.</strong> The vocabulary should feel familiar; the depth will increase. Welcome to healthcare data.</p>
+    `,
+    beforeAfter: {
+      beforeLabel: 'Stream of HL7 v2 messages',
+      beforeContent: `<pre style="font-family:var(--mono);font-size:11.5px;line-height:1.7;color:#000;background:transparent;margin:0">MSH|...|ADT^A04|...
+MSH|...|ORM^O01|...
+MSH|...|ORU^R01|...
+MSH|...|ADT^A03|...
+... (15-30 per encounter)</pre>`,
+      afterLabel: 'Tabular database row',
+      afterContent: `<pre style="font-family:var(--mono);font-size:10.5px;line-height:1.7;color:#000;background:transparent;margin:0;white-space:pre-wrap">encounter_id: V12345
+patient_id:   MRN78421
+arrival_time: 2024-03-12 14:32
+disposition:  discharged
+chief_complaint_code: R07.89
+los_minutes:  248</pre><p style="font-size:11px;color:var(--text-dim);margin-top:6px">After Stations A1-A5: encounter-level analytics dataset.</p>`
+    },
+    pulseChecks: [
+      {
+        question: `What kind of message did Helen\'s ED arrival generate?`,
+        options: [
+          {key:'A', text:'ORU^R01'},
+          {key:'B', text:'ADT^A04'},
+          {key:'C', text:'MSH^A01'},
+          {key:'D', text:'PID^V12345'}
+        ],
+        correctKey: 'B',
+        feedback: {
+          correct: 'Right. ADT for the message type (Admission/Discharge/Transfer category), A04 for the trigger event (outpatient/ED arrival).',
+          incorrect: 'It\'s B. ADT is the category, A04 is the specific event for outpatient/ED arrival. ORU is for results, not registrations. MSH and PID are segment names, not message types.'
+        }
+      },
+      {
+        question: `What does the MSH segment contain?`,
+        options: [
+          {key:'A', text:'The patient information'},
+          {key:'B', text:'The visit details'},
+          {key:'C', text:'The message envelope (sender, receiver, type, time)'},
+          {key:'D', text:'The diagnoses'}
+        ],
+        correctKey: 'C',
+        feedback: {
+          correct: 'Right. MSH = Message Header = the envelope. Patient info lives in PID, visit info in PV1, diagnoses in DG1.',
+          incorrect: 'It\'s C. MSH is the message envelope: who sent it, who it\'s for, what type it is, when, what version. Patient information is in PID. Visit details are in PV1. Diagnoses are in DG1.'
+        }
+      },
+      {
+        question: `What\'s the difference between an MRN and a visit number?`,
+        options: [
+          {key:'A', text:'MRN is for inpatients, visit number for outpatients'},
+          {key:'B', text:'MRN identifies the person; visit number identifies a specific encounter'},
+          {key:'C', text:'They\'re the same thing'},
+          {key:'D', text:'MRN is a code, visit number is plain text'}
+        ],
+        correctKey: 'B',
+        feedback: {
+          correct: 'Right. MRN = person identifier (one per person at a facility, lifelong). Visit number = encounter identifier (one per visit). Mixing them up creates messy data.',
+          incorrect: 'It\'s B. MRN identifies the patient as a person — Helen has one MRN forever at Riverside. Visit number identifies one specific encounter — each ED visit, each admission gets its own.'
+        }
+      },
+      {
+        question: `Why does HL7 v2 use codes like ICD-10 and LOINC for clinical concepts?`,
+        options: [
+          {key:'A', text:'To save space'},
+          {key:'B', text:'To make data poolable across systems and institutions'},
+          {key:'C', text:'Because computers can\'t store text'},
+          {key:'D', text:'Tradition'}
+        ],
+        correctKey: 'B',
+        feedback: {
+          correct: 'Right. Codes let data from different doctors at different hospitals using different EHRs all combine into countable, analyzable data sets. Plain text doesn\'t pool.',
+          incorrect: 'It\'s B. Healthcare uses plain text for many things (clinical notes, etc.), but for structured concepts that need to be analyzed across sources, codes are essential. Without coding, every hospital\'s data would be an island.'
+        }
+      }
+    ]
+  }
+];
+
+// ════════════════════════════════════════════════════════════════
+//  STATE MANAGEMENT
+// ════════════════════════════════════════════════════════════════
+const STATE_KEY = 'hl7v2_primer_state';
+let state;
+
+function defaultState(){
+  return {
+    version: 1,
+    currentSegment: 1,
+    completed: [],
+    pulseAnswers: {},
+    pulseRevealed: [],
+    pulseRetries: {},
+    startedAt: Date.now(),
+    lastVisited: Date.now(),
+    welcomeBackShown: false
+  };
+}
+
+function loadState(){
+  try{
+    const raw = localStorage.getItem(STATE_KEY);
+    if(!raw) return defaultState();
+    const parsed = JSON.parse(raw);
+    return Object.assign(defaultState(), parsed);
+  }catch(e){
+    console.warn('Could not load state:', e);
+    return defaultState();
+  }
+}
+
+function saveState(){
+  state.lastVisited = Date.now();
+  try{ localStorage.setItem(STATE_KEY, JSON.stringify(state)); }
+  catch(e){ console.warn('Could not save state:', e); }
+}
+
+function resetProgress(){
+  if(!confirm('Start over? This will clear all your progress through the primer.')) return;
+  localStorage.removeItem(STATE_KEY);
+  location.reload();
+}
+
+// ════════════════════════════════════════════════════════════════
+//  HELPERS
+// ════════════════════════════════════════════════════════════════
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+
+function scrollToTop(){ window.scrollTo({top:0,behavior:'smooth'}); }
+
+function isSegmentUnlocked(id){
+  if(id === 1) return true;
+  return state.completed.includes(id - 1);
+}
+
+function isSegmentComplete(id){
+  return state.completed.includes(id);
+}
+
+function totalRemainingMinutes(){
+  return SEGMENTS
+    .filter(s => !state.completed.includes(s.id))
+    .reduce((sum, s) => sum + s.minutes, 0);
+}
+
+function formatRelativeTime(ts){
+  const ms = Date.now() - ts;
+  const hours = Math.floor(ms / 3600000);
+  const days = Math.floor(hours / 24);
+  if(days >= 2) return `${days} days ago`;
+  if(days === 1) return 'yesterday';
+  if(hours >= 2) return `${hours} hours ago`;
+  if(hours === 1) return '1 hour ago';
+  return 'recently';
+}
+
+// ════════════════════════════════════════════════════════════════
+//  RENDERING
+// ════════════════════════════════════════════════════════════════
+
+function renderProgressBar(){
+  const bar = document.getElementById('progressBar');
+  let html = '';
+  SEGMENTS.forEach(seg => {
+    const unlocked = isSegmentUnlocked(seg.id);
+    const done = isSegmentComplete(seg.id);
+    const active = state.currentSegment === seg.id;
+    let cls = 'seg-pill';
+    if(active) cls += ' active';
+    else if(done) cls += ' done';
+    else if(!unlocked) cls += ' locked';
+    const onclick = unlocked ? `goToSegment(${seg.id})` : '';
+    html += `<button class="${cls}" onclick="${onclick}" ${unlocked?'':'disabled'} title="${esc(seg.title)}">
+      <span class="seg-num">${seg.id}</span>
+      <span class="seg-icon">${seg.icon}</span>
+    </button>`;
+  });
+  const remaining = totalRemainingMinutes();
+  html += `<span class="time-remaining">~${remaining} min remaining</span>`;
+  bar.innerHTML = html;
+}
+
+function renderHero(){
+  const hero = document.getElementById('heroSection');
+  // Only show hero on segment 1 if not yet started
+  if(state.currentSegment === 1 && state.completed.length === 0){
+    hero.innerHTML = `
+      <section class="hero">
+        <div class="hero-sub">Before you begin · Foundation</div>
+        <h1>Welcome to HL7 v2</h1>
+        <p>This primer is your starting point if you\'re new to healthcare data. Over 8 short segments — about an hour total — we\'ll build a foundation in two areas that the main tutorial assumes you already understand: the <strong>clinical workflow</strong> of a hospital visit, and the <strong>HL7 v2 message format</strong> itself.</p>
+        <p>We\'ll also briefly point at three other technical areas (networking, SQL, Python) and show you where they fit in the bigger picture, without going deep — the main tutorial covers those when needed.</p>
+        <p>You\'ll meet one patient — Helen Okonkwo, 64, walking into the ED with chest pain — and follow her through the data layer of her visit. By the end, you\'ll be able to read an HL7 v2 message and recognize what every part of it means.</p>
+        <div class="hero-cta">
+          <button class="btn primary" onclick="goToSegment(1);scrollToTop();">Start segment 1 →</button>
+        </div>
+      </section>
+    `;
+  } else {
+    hero.innerHTML = '';
+  }
+}
+
+function renderActionBar(){
+  const bar = document.getElementById('actionBar');
+  bar.innerHTML = `
+    <div class="left-actions">
+      <button class="btn secondary" onclick="openCardLibrary()">📚 Card library</button>
+      <button class="btn secondary" onclick="replaySegment(${state.currentSegment})">🔄 Replay this segment</button>
+    </div>
+    <div class="right-actions">
+      <button class="btn ghost" onclick="goToPrevSegment()" ${state.currentSegment === 1 ? 'disabled' : ''}>← Previous</button>
+    </div>
+  `;
+}
+
+function renderSegment(id){
+  const seg = SEGMENTS.find(s => s.id === id);
+  if(!seg) return;
+  const container = document.getElementById('segmentContainer');
+  const done = isSegmentComplete(seg.id);
+
+  let html = `
+    <section class="segment">
+      <div class="segment-header">
+        <div class="segment-meta">
+          <span class="seg-step">Segment ${seg.id} of ${SEGMENTS.length}</span>
+          <span>~${seg.minutes} min</span>
+          ${done ? '<span style="color:var(--green);font-weight:700">✓ Completed</span>' : ''}
+        </div>
+        <div class="segment-title">
+          <span class="seg-icon-large">${seg.icon}</span>
+          ${esc(seg.title)}
+        </div>
+        <div class="segment-subtitle">${esc(seg.subtitle)}</div>
+        <div class="end-goal">
+          <div class="end-goal-label">End goal</div>
+          <div class="end-goal-text">${esc(seg.endGoal)}</div>
+        </div>
+      </div>
+      <div class="lecture">${seg.lecture}</div>
+  `;
+
+  // Before/After block (if defined)
+  if(seg.beforeAfter){
+    html += `
+      <div class="ba-block">
+        <div class="ba-panel ba-before">
+          <div class="ba-label">${esc(seg.beforeAfter.beforeLabel)}</div>
+          <div class="ba-content">${seg.beforeAfter.beforeContent}</div>
+        </div>
+        <div class="ba-arrow">→</div>
+        <div class="ba-panel ba-after">
+          <div class="ba-label">${esc(seg.beforeAfter.afterLabel)}</div>
+          <div class="ba-content">${seg.beforeAfter.afterContent}</div>
+        </div>
+      </div>
+    `;
+  }
+
+  // Pulse checks
+  seg.pulseChecks.forEach((pc, idx) => {
+    html += renderPulseCheckHTML(seg.id, idx, pc);
+  });
+
+  // Segment navigation
+  const isLast = seg.id === SEGMENTS.length;
+  const nextId = seg.id + 1;
+  const nextSegment = SEGMENTS.find(s => s.id === nextId);
+  html += `
+      <div class="seg-nav">
+        <div class="seg-nav-left">
+          ${seg.id > 1 ? `<button class="btn ghost" onclick="goToPrevSegment()">← Previous segment</button>` : '<span></span>'}
+        </div>
+        <div class="seg-nav-right">
+          ${!isLast ? `<button class="btn primary" onclick="markCompleteAndContinue(${seg.id})">${done ? 'Continue to' : 'Mark complete & continue to'} segment ${nextId} →</button>` : `<button class="btn primary" onclick="markCompleteAndContinue(${seg.id})">${done ? 'Finish primer →' : 'Mark complete & finish primer →'}</button>`}
+        </div>
+      </div>
+    </section>
+  `;
+
+  container.innerHTML = html;
+}
+
+function renderPulseCheckHTML(segId, idx, pc){
+  const key = `s${segId}_p${idx}`;
+  const userAnswer = state.pulseAnswers[key];
+  const wasRevealed = state.pulseRevealed.includes(key);
+  const answered = userAnswer !== undefined;
+  const isCorrect = userAnswer === pc.correctKey;
+
+  let optionsHTML = '';
+  pc.options.forEach(opt => {
+    let cls = 'pulse-option';
+    let onclickAttr = `onclick="handlePulseAnswer(${segId},${idx},'${opt.key}')"`;
+    if(answered || wasRevealed){
+      cls += ' disabled';
+      onclickAttr = '';
+      if(opt.key === pc.correctKey) cls += ' correct';
+      else if(opt.key === userAnswer && !isCorrect) cls += ' wrong';
+    }
+    optionsHTML += `<button class="${cls}" ${onclickAttr}>
+      <span class="pulse-key">${opt.key}</span>
+      <span>${opt.text}</span>
+    </button>`;
+  });
+
+  let feedbackHTML = '';
+  if(answered || wasRevealed){
+    let fbCls = 'pulse-feedback visible';
+    let fbContent = '';
+    if(wasRevealed && !answered){
+      fbCls += ' revealed';
+      fbContent = `<strong>Answer revealed:</strong> ${pc.feedback.incorrect}`;
+    } else if(isCorrect){
+      fbCls += ' correct';
+      fbContent = `<strong>✓ Correct.</strong> ${pc.feedback.correct}`;
+    } else {
+      fbCls += ' incorrect';
+      fbContent = `<strong>Not quite.</strong> ${pc.feedback.incorrect}`;
+    }
+    feedbackHTML = `<div class="${fbCls}">${fbContent}</div>`;
+  }
+
+  let actionsHTML = '';
+  if(!answered && !wasRevealed){
+    actionsHTML = `<div class="pulse-actions"><button class="pulse-link" onclick="revealPulseAnswer(${segId},${idx})">Reveal answer</button></div>`;
+  } else {
+    actionsHTML = `<div class="pulse-actions"><button class="pulse-link" onclick="retryPulseCheck(${segId},${idx})">🔄 Try again</button></div>`;
+  }
+
+  return `
+    <div class="pulse-check">
+      <div class="pulse-header">
+        <span class="pulse-icon">💭</span>
+        <span class="pulse-label">Pulse check</span>
+      </div>
+      <div class="pulse-question">${pc.question}</div>
+      <div class="pulse-options">${optionsHTML}</div>
+      ${feedbackHTML}
+      ${actionsHTML}
+    </div>
+  `;
+}
+
+function renderCardsSidebar(){
+  const sidebar = document.getElementById('cardsSidebar');
+  const seg = SEGMENTS.find(s => s.id === state.currentSegment);
+  if(!seg || !seg.cards || seg.cards.length === 0){
+    sidebar.innerHTML = '';
+    return;
+  }
+  let html = `<div class="cards-panel">
+    <h3>Cards · Segment ${seg.id}</h3>
+    <div class="cards-sub">Definitions for this segment</div>`;
+  seg.cards.forEach(cardId => {
+    const card = CARDS[cardId];
+    if(!card) return;
+    html += `<div class="card-item" onclick="openCardModal('${cardId}')">
+      <span class="card-item-term">${esc(card.term)}</span>
+      <span class="card-item-expand">›</span>
+    </div>`;
+  });
+  html += '</div>';
+  sidebar.innerHTML = html;
+}
+
+// ════════════════════════════════════════════════════════════════
+//  HANDLERS
+// ════════════════════════════════════════════════════════════════
+function handlePulseAnswer(segId, idx, key){
+  const answerKey = `s${segId}_p${idx}`;
+  state.pulseAnswers[answerKey] = key;
+  saveState();
+  renderSegment(segId);
+}
+
+function revealPulseAnswer(segId, idx){
+  const answerKey = `s${segId}_p${idx}`;
+  if(!state.pulseRevealed.includes(answerKey)) state.pulseRevealed.push(answerKey);
+  saveState();
+  renderSegment(segId);
+}
+
+function retryPulseCheck(segId, idx){
+  const answerKey = `s${segId}_p${idx}`;
+  delete state.pulseAnswers[answerKey];
+  state.pulseRevealed = state.pulseRevealed.filter(k => k !== answerKey);
+  state.pulseRetries[answerKey] = (state.pulseRetries[answerKey] || 0) + 1;
+  saveState();
+  renderSegment(segId);
+}
+
+function markCompleteAndContinue(segId){
+  if(!state.completed.includes(segId)) state.completed.push(segId);
+  saveState();
+  if(segId < SEGMENTS.length){
+    state.currentSegment = segId + 1;
+    saveState();
+    fullRender();
+    scrollToTop();
+  } else {
+    // Last segment — keep them on this segment, just refresh
+    fullRender();
+  }
+}
+
+function goToSegment(id){
+  if(!isSegmentUnlocked(id)) return;
+  state.currentSegment = id;
+  saveState();
+  fullRender();
+  scrollToTop();
+}
+
+function goToPrevSegment(){
+  if(state.currentSegment > 1) goToSegment(state.currentSegment - 1);
+}
+
+function replaySegment(segId){
+  if(!confirm('Replay this segment? This resets the pulse check answers for this segment only — your overall progress and other segments stay intact.')) return;
+  // Clear pulse-check answers for this segment
+  Object.keys(state.pulseAnswers).forEach(k => {
+    if(k.startsWith(`s${segId}_p`)) delete state.pulseAnswers[k];
+  });
+  state.pulseRevealed = state.pulseRevealed.filter(k => !k.startsWith(`s${segId}_p`));
+  saveState();
+  renderSegment(segId);
+  scrollToTop();
+}
+
+// ════════════════════════════════════════════════════════════════
+//  MODALS
+// ════════════════════════════════════════════════════════════════
+function openCardModal(cardId){
+  const card = CARDS[cardId];
+  if(!card) return;
+  document.getElementById('modalTitle').textContent = card.term;
+  let html = `<div class="card-modal-term">${esc(card.term)}</div>`;
+  if(card.expansion) html += `<div class="card-modal-expansion">${esc(card.expansion)}</div>`;
+  html += `<div class="card-modal-def">${esc(card.def)}</div>`;
+  if(card.long) html += `<div class="card-modal-long">${esc(card.long)}</div>`;
+  document.getElementById('modalBody').innerHTML = html;
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+function openCardLibrary(){
+  // Determine visible segments (current + completed)
+  const visibleIds = new Set([state.currentSegment, ...state.completed]);
+  const visibleSegs = SEGMENTS.filter(s => visibleIds.has(s.id)).sort((a,b) => a.id - b.id);
+
+  document.getElementById('modalTitle').textContent = '📚 Card library';
+  let html = `<div style="font-size:13px;color:var(--text-muted);margin-bottom:14px">Cumulative reference — terms you\'ve encountered so far. Cards from later segments will appear as you progress.</div>`;
+  html += `<div class="modal-search"><input type="text" id="cardLibrarySearch" placeholder="Search terms..." oninput="filterCardLibrary()"></div>`;
+  html += `<div id="cardLibraryContent">`;
+
+  let totalCards = 0;
+  visibleSegs.forEach(seg => {
+    if(!seg.cards || seg.cards.length === 0) return;
+    html += `<div class="lib-segment-group" data-seg-id="${seg.id}">
+      <div class="lib-segment-header">${seg.icon} Segment ${seg.id}: ${esc(seg.title)}</div>`;
+    seg.cards.forEach(cardId => {
+      const card = CARDS[cardId];
+      if(!card) return;
+      totalCards++;
+      html += `<div class="lib-card" data-term="${esc(card.term.toLowerCase())}" data-def="${esc(card.def.toLowerCase())}">
+        <div class="lib-card-term">${esc(card.term)}</div>
+        ${card.expansion ? `<div class="lib-card-expansion">${esc(card.expansion)}</div>` : ''}
+        <div class="lib-card-def">${esc(card.def)}</div>
+      </div>`;
+    });
+    html += `</div>`;
+  });
+
+  if(totalCards === 0){
+    html += `<div style="text-align:center;color:var(--text-dim);padding:30px 0;font-size:13px">No cards yet — start segment 1 to begin building your library.</div>`;
+  }
+  html += `</div>`;
+
+  document.getElementById('modalBody').innerHTML = html;
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+function filterCardLibrary(){
+  const q = document.getElementById('cardLibrarySearch').value.toLowerCase().trim();
+  document.querySelectorAll('.lib-card').forEach(card => {
+    const term = card.dataset.term || '';
+    const def = card.dataset.def || '';
+    const matches = !q || term.includes(q) || def.includes(q);
+    card.style.display = matches ? '' : 'none';
+  });
+  // Hide segment groups with no visible cards
+  document.querySelectorAll('.lib-segment-group').forEach(group => {
+    const visible = group.querySelectorAll('.lib-card:not([style*="display: none"])').length;
+    group.style.display = visible > 0 ? '' : 'none';
+  });
+}
+
+function closeModal(){
+  document.getElementById('modalOverlay').classList.remove('open');
+}
+
+// ════════════════════════════════════════════════════════════════
+//  WELCOME-BACK BANNER
+// ════════════════════════════════════════════════════════════════
+function maybeShowWelcomeBack(){
+  const hoursAway = (Date.now() - state.lastVisited) / 3600000;
+  const hasProgress = state.completed.length > 0;
+  if(hoursAway > 4 && hasProgress && !state.welcomeBackShown){
+    const banner = document.getElementById('welcomeBackBanner');
+    const seg = SEGMENTS.find(s => s.id === state.currentSegment);
+    banner.style.display = 'block';
+    banner.innerHTML = `<div class="welcome-back">
+      <div class="welcome-back-text">
+        Welcome back. You were on <strong>Segment ${seg.id}: ${esc(seg.title)}</strong> ${formatRelativeTime(state.lastVisited)}.
+      </div>
+      <button class="btn primary" onclick="dismissWelcomeBack()">Continue →</button>
+    </div>`;
+    state.welcomeBackShown = true;
+    saveState();
+  }
+}
+
+function dismissWelcomeBack(){
+  document.getElementById('welcomeBackBanner').style.display = 'none';
+  scrollToTop();
+}
+
+// ════════════════════════════════════════════════════════════════
+//  FULL RENDER + INIT
+// ════════════════════════════════════════════════════════════════
+function fullRender(){
+  renderProgressBar();
+  renderHero();
+  renderActionBar();
+  renderSegment(state.currentSegment);
+  renderCardsSidebar();
+
+  // Enable "Begin tutorial" button when all 8 complete
+  const beginBtn = document.getElementById('beginTutorialBtn');
+  if(state.completed.length >= SEGMENTS.length){
+    beginBtn.disabled = false;
+    beginBtn.style.opacity = '1';
+  } else {
+    beginBtn.disabled = true;
+    beginBtn.style.opacity = '.4';
+    beginBtn.style.cursor = 'not-allowed';
+  }
+}
+
+function init(){
+  state = loadState();
+  // Reset welcomeBackShown each session start
+  if(Date.now() - state.lastVisited > 1800000) state.welcomeBackShown = false; // 30 min away = new session
+  fullRender();
+  maybeShowWelcomeBack();
+
+  // Keyboard: Esc closes modals
+  document.addEventListener('keydown', e => {
+    if(e.key === 'Escape') closeModal();
+  });
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>

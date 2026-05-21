@@ -1,0 +1,2346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Station 11 · Segment-to-Resource Mapping</title>
+<style>
+/* ═══════════════════════════════════════════════════════════════
+   COLOR & TYPE SYSTEM — matching hl7v2_message_to_model app
+   ═══════════════════════════════════════════════════════════════ */
+:root {
+  --bg-page:        #E5EAEF;
+  --bg-content:     #FFFFFF;
+  --bg-header:      #DDE5EC;
+  --bg-before:      #C8D2DC;
+  --bg-code:        #D5D8DD;
+  --bg-soft:        #F2F5F8;
+
+  --divider:        #1A2F4A;
+  --text-primary:   #1A2F4A;
+  --text-secondary: #4A5C75;
+  --text-muted:     #6B7A8F;
+
+  --tan-bg:         #D4B896;
+  --tan-border:     #B8946D;
+  --tan-text:       #5F4B2A;
+  --tan-soft:       #E8D7B8;
+
+  --green-bg:       #1F5F3F;
+  --green-soft:     #DCEAE2;
+  --green-text:     #FFFFFF;
+  --green-dark:     #144A30;
+
+  --coral:          #B8633F;
+  --coral-soft:     #F5DCD0;
+  --coral-dark:     #8B4326;
+
+  --code-text:      #2F4F6F;
+
+  --hint:           #C9A875;
+  --hint-soft:      #F5EBD7;
+  --hint-dark:      #8B6F47;
+
+  --error:          #B8633F;
+  --success:        #1F5F3F;
+
+  --serif: Charter, "Charter BT", Georgia, "Iowan Old Style", "Palatino Linotype", "Times New Roman", serif;
+  --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, system-ui, "Helvetica Neue", Arial, sans-serif;
+  --mono: "SF Mono", "JetBrains Mono", Monaco, "Cascadia Code", Consolas, monospace;
+
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-pill: 999px;
+
+  --shadow-sm: 0 1px 2px rgba(26, 47, 74, 0.06);
+  --shadow-md: 0 2px 8px rgba(26, 47, 74, 0.08);
+  --shadow-lg: 0 8px 24px rgba(26, 47, 74, 0.12);
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg-page);
+  color: var(--text-primary);
+  font-family: var(--sans);
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   PAGE STRUCTURE
+   ═══════════════════════════════════════════════════════════════ */
+.page {
+  max-width: 1140px;
+  margin: 0 auto;
+  background: var(--bg-content);
+  min-height: 100vh;
+}
+
+.station-header {
+  background: var(--bg-header);
+  padding: 36px 48px 32px;
+  border-bottom: 4px solid var(--divider);
+}
+
+.header-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+}
+
+.station-pill {
+  background: var(--tan-soft);
+  border: 1.5px solid var(--tan-border);
+  color: var(--tan-text);
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: var(--radius-md);
+  letter-spacing: 0.02em;
+}
+
+.info-icon {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: transparent;
+  border: 1.5px solid var(--text-secondary);
+  color: var(--text-secondary);
+  font-style: italic;
+  font-family: var(--serif);
+  font-size: 13px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: help;
+}
+
+h1.station-title {
+  font-family: var(--serif);
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+  letter-spacing: -0.01em;
+  flex: 1 1 auto;
+}
+
+.track-pill {
+  background: var(--green-bg);
+  color: var(--green-text);
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: var(--radius-md);
+  letter-spacing: 0.04em;
+}
+
+.lead {
+  font-family: var(--serif);
+  font-size: 17px;
+  line-height: 1.65;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.lead strong { font-weight: 700; }
+.lead em { font-style: italic; color: var(--text-secondary); }
+
+/* Inline code badge — light gray pill */
+code.badge,
+.code-pill {
+  display: inline-block;
+  background: var(--bg-code);
+  color: var(--code-text);
+  font-family: var(--mono);
+  font-size: 13px;
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(26, 47, 74, 0.08);
+  margin: 0 1px;
+  white-space: nowrap;
+  letter-spacing: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   CONTENT AREA
+   ═══════════════════════════════════════════════════════════════ */
+.content {
+  padding: 40px 48px 80px;
+}
+
+section {
+  margin-bottom: 48px;
+}
+
+section h2 {
+  font-family: var(--serif);
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 14px;
+  letter-spacing: -0.01em;
+}
+
+section h3 {
+  font-family: var(--serif);
+  font-size: 19px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 28px 0 12px;
+}
+
+p {
+  margin: 0 0 14px;
+  font-size: 15.5px;
+  line-height: 1.7;
+  color: var(--text-primary);
+}
+
+p.note {
+  font-size: 14.5px;
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+/* Define-on-first-use abbreviation styling */
+.abbr-intro {
+  background: var(--hint-soft);
+  border-left: 3px solid var(--hint);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  padding: 1px 8px;
+  font-style: normal;
+}
+
+abbr {
+  text-decoration: none;
+  border-bottom: 1px dotted var(--text-secondary);
+  cursor: help;
+}
+
+/* Definitions box — abbreviation glossary */
+.glossary {
+  background: var(--bg-soft);
+  border: 1px solid rgba(26, 47, 74, 0.08);
+  border-radius: var(--radius-md);
+  padding: 18px 22px;
+  margin: 18px 0 24px;
+}
+.glossary-title {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  margin: 0 0 10px;
+}
+.glossary dl {
+  margin: 0;
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 6px 16px;
+  font-size: 14px;
+}
+.glossary dt {
+  font-family: var(--mono);
+  font-weight: 600;
+  color: var(--code-text);
+  white-space: nowrap;
+}
+.glossary dd {
+  margin: 0;
+  color: var(--text-primary);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ANIMATED MAPPING DEMONSTRATION
+   ═══════════════════════════════════════════════════════════════ */
+.demo-frame {
+  background: var(--bg-soft);
+  border: 1px solid rgba(26, 47, 74, 0.12);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  margin: 18px 0 24px;
+}
+
+.demo-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+}
+
+.demo-step-indicator {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--text-muted);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-right: auto;
+}
+.demo-step-indicator strong {
+  color: var(--text-primary);
+  font-weight: 700;
+}
+
+.demo-btn {
+  background: var(--bg-content);
+  border: 1px solid var(--divider);
+  color: var(--text-primary);
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 8px 16px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.demo-btn:hover:not(:disabled) {
+  background: var(--divider);
+  color: var(--bg-content);
+}
+.demo-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.demo-btn.primary {
+  background: var(--green-bg);
+  border-color: var(--green-bg);
+  color: var(--green-text);
+}
+.demo-btn.primary:hover:not(:disabled) {
+  background: var(--green-dark);
+  border-color: var(--green-dark);
+}
+
+.demo-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+.demo-column-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+.dot-coral { width: 8px; height: 8px; border-radius: 50%; background: var(--coral); }
+.dot-green { width: 8px; height: 8px; border-radius: 50%; background: var(--green-bg); }
+
+.label-coral { color: var(--coral-dark); }
+.label-green { color: var(--green-dark); }
+
+/* v2 message panel */
+.v2-message {
+  background: var(--bg-before);
+  border: 1px solid rgba(26, 47, 74, 0.15);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  font-family: var(--mono);
+  font-size: 12.5px;
+  line-height: 1.85;
+  color: var(--text-primary);
+  white-space: pre-wrap;
+  word-break: break-all;
+  overflow-x: auto;
+}
+
+.v2-segment {
+  display: block;
+  padding: 4px 6px;
+  margin: -2px -6px;
+  border-radius: var(--radius-sm);
+  transition: background 0.4s, box-shadow 0.4s;
+  position: relative;
+}
+.v2-segment.dim { opacity: 0.35; }
+.v2-segment.active {
+  background: rgba(255, 255, 255, 0.85);
+  box-shadow: 0 0 0 2px var(--coral);
+  opacity: 1;
+}
+.v2-segment.processed { opacity: 0.6; }
+
+/* FHIR resource panel */
+.fhir-resources {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 200px;
+}
+
+.fhir-card {
+  background: var(--bg-content);
+  border: 1px solid rgba(26, 47, 74, 0.12);
+  border-left: 4px solid var(--green-bg);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+  font-size: 14px;
+}
+.fhir-card.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+.fhir-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: var(--mono);
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--green-dark);
+  margin-bottom: 4px;
+}
+.fhir-card-source {
+  font-size: 10.5px;
+  font-weight: 500;
+  color: var(--text-muted);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.fhir-card-content {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.55;
+}
+.fhir-card-content code {
+  font-family: var(--mono);
+  font-size: 12px;
+  background: var(--bg-code);
+  color: var(--code-text);
+  padding: 1px 4px;
+  border-radius: 3px;
+}
+
+.fhir-card .ref-tag {
+  display: inline-block;
+  font-family: var(--mono);
+  font-size: 11px;
+  background: var(--green-soft);
+  color: var(--green-dark);
+  padding: 1px 6px;
+  border-radius: 3px;
+  margin-right: 4px;
+  margin-top: 4px;
+}
+
+/* Demo explanation box */
+.demo-explanation {
+  background: var(--bg-content);
+  border: 1px solid rgba(26, 47, 74, 0.12);
+  border-radius: var(--radius-md);
+  padding: 14px 18px;
+  margin-top: 16px;
+  font-size: 14.5px;
+  line-height: 1.65;
+  color: var(--text-primary);
+  min-height: 60px;
+}
+.demo-explanation strong {
+  color: var(--text-primary);
+  font-weight: 700;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   PROBLEM CARDS
+   ═══════════════════════════════════════════════════════════════ */
+.problem {
+  background: var(--bg-content);
+  border: 1px solid rgba(26, 47, 74, 0.12);
+  border-radius: var(--radius-lg);
+  padding: 28px 32px;
+  margin: 28px 0;
+  box-shadow: var(--shadow-sm);
+}
+
+.problem-header {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+
+.problem-num {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--coral-dark);
+  background: var(--coral-soft);
+  padding: 3px 10px;
+  border-radius: var(--radius-sm);
+}
+
+.problem-type {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.problem h3 {
+  font-family: var(--serif);
+  font-size: 21px;
+  font-weight: 700;
+  margin: 0 0 18px;
+  width: 100%;
+}
+
+.problem-prompt {
+  font-size: 15.5px;
+  line-height: 1.65;
+  margin-bottom: 18px;
+}
+
+/* MCQ options */
+.mcq-options {
+  display: grid;
+  gap: 8px;
+  margin: 16px 0;
+}
+
+.mcq-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 16px;
+  background: var(--bg-soft);
+  border: 1.5px solid rgba(26, 47, 74, 0.12);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all 0.15s;
+  font-size: 14.5px;
+  line-height: 1.55;
+}
+.mcq-option:hover:not(.locked) {
+  border-color: var(--text-secondary);
+  background: var(--bg-content);
+}
+.mcq-option.selected {
+  border-color: var(--text-primary);
+  background: var(--bg-content);
+  box-shadow: 0 0 0 1px var(--text-primary);
+}
+.mcq-option.correct {
+  border-color: var(--success);
+  background: var(--green-soft);
+  box-shadow: 0 0 0 1px var(--success);
+}
+.mcq-option.incorrect {
+  border-color: var(--error);
+  background: var(--coral-soft);
+  box-shadow: 0 0 0 1px var(--error);
+}
+.mcq-option.locked {
+  cursor: default;
+  pointer-events: none;
+}
+.mcq-option input { display: none; }
+.mcq-bullet {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 1.5px solid var(--text-secondary);
+  background: var(--bg-content);
+  margin-top: 1px;
+  position: relative;
+  transition: all 0.15s;
+}
+.mcq-option.selected .mcq-bullet { border-color: var(--text-primary); }
+.mcq-option.selected .mcq-bullet::after {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  border-radius: 50%;
+  background: var(--text-primary);
+}
+.mcq-option.correct .mcq-bullet { border-color: var(--success); background: var(--success); }
+.mcq-option.correct .mcq-bullet::after {
+  content: '✓';
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 13px;
+  font-weight: 700;
+  background: none;
+  border-radius: 0;
+}
+.mcq-option.incorrect .mcq-bullet { border-color: var(--error); background: var(--error); }
+.mcq-option.incorrect .mcq-bullet::after {
+  content: '✕';
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 12px;
+  font-weight: 700;
+  background: none;
+  border-radius: 0;
+}
+.mcq-letter {
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-right: 6px;
+}
+.mcq-option code {
+  font-family: var(--mono);
+  font-size: 13px;
+  background: var(--bg-code);
+  color: var(--code-text);
+  padding: 1px 5px;
+  border-radius: 3px;
+}
+
+/* Fill-in input */
+.fillin-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 16px 0;
+}
+.fillin-input {
+  font-family: var(--mono);
+  font-size: 14px;
+  padding: 9px 12px;
+  background: var(--bg-content);
+  border: 1.5px solid rgba(26, 47, 74, 0.18);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  min-width: 180px;
+  transition: border-color 0.15s;
+}
+.fillin-input:focus {
+  outline: none;
+  border-color: var(--text-primary);
+}
+.fillin-input.correct {
+  border-color: var(--success);
+  background: var(--green-soft);
+  color: var(--green-dark);
+  font-weight: 600;
+}
+.fillin-input.incorrect {
+  border-color: var(--error);
+  background: var(--coral-soft);
+}
+.fillin-input.revealed {
+  border-color: var(--hint);
+  background: var(--hint-soft);
+  color: var(--hint-dark);
+  font-weight: 600;
+}
+
+/* Match-pairs (for problem 5) */
+.match-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin: 16px 0;
+}
+.match-column h4 {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin: 0 0 10px;
+}
+.match-list { display: flex; flex-direction: column; gap: 8px; }
+.match-item {
+  background: var(--bg-soft);
+  border: 1.5px solid rgba(26, 47, 74, 0.12);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+  font-family: var(--mono);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.match-item:hover:not(.locked):not(.matched) {
+  border-color: var(--text-secondary);
+  background: var(--bg-content);
+}
+.match-item.selected {
+  border-color: var(--text-primary);
+  background: var(--bg-content);
+  box-shadow: 0 0 0 1px var(--text-primary);
+}
+.match-item.matched-correct {
+  border-color: var(--success);
+  background: var(--green-soft);
+  color: var(--green-dark);
+}
+.match-item.matched-incorrect {
+  border-color: var(--error);
+  background: var(--coral-soft);
+}
+.match-item.matched, .match-item.locked {
+  cursor: default;
+  pointer-events: none;
+}
+.match-pair-tag {
+  font-family: var(--sans);
+  font-size: 11px;
+  font-weight: 700;
+  color: inherit;
+  opacity: 0.7;
+}
+
+/* Hints, controls, feedback */
+.problem-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 18px;
+  flex-wrap: wrap;
+}
+
+.btn {
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 9px 18px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all 0.15s;
+  border: 1.5px solid transparent;
+  letter-spacing: 0.01em;
+}
+
+.btn-submit {
+  background: var(--text-primary);
+  color: var(--bg-content);
+  border-color: var(--text-primary);
+}
+.btn-submit:hover:not(:disabled) {
+  background: var(--divider);
+  border-color: var(--divider);
+}
+.btn-submit:disabled {
+  background: var(--text-muted);
+  border-color: var(--text-muted);
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-hint {
+  background: transparent;
+  color: var(--hint-dark);
+  border: 1.5px solid var(--hint);
+}
+.btn-hint:hover:not(:disabled) {
+  background: var(--hint-soft);
+}
+.btn-hint:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.btn-reveal {
+  background: transparent;
+  color: var(--coral-dark);
+  border: 1.5px solid var(--coral);
+}
+.btn-reveal:hover:not(:disabled) {
+  background: var(--coral-soft);
+}
+
+.btn-reset {
+  background: transparent;
+  color: var(--text-muted);
+  border: 1.5px solid rgba(26, 47, 74, 0.2);
+  font-size: 12px;
+  padding: 7px 14px;
+}
+.btn-reset:hover:not(:disabled) {
+  background: var(--bg-soft);
+  color: var(--text-primary);
+}
+
+.attempt-tracker {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.attempt-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--bg-code);
+  border: 1px solid rgba(26, 47, 74, 0.18);
+}
+.attempt-dot.used { background: var(--coral); border-color: var(--coral-dark); }
+.attempt-dot.success { background: var(--success); border-color: var(--green-dark); }
+
+/* Hint stack */
+.hint-stack {
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.hint-card {
+  background: var(--hint-soft);
+  border-left: 3px solid var(--hint);
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  padding: 10px 14px;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--hint-dark);
+  animation: slide-in 0.3s ease;
+}
+.hint-card-label {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-right: 8px;
+  opacity: 0.85;
+}
+
+@keyframes slide-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Feedback banner */
+.feedback {
+  margin-top: 14px;
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
+  font-size: 14.5px;
+  line-height: 1.55;
+  display: none;
+  animation: slide-in 0.3s ease;
+}
+.feedback.visible { display: block; }
+.feedback.success {
+  background: var(--green-soft);
+  border-left: 3px solid var(--success);
+  color: var(--green-dark);
+}
+.feedback.failure {
+  background: var(--coral-soft);
+  border-left: 3px solid var(--error);
+  color: var(--coral-dark);
+}
+.feedback.revealed {
+  background: var(--bg-soft);
+  border-left: 3px solid var(--text-secondary);
+  color: var(--text-primary);
+}
+.feedback strong {
+  font-weight: 700;
+  display: block;
+  margin-bottom: 3px;
+}
+.feedback code {
+  font-family: var(--mono);
+  font-size: 13px;
+  background: rgba(255, 255, 255, 0.6);
+  padding: 1px 5px;
+  border-radius: 3px;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ASK AI FLOATING BUTTON
+   ═══════════════════════════════════════════════════════════════ */
+#ask-ai-toggle {
+  position: fixed;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  background: var(--green-bg);
+  color: var(--green-text);
+  border: none;
+  padding: 14px 10px;
+  border-radius: var(--radius-md) 0 0 var(--radius-md);
+  cursor: pointer;
+  box-shadow: var(--shadow-md);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--sans);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  writing-mode: vertical-rl;
+  transform-origin: center;
+  transition: all 0.2s;
+  z-index: 90;
+}
+#ask-ai-toggle:hover {
+  background: var(--green-dark);
+  padding-right: 14px;
+}
+#ask-ai-toggle .ai-icon {
+  writing-mode: horizontal-tb;
+  font-size: 18px;
+  font-weight: 700;
+  font-family: var(--serif);
+}
+
+#ask-ai-panel {
+  position: fixed;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 380px;
+  max-width: 90vw;
+  background: var(--bg-content);
+  border-left: 3px solid var(--green-bg);
+  box-shadow: var(--shadow-lg);
+  transform: translateX(100%);
+  transition: transform 0.25s ease;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+}
+#ask-ai-panel.open { transform: translateX(0); }
+
+.ai-header {
+  background: var(--green-bg);
+  color: var(--green-text);
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.ai-title {
+  font-family: var(--serif);
+  font-size: 17px;
+  font-weight: 700;
+}
+.ai-subtitle {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  opacity: 0.75;
+  text-transform: uppercase;
+  margin-top: 2px;
+}
+.ai-close {
+  background: transparent;
+  color: var(--green-text);
+  border: 1px solid rgba(255,255,255,0.3);
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+}
+.ai-close:hover { background: rgba(255,255,255,0.15); }
+
+.ai-body {
+  flex: 1;
+  padding: 18px 20px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.ai-msg {
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  font-size: 13.5px;
+  line-height: 1.55;
+  max-width: 92%;
+}
+.ai-msg.user {
+  background: var(--bg-soft);
+  align-self: flex-end;
+  border: 1px solid rgba(26, 47, 74, 0.1);
+}
+.ai-msg.assistant {
+  background: var(--green-soft);
+  border-left: 2px solid var(--green-bg);
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  color: var(--green-dark);
+  align-self: flex-start;
+}
+.ai-msg-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  opacity: 0.7;
+  margin-bottom: 4px;
+  display: block;
+}
+
+.ai-input-area {
+  border-top: 1px solid rgba(26, 47, 74, 0.1);
+  padding: 14px 20px 18px;
+  background: var(--bg-soft);
+}
+.ai-input-label {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+#ai-input {
+  width: 100%;
+  height: calc(4 * 1.5em + 16px);
+  resize: vertical;
+  font-family: var(--sans);
+  font-size: 13.5px;
+  line-height: 1.5;
+  padding: 8px 10px;
+  border: 1.5px solid rgba(26, 47, 74, 0.15);
+  border-radius: var(--radius-sm);
+  background: var(--bg-content);
+  color: var(--text-primary);
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+#ai-input:focus {
+  outline: none;
+  border-color: var(--green-bg);
+}
+.ai-actions {
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.ai-send {
+  background: var(--green-bg);
+  color: var(--green-text);
+  border: none;
+  padding: 8px 16px;
+  border-radius: var(--radius-md);
+  font-family: var(--sans);
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.ai-send:hover { background: var(--green-dark); }
+.ai-hint {
+  font-size: 11.5px;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+/* Responsive */
+@media (max-width: 760px) {
+  .station-header { padding: 24px 24px 20px; }
+  .content { padding: 28px 24px 60px; }
+  h1.station-title { font-size: 24px; }
+  .demo-grid { grid-template-columns: 1fr; }
+  .match-grid { grid-template-columns: 1fr; }
+  .problem { padding: 22px 22px; }
+}
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <!-- ═══════════════════════════════════════════════════════════
+       STATION HEADER
+       ═══════════════════════════════════════════════════════════ -->
+  <header class="station-header">
+    <div class="header-row">
+      <span class="station-pill">Station 11</span>
+      <span class="info-icon" title="Tutorial: Segment-to-Resource Mapping">i</span>
+      <h1 class="station-title">Segment-to-Resource Mapping</h1>
+      <span class="track-pill">FHIR 1/3</span>
+    </div>
+    <p class="lead">
+      Converting <abbr title="Health Level Seven version 2">HL7 v2</abbr> messages to <abbr title="Fast Healthcare Interoperability Resources">FHIR</abbr> is <strong>not a one-to-one rename</strong>.
+      The two standards are organized on different principles. v2 is a <em>flat list of segments</em> where context is positional —
+      a <code class="badge">PID</code> identifies the patient, and every segment that follows in the message belongs to that patient
+      because of where it sits. FHIR is a <em>graph of resources</em>, where each resource (Patient, Encounter, Observation) stands
+      alone and is connected to others through explicit reference fields like <code class="badge">subject</code> and <code class="badge">encounter</code>.
+    </p>
+  </header>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       MAIN CONTENT
+       ═══════════════════════════════════════════════════════════ -->
+  <div class="content">
+
+    <!-- ===== Section 1: Foundations & Glossary ===== -->
+    <section>
+      <h2>1. Setting the table</h2>
+      <p>
+        You already work with two segments routinely: <code class="badge">MSH</code>, the Message Header (transport metadata —
+        sender, receiver, message type), and <code class="badge">PID</code>, the Patient Identification segment (name, date of birth,
+        sex, <abbr title="Medical Record Number">MRN</abbr>). The other segments below are the ones you will see most often when v2 messages
+        carry clinical content. Each one becomes a different FHIR resource on the other side of the conversion.
+      </p>
+
+      <div class="glossary">
+        <p class="glossary-title">Abbreviations used in this tutorial</p>
+        <dl>
+          <dt>HL7 v2</dt><dd>Health Level Seven, version 2 — the legacy pipe-delimited messaging standard most healthcare systems still emit today.</dd>
+          <dt>FHIR</dt><dd>Fast Healthcare Interoperability Resources — the modern JSON/XML-based standard. Pronounced "fire."</dd>
+          <dt>MSH</dt><dd>Message Header segment — transport envelope.</dd>
+          <dt>PID</dt><dd>Patient Identification segment — demographics and identifiers.</dd>
+          <dt>PV1</dt><dd>Patient Visit segment — visit class, location, attending provider, dates.</dd>
+          <dt>OBR</dt><dd>Observation Request segment — the order or panel a result was produced for.</dd>
+          <dt>OBX</dt><dd>Observation segment — one row per individual result, finding, or measurement.</dd>
+          <dt>DG1</dt><dd>Diagnosis segment — admit, working, or discharge diagnosis.</dd>
+          <dt>IN1</dt><dd>Insurance segment — coverage / payor information.</dd>
+          <dt>AL1</dt><dd>Allergy segment — patient allergy or adverse reaction.</dd>
+          <dt>ADT</dt><dd>Admission, Discharge, Transfer — the family of v2 messages that signal patient movement events.</dd>
+          <dt>ORU^R01</dt><dd>Observation Result, Unsolicited — the v2 message that carries lab/diagnostic results.</dd>
+          <dt>LOINC</dt><dd>Logical Observation Identifiers Names and Codes — terminology for lab tests, vital signs, and clinical observations.</dd>
+          <dt>ICD-10-CM</dt><dd>International Classification of Diseases, 10th Revision, Clinical Modification — the diagnosis code set.</dd>
+        </dl>
+      </div>
+
+      <p>
+        From this point forward I will use the abbreviation only.
+      </p>
+    </section>
+
+    <!-- ===== Section 2: The basic mapping rule ===== -->
+    <section>
+      <h2>2. The basic mapping rule</h2>
+      <p>
+        At the simplest level, each v2 segment that carries clinical content corresponds to exactly one FHIR resource on the
+        other side. Here is the canonical map for the six segments you will meet most often:
+      </p>
+
+      <div class="demo-frame" style="padding: 22px;">
+        <div style="display: grid; grid-template-columns: max-content max-content 1fr; gap: 8px 22px; align-items: center; font-family: var(--mono); font-size: 13.5px;">
+          <span class="code-pill">PID</span>
+          <span style="color: var(--text-muted);">→</span>
+          <span><strong style="color: var(--green-dark); font-family: var(--sans); font-size: 14.5px;">Patient</strong>
+            <span style="color: var(--text-muted); font-size: 12.5px; font-family: var(--sans);"> — demographics + identifiers</span></span>
+
+          <span class="code-pill">PV1</span>
+          <span style="color: var(--text-muted);">→</span>
+          <span><strong style="color: var(--green-dark); font-family: var(--sans); font-size: 14.5px;">Encounter</strong>
+            <span style="color: var(--text-muted); font-size: 12.5px; font-family: var(--sans);"> — a single visit or admission</span></span>
+
+          <span class="code-pill">OBR</span>
+          <span style="color: var(--text-muted);">→</span>
+          <span><strong style="color: var(--green-dark); font-family: var(--sans); font-size: 14.5px;">DiagnosticReport</strong>
+            <span style="color: var(--text-muted); font-size: 12.5px; font-family: var(--sans);"> — grouped lab or imaging report</span></span>
+
+          <span class="code-pill">OBX</span>
+          <span style="color: var(--text-muted);">→</span>
+          <span><strong style="color: var(--green-dark); font-family: var(--sans); font-size: 14.5px;">Observation</strong>
+            <span style="color: var(--text-muted); font-size: 12.5px; font-family: var(--sans);"> — a single result or measurement</span></span>
+
+          <span class="code-pill">DG1</span>
+          <span style="color: var(--text-muted);">→</span>
+          <span><strong style="color: var(--green-dark); font-family: var(--sans); font-size: 14.5px;">Condition</strong>
+            <span style="color: var(--text-muted); font-size: 12.5px; font-family: var(--sans);"> — an active or historical diagnosis</span></span>
+
+          <span class="code-pill">IN1</span>
+          <span style="color: var(--text-muted);">→</span>
+          <span><strong style="color: var(--green-dark); font-family: var(--sans); font-size: 14.5px;">Coverage</strong>
+            <span style="color: var(--text-muted); font-size: 12.5px; font-family: var(--sans);"> — an insurance plan record</span></span>
+        </div>
+      </div>
+
+      <p>
+        That is the easy part. The rest of this tutorial is about the things this table does <em>not</em> show:
+        how a single segment can map to <em>different</em> resources depending on what it carries, how the FHIR resources
+        re-establish the relationships that v2 expressed by segment ordering, and how the converter generates the IDs
+        that wire the resources together.
+      </p>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         ANIMATED MAPPING DEMONSTRATION
+         ═══════════════════════════════════════════════════════════ -->
+    <section>
+      <h2>3. Watch a real message convert, segment by segment</h2>
+      <p>
+        Below is a real <code class="badge">ORU^R01</code> message — a lab result for a hemoglobin A1c (a diabetes monitoring test).
+        Click <strong>Next step</strong> to walk the converter through the message one segment at a time. The segment being processed
+        is highlighted on the left; the resource it produces appears on the right. Pay attention to how each new resource on the right
+        carries reference tags pointing back to the resources created in earlier steps — those tags are the explicit references that
+        replace v2's positional grouping.
+      </p>
+
+      <div class="demo-frame">
+        <div class="demo-controls">
+          <span class="demo-step-indicator">Step <strong id="demo-step-num">0</strong> of 6</span>
+          <button class="demo-btn" id="demo-prev" disabled>&larr; Previous</button>
+          <button class="demo-btn primary" id="demo-next">Next step &rarr;</button>
+          <button class="demo-btn" id="demo-reset">Reset</button>
+        </div>
+
+        <div class="demo-grid">
+          <!-- Left: v2 message -->
+          <div>
+            <div class="demo-column-label label-coral">
+              <span class="dot-coral"></span>
+              <span>HL7 v2 source message</span>
+            </div>
+            <div class="v2-message" id="v2-message">
+<span class="v2-segment dim" data-seg="msh"><strong>MSH</strong>|^~\&amp;|LAB|MEMORIAL|EHR|MAIN|20260503143022||ORU^R01|MSG001|P|2.5</span>
+<span class="v2-segment dim" data-seg="pid"><strong>PID</strong>|1||MRN12345^^^MEMORIAL^MR||DOE^JANE^M||19560412|F</span>
+<span class="v2-segment dim" data-seg="pv1"><strong>PV1</strong>|1|O|OUTPT^^^MEMORIAL||||1234^SMITH^JOHN^MD|||MED|||||||V001</span>
+<span class="v2-segment dim" data-seg="obr"><strong>OBR</strong>|1|ORD789|RES456|4548-4^Hemoglobin A1c^LN|||20260503143000</span>
+<span class="v2-segment dim" data-seg="obx"><strong>OBX</strong>|1|NM|4548-4^Hemoglobin A1c^LN||7.2|%|&lt;5.7|H|||F</span>
+<span class="v2-segment dim" data-seg="dg1"><strong>DG1</strong>|1||E11.9^Type 2 diabetes mellitus^I10|Type 2 DM|20260503|A</span>
+            </div>
+          </div>
+
+          <!-- Right: FHIR resources -->
+          <div>
+            <div class="demo-column-label label-green">
+              <span class="dot-green"></span>
+              <span>FHIR resource graph</span>
+            </div>
+            <div class="fhir-resources" id="fhir-resources">
+              <div class="fhir-card" data-card="msh">
+                <div class="fhir-card-header">
+                  Bundle metadata
+                  <span class="fhir-card-source">from MSH</span>
+                </div>
+                <div class="fhir-card-content">
+                  Sender, receiver, timestamp, and message control ID populate the wrapping <code>Bundle</code> envelope. No clinical resource is created at this step.
+                </div>
+              </div>
+              <div class="fhir-card" data-card="pid">
+                <div class="fhir-card-header">
+                  Patient
+                  <span class="fhir-card-source">from PID</span>
+                </div>
+                <div class="fhir-card-content">
+                  <strong>id:</strong> <code>pat-jane</code> &nbsp;·&nbsp; <strong>name:</strong> Doe, Jane M &nbsp;·&nbsp; <strong>MRN:</strong> MRN12345 &nbsp;·&nbsp; <strong>DOB:</strong> 1956-04-12
+                </div>
+              </div>
+              <div class="fhir-card" data-card="pv1">
+                <div class="fhir-card-header">
+                  Encounter
+                  <span class="fhir-card-source">from PV1</span>
+                </div>
+                <div class="fhir-card-content">
+                  <strong>id:</strong> <code>enc-001</code> &nbsp;·&nbsp; <strong>class:</strong> ambulatory &nbsp;·&nbsp; <strong>visit#:</strong> V001
+                  <div><span class="ref-tag">subject &rarr; Patient/pat-jane</span></div>
+                </div>
+              </div>
+              <div class="fhir-card" data-card="obr">
+                <div class="fhir-card-header">
+                  DiagnosticReport
+                  <span class="fhir-card-source">from OBR</span>
+                </div>
+                <div class="fhir-card-content">
+                  <strong>id:</strong> <code>dr-001</code> &nbsp;·&nbsp; <strong>code:</strong> 4548-4 (Hemoglobin A1c)
+                  <div><span class="ref-tag">subject &rarr; Patient/pat-jane</span><span class="ref-tag">encounter &rarr; Encounter/enc-001</span></div>
+                </div>
+              </div>
+              <div class="fhir-card" data-card="obx">
+                <div class="fhir-card-header">
+                  Observation
+                  <span class="fhir-card-source">from OBX</span>
+                </div>
+                <div class="fhir-card-content">
+                  <strong>id:</strong> <code>obs-001</code> &nbsp;·&nbsp; <strong>value:</strong> 7.2 % &nbsp;·&nbsp; <strong>flag:</strong> H (high)
+                  <div><span class="ref-tag">subject &rarr; Patient/pat-jane</span><span class="ref-tag">encounter &rarr; Encounter/enc-001</span></div>
+                </div>
+              </div>
+              <div class="fhir-card" data-card="dg1">
+                <div class="fhir-card-header">
+                  Condition
+                  <span class="fhir-card-source">from DG1</span>
+                </div>
+                <div class="fhir-card-content">
+                  <strong>id:</strong> <code>cond-001</code> &nbsp;·&nbsp; <strong>code:</strong> ICD-10-CM E11.9 (Type 2 DM)
+                  <div><span class="ref-tag">subject &rarr; Patient/pat-jane</span><span class="ref-tag">encounter &rarr; Encounter/enc-001</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="demo-explanation" id="demo-explanation">
+          <strong>Step 0 — Before conversion.</strong> The full v2 message sits on the left; nothing has been produced yet on the right. Click <em>Next step</em> to begin processing segments.
+        </div>
+      </div>
+
+      <p class="note">
+        Notice that every clinical resource on the right carries at least one reference tag — <code class="badge">subject</code> back to Patient,
+        and (for visit-bound clinical resources) <code class="badge">encounter</code> back to Encounter. Those references are what allow a FHIR
+        client to ask <em>"give me everything for this patient"</em> without parsing the original message at all.
+      </p>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         PROBLEM 1 — Direct mapping (MCQ)
+         ═══════════════════════════════════════════════════════════ -->
+    <section class="problem" id="p1">
+      <div class="problem-header">
+        <span class="problem-num">Problem 1 of 5</span>
+        <span class="problem-type">Multiple choice · Direct mapping</span>
+      </div>
+      <h3>Which FHIR resource is produced from a PV1 segment?</h3>
+      <p class="problem-prompt">
+        You receive an <code class="badge">ADT^A01</code> admission message. The <code class="badge">PV1</code> carries the patient class (inpatient),
+        the assigned location, the admit date, and the attending physician. Your converter needs to produce one FHIR resource that captures all of that.
+        Which one?
+      </p>
+
+      <div class="mcq-options" data-problem="1">
+        <label class="mcq-option" data-value="patient">
+          <input type="radio" name="p1" value="patient">
+          <span class="mcq-bullet"></span>
+          <span><span class="mcq-letter">A.</span> <code>Patient</code> — because PV1 is part of the patient's record</span>
+        </label>
+        <label class="mcq-option" data-value="encounter">
+          <input type="radio" name="p1" value="encounter">
+          <span class="mcq-bullet"></span>
+          <span><span class="mcq-letter">B.</span> <code>Encounter</code> — a single visit or admission</span>
+        </label>
+        <label class="mcq-option" data-value="organization">
+          <input type="radio" name="p1" value="organization">
+          <span class="mcq-bullet"></span>
+          <span><span class="mcq-letter">C.</span> <code>Organization</code> — the facility where the visit happened</span>
+        </label>
+        <label class="mcq-option" data-value="location">
+          <input type="radio" name="p1" value="location">
+          <span class="mcq-bullet"></span>
+          <span><span class="mcq-letter">D.</span> <code>Location</code> — because PV1 names the assigned room</span>
+        </label>
+      </div>
+
+      <div class="problem-controls">
+        <button class="btn btn-submit" data-action="submit" data-problem="1">Submit</button>
+        <button class="btn btn-hint" data-action="hint" data-problem="1">Hint</button>
+        <button class="btn btn-reset" data-action="reset" data-problem="1">Reset</button>
+        <span class="attempt-tracker">
+          Attempts
+          <span class="attempt-dot" data-attempt="1"></span>
+          <span class="attempt-dot" data-attempt="2"></span>
+          <span class="attempt-dot" data-attempt="3"></span>
+        </span>
+      </div>
+
+      <div class="hint-stack" data-hints="1"></div>
+      <div class="feedback" data-feedback="1"></div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         PROBLEM 2 — Field-level fill-in
+         ═══════════════════════════════════════════════════════════ -->
+    <section class="problem" id="p2">
+      <div class="problem-header">
+        <span class="problem-num">Problem 2 of 5</span>
+        <span class="problem-type">Fill-in · Field-level mapping</span>
+      </div>
+      <h3>Map the PID fields to their FHIR Patient elements</h3>
+      <p class="problem-prompt">
+        A converter has parsed this PID:
+      </p>
+      <div class="v2-message" style="font-size: 13px; margin-bottom: 16px;">PID|1||MRN12345^^^MEMORIAL^MR||DOE^JANE^M||19560412|F</div>
+      <p class="problem-prompt">
+        Fill in the FHIR <code>Patient</code> element name (the dotted path, like <code class="badge">Patient.name.given</code>) that each field
+        becomes. Type the path exactly as it appears in the FHIR spec — case matters. You can submit when all four are filled.
+      </p>
+
+      <div class="fillin-row" style="display:grid; grid-template-columns: max-content max-content 1fr; gap:10px 16px; align-items:center;">
+        <code class="badge" style="font-size:13px;">PID-5.1 (Family name)</code>
+        <span style="color: var(--text-muted);">→</span>
+        <input class="fillin-input" id="p2_a" data-answer="Patient.name.family" placeholder="Patient.name.???">
+
+        <code class="badge" style="font-size:13px;">PID-7 (DOB)</code>
+        <span style="color: var(--text-muted);">→</span>
+        <input class="fillin-input" id="p2_b" data-answer="Patient.birthDate" placeholder="Patient.???">
+
+        <code class="badge" style="font-size:13px;">PID-8 (Sex)</code>
+        <span style="color: var(--text-muted);">→</span>
+        <input class="fillin-input" id="p2_c" data-answer="Patient.gender" placeholder="Patient.???">
+
+        <code class="badge" style="font-size:13px;">PID-3 (MRN)</code>
+        <span style="color: var(--text-muted);">→</span>
+        <input class="fillin-input" id="p2_d" data-answer="Patient.identifier" placeholder="Patient.???">
+      </div>
+
+      <div class="problem-controls">
+        <button class="btn btn-submit" data-action="submit" data-problem="2">Submit</button>
+        <button class="btn btn-hint" data-action="hint" data-problem="2">Hint</button>
+        <button class="btn btn-reset" data-action="reset" data-problem="2">Reset</button>
+        <span class="attempt-tracker">
+          Attempts
+          <span class="attempt-dot" data-attempt="1"></span>
+          <span class="attempt-dot" data-attempt="2"></span>
+          <span class="attempt-dot" data-attempt="3"></span>
+        </span>
+      </div>
+
+      <div class="hint-stack" data-hints="2"></div>
+      <div class="feedback" data-feedback="2"></div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         PROBLEM 3 — Context-dependent OBX
+         ═══════════════════════════════════════════════════════════ -->
+    <section class="problem" id="p3">
+      <div class="problem-header">
+        <span class="problem-num">Problem 3 of 5</span>
+        <span class="problem-type">Multiple choice · Context-driven routing</span>
+      </div>
+      <h3>OBX is poly-target — what does <em>this</em> OBX become?</h3>
+      <p class="problem-prompt">
+        OBX usually becomes an <code>Observation</code>, but not always. The kind of code carried in OBX-3 (the Observation Identifier field)
+        determines which FHIR resource the converter should produce. You receive this OBX:
+      </p>
+      <div class="v2-message" style="font-size: 13px; margin-bottom: 8px;">OBX|1|CWE|52473-6^Allergen^LN||7980004^Penicillin^SCT|||||||F</div>
+      <p class="problem-prompt" style="font-size: 14px; color: var(--text-secondary);">
+        OBX-3 carries LOINC code <code class="badge">52473-6</code> (Allergen). The value in OBX-5 is a SNOMED concept for Penicillin.
+        Which FHIR resource should the converter produce?
+      </p>
+
+      <div class="mcq-options" data-problem="3">
+        <label class="mcq-option" data-value="observation-lab">
+          <input type="radio" name="p3" value="observation-lab">
+          <span class="mcq-bullet"></span>
+          <span><span class="mcq-letter">A.</span> <code>Observation</code> with the laboratory category</span>
+        </label>
+        <label class="mcq-option" data-value="observation-vitals">
+          <input type="radio" name="p3" value="observation-vitals">
+          <span class="mcq-bullet"></span>
+          <span><span class="mcq-letter">B.</span> <code>Observation</code> with the vital-signs profile</span>
+        </label>
+        <label class="mcq-option" data-value="allergyintolerance">
+          <input type="radio" name="p3" value="allergyintolerance">
+          <span class="mcq-bullet"></span>
+          <span><span class="mcq-letter">C.</span> <code>AllergyIntolerance</code></span>
+        </label>
+        <label class="mcq-option" data-value="medication">
+          <input type="radio" name="p3" value="medication">
+          <span class="mcq-bullet"></span>
+          <span><span class="mcq-letter">D.</span> <code>Medication</code> — because the value is a drug</span>
+        </label>
+      </div>
+
+      <div class="problem-controls">
+        <button class="btn btn-submit" data-action="submit" data-problem="3">Submit</button>
+        <button class="btn btn-hint" data-action="hint" data-problem="3">Hint</button>
+        <button class="btn btn-reset" data-action="reset" data-problem="3">Reset</button>
+        <span class="attempt-tracker">
+          Attempts
+          <span class="attempt-dot" data-attempt="1"></span>
+          <span class="attempt-dot" data-attempt="2"></span>
+          <span class="attempt-dot" data-attempt="3"></span>
+        </span>
+      </div>
+
+      <div class="hint-stack" data-hints="3"></div>
+      <div class="feedback" data-feedback="3"></div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         PROBLEM 4 — References (fill-in)
+         ═══════════════════════════════════════════════════════════ -->
+    <section class="problem" id="p4">
+      <div class="problem-header">
+        <span class="problem-num">Problem 4 of 5</span>
+        <span class="problem-type">Fill-in · Building the reference graph</span>
+      </div>
+      <h3>Wire up the references</h3>
+      <p class="problem-prompt">
+        The converter has produced a Patient with id <code class="badge">pat-jane</code> and an Encounter with id <code class="badge">enc-001</code>.
+        It is now building an <code>Observation</code> for an HbA1c result that was reported during that visit.
+        Fill in the reference values that should appear in the Observation. Use the format <code class="badge">ResourceType/id</code> — for example,
+        <code class="badge">Patient/pat-jane</code>.
+      </p>
+
+      <div class="fillin-row" style="display:grid; grid-template-columns: max-content max-content 1fr; gap:10px 16px; align-items:center;">
+        <code class="badge" style="font-size:13px;">Observation.subject.reference</code>
+        <span style="color: var(--text-muted);">=</span>
+        <input class="fillin-input" id="p4_a" data-answer="Patient/pat-jane" placeholder="ResourceType/id">
+
+        <code class="badge" style="font-size:13px;">Observation.encounter.reference</code>
+        <span style="color: var(--text-muted);">=</span>
+        <input class="fillin-input" id="p4_b" data-answer="Encounter/enc-001" placeholder="ResourceType/id">
+      </div>
+
+      <p class="problem-prompt" style="margin-top: 18px;">
+        The DiagnosticReport that groups this Observation also needs to point back to it. Fill in the reference value
+        that goes inside <code class="badge">DiagnosticReport.result[0].reference</code>, given the Observation has id <code class="badge">obs-001</code>:
+      </p>
+      <div class="fillin-row" style="display:grid; grid-template-columns: max-content max-content 1fr; gap:10px 16px; align-items:center;">
+        <code class="badge" style="font-size:13px;">DiagnosticReport.result[0].reference</code>
+        <span style="color: var(--text-muted);">=</span>
+        <input class="fillin-input" id="p4_c" data-answer="Observation/obs-001" placeholder="ResourceType/id">
+      </div>
+
+      <div class="problem-controls">
+        <button class="btn btn-submit" data-action="submit" data-problem="4">Submit</button>
+        <button class="btn btn-hint" data-action="hint" data-problem="4">Hint</button>
+        <button class="btn btn-reset" data-action="reset" data-problem="4">Reset</button>
+        <span class="attempt-tracker">
+          Attempts
+          <span class="attempt-dot" data-attempt="1"></span>
+          <span class="attempt-dot" data-attempt="2"></span>
+          <span class="attempt-dot" data-attempt="3"></span>
+        </span>
+      </div>
+
+      <div class="hint-stack" data-hints="4"></div>
+      <div class="feedback" data-feedback="4"></div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         PROBLEM 5 — Match pairs (full message synthesis)
+         ═══════════════════════════════════════════════════════════ -->
+    <section class="problem" id="p5">
+      <div class="problem-header">
+        <span class="problem-num">Problem 5 of 5</span>
+        <span class="problem-type">Match pairs · Full-message synthesis</span>
+      </div>
+      <h3>Connect every segment to its FHIR target</h3>
+      <p class="problem-prompt">
+        Below is a complete message and the six FHIR resources its converter will produce. Click a segment on the left, then click
+        the resource on the right that it maps to. Each pair locks in once you select both sides. You have three attempts on each pair —
+        if you miss three times, that pair will be revealed.
+      </p>
+
+      <div class="v2-message" style="font-size: 12.5px; margin-bottom: 18px;">
+MSH|^~\&amp;|HOSP|MEMORIAL|REGISTRATION|MAIN|20260507||ADT^A04|MSG2|P|2.5
+PID|1||MRN77821^^^MEMORIAL^MR||LEE^DAVID^||19720819|M
+PV1|1|O|CARDIO^^^MEMORIAL||||9988^WONG^LISA^MD|||CARD|||||||V200
+DG1|1||I10^Essential hypertension^I10|HTN|20260507|A
+AL1|1||7980004^Penicillin^SCT|MO|Hives|20210315
+IN1|1|BCBS001^Blue Cross Blue Shield||PPO||||MEM-887234</div>
+
+      <div class="match-grid">
+        <div class="match-column">
+          <h4>Segments</h4>
+          <div class="match-list" data-match-side="left">
+            <div class="match-item" data-key="PID">PID <span class="match-pair-tag" data-tag></span></div>
+            <div class="match-item" data-key="PV1">PV1 <span class="match-pair-tag" data-tag></span></div>
+            <div class="match-item" data-key="DG1">DG1 <span class="match-pair-tag" data-tag></span></div>
+            <div class="match-item" data-key="AL1">AL1 <span class="match-pair-tag" data-tag></span></div>
+            <div class="match-item" data-key="IN1">IN1 <span class="match-pair-tag" data-tag></span></div>
+            <div class="match-item" data-key="MSH">MSH <span class="match-pair-tag" data-tag></span></div>
+          </div>
+        </div>
+        <div class="match-column">
+          <h4>FHIR resources</h4>
+          <div class="match-list" data-match-side="right">
+            <div class="match-item" data-key="Coverage">Coverage <span class="match-pair-tag" data-tag></span></div>
+            <div class="match-item" data-key="Encounter">Encounter <span class="match-pair-tag" data-tag></span></div>
+            <div class="match-item" data-key="Patient">Patient <span class="match-pair-tag" data-tag></span></div>
+            <div class="match-item" data-key="AllergyIntolerance">AllergyIntolerance <span class="match-pair-tag" data-tag></span></div>
+            <div class="match-item" data-key="Bundle metadata">Bundle metadata <span class="match-pair-tag" data-tag></span></div>
+            <div class="match-item" data-key="Condition">Condition <span class="match-pair-tag" data-tag></span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="problem-controls">
+        <button class="btn btn-hint" data-action="hint" data-problem="5">Hint</button>
+        <button class="btn btn-reset" data-action="reset" data-problem="5">Reset</button>
+        <button class="btn btn-reveal" data-action="reveal-all" data-problem="5">Reveal remaining</button>
+        <span class="attempt-tracker" data-match-progress>
+          Pairs <strong style="color: var(--text-primary); margin: 0 4px;">0</strong>/6
+        </span>
+      </div>
+
+      <div class="hint-stack" data-hints="5"></div>
+      <div class="feedback" data-feedback="5"></div>
+    </section>
+
+    <!-- ===== Wrap-up ===== -->
+    <section>
+      <h2>4. What you have now</h2>
+      <p>
+        You can recognize the canonical segment-to-resource map, you know that OBX is poly-target and that OBX-3 routes it to the right
+        resource, and you can write the reference strings that wire FHIR's resource graph together. The next station picks up where this
+        one ends — generating stable resource IDs, assembling everything into a Bundle for transactional posting, and handling the
+        terminology mappings (LOINC, SNOMED, ICD-10-CM, RxNorm) that the FHIR side expects.
+      </p>
+      <p class="note">
+        If anything is still fuzzy, use the <strong>Ask AI</strong> button on the right to ask a follow-up question with the specific
+        problem you got stuck on.
+      </p>
+    </section>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     ASK AI FLOATING PANEL
+     ═══════════════════════════════════════════════════════════════ -->
+<button id="ask-ai-toggle" aria-label="Open Ask AI panel">
+  <span class="ai-icon">AI</span>
+  <span>Ask&nbsp;AI</span>
+</button>
+
+<div id="ask-ai-panel" aria-hidden="true">
+  <div class="ai-header">
+    <div>
+      <div class="ai-title">Ask AI</div>
+      <div class="ai-subtitle">Tutor for Station 11</div>
+    </div>
+    <button class="ai-close" id="ai-close" aria-label="Close panel">&times;</button>
+  </div>
+  <div class="ai-body" id="ai-body">
+    <div class="ai-msg assistant">
+      <span class="ai-msg-label">Tutor</span>
+      Hi Joe — I'm here to help with this station. Ask me about any segment, resource, reference field, or any of the five problems above. Type your question below, and I'll prepare a focused prompt you can send into Claude or paste into your usual chat.
+    </div>
+  </div>
+  <div class="ai-input-area">
+    <div class="ai-input-label">Your question</div>
+    <textarea id="ai-input" placeholder="e.g. Why does OBX route to AllergyIntolerance instead of Observation when OBX-3 is an allergy LOINC code?"></textarea>
+    <div class="ai-actions">
+      <button class="ai-send" id="ai-send">Send</button>
+      <span class="ai-hint">Shift+Enter for new line · Enter to send</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     JAVASCRIPT — All interactivity
+     ═══════════════════════════════════════════════════════════════ -->
+<script>
+'use strict';
+
+// ───────────────────────────────────────────────────────────────
+// ANIMATED MAPPING DEMONSTRATION
+// ───────────────────────────────────────────────────────────────
+const DEMO_STEPS = [
+  { active: null, processed: [], cards: [], explain:
+    "<strong>Step 0 — Before conversion.</strong> The full v2 message sits on the left; nothing has been produced yet on the right. Click <em>Next step</em> to begin processing segments." },
+  { active: 'msh', processed: [], cards: ['msh'], explain:
+    "<strong>Step 1 — MSH (Message Header).</strong> The converter reads the envelope first. Sender (LAB at MEMORIAL), receiver (EHR at MAIN), message type (ORU^R01), and control ID (MSG001) populate the FHIR <code>Bundle</code> wrapper. <em>No clinical resource is created yet</em> — MSH is transport metadata." },
+  { active: 'pid', processed: ['msh'], cards: ['msh','pid'], explain:
+    "<strong>Step 2 — PID (Patient Identification).</strong> Now the converter has a patient. It generates a stable <code>Patient.id</code> (here: <code>pat-jane</code>) — typically a deterministic hash of the assigning authority and MRN, so the same person produces the same ID every time. This Patient is the root of the graph everything else will reference." },
+  { active: 'pv1', processed: ['msh','pid'], cards: ['msh','pid','pv1'], explain:
+    "<strong>Step 3 — PV1 (Patient Visit).</strong> The Encounter is created and immediately gets a <code>subject</code> reference back to the Patient that was just generated. <em>This is the first FHIR reference</em> — the converter writes the literal string <code>Patient/pat-jane</code> into <code>Encounter.subject.reference</code>. The visit number V001 is preserved as <code>Encounter.identifier</code>." },
+  { active: 'obr', processed: ['msh','pid','pv1'], cards: ['msh','pid','pv1','obr'], explain:
+    "<strong>Step 4 — OBR (Observation Request).</strong> The DiagnosticReport groups the lab order. It now has TWO references: <code>subject</code> (Patient) and <code>encounter</code> (the Encounter just created). Both IDs are already in scope, so the converter just writes them into the appropriate fields." },
+  { active: 'obx', processed: ['msh','pid','pv1','obr'], cards: ['msh','pid','pv1','obr','obx'], explain:
+    "<strong>Step 5 — OBX (Observation result).</strong> The actual HbA1c value of 7.2 % becomes an <code>Observation</code> resource. Like the DiagnosticReport, it carries <code>subject</code> and <code>encounter</code> references. The OBR-OBX containment that v2 expressed by adjacency becomes a <code>DiagnosticReport.result[]</code> array entry pointing back to <code>Observation/obs-001</code>." },
+  { active: 'dg1', processed: ['msh','pid','pv1','obr','obx'], cards: ['msh','pid','pv1','obr','obx','dg1'], explain:
+    "<strong>Step 6 — DG1 (Diagnosis).</strong> Type 2 diabetes, ICD-10-CM code E11.9, becomes a <code>Condition</code>. Same reference pattern: <code>subject</code> &rarr; Patient, <code>encounter</code> &rarr; Encounter. The graph is complete: one Patient, one Encounter, three clinical resources, all wired together by explicit references." }
+];
+
+let demoStep = 0;
+
+function renderDemo() {
+  const step = DEMO_STEPS[demoStep];
+  document.getElementById('demo-step-num').textContent = demoStep;
+
+  // v2 segments
+  document.querySelectorAll('#v2-message .v2-segment').forEach(seg => {
+    const key = seg.dataset.seg;
+    seg.classList.remove('active', 'processed', 'dim');
+    if (step.active === key) seg.classList.add('active');
+    else if (step.processed.includes(key)) seg.classList.add('processed');
+    else seg.classList.add('dim');
+  });
+
+  // FHIR cards
+  document.querySelectorAll('#fhir-resources .fhir-card').forEach(card => {
+    const key = card.dataset.card;
+    if (step.cards.includes(key)) card.classList.add('visible');
+    else card.classList.remove('visible');
+  });
+
+  // Explanation
+  document.getElementById('demo-explanation').innerHTML = step.explain;
+
+  // Buttons
+  document.getElementById('demo-prev').disabled = (demoStep === 0);
+  document.getElementById('demo-next').disabled = (demoStep === DEMO_STEPS.length - 1);
+}
+
+document.getElementById('demo-prev').addEventListener('click', () => {
+  if (demoStep > 0) { demoStep--; renderDemo(); }
+});
+document.getElementById('demo-next').addEventListener('click', () => {
+  if (demoStep < DEMO_STEPS.length - 1) { demoStep++; renderDemo(); }
+});
+document.getElementById('demo-reset').addEventListener('click', () => {
+  demoStep = 0; renderDemo();
+});
+
+renderDemo();
+
+// ───────────────────────────────────────────────────────────────
+// PROBLEM ENGINE — manages state, hints, attempts, feedback
+// ───────────────────────────────────────────────────────────────
+const PROBLEMS = {
+  '1': {
+    type: 'mcq',
+    correct: 'encounter',
+    hints: [
+      "PV1 stands for Patient Visit. Read its name carefully — what FHIR resource carries the same idea of one specific encounter with the system?",
+      "FHIR has resources called Patient, Encounter, Location, and Organization. Patient is the person; the visit itself is something else.",
+      "The answer is <code>Encounter</code>. PV1 → Encounter is one of the canonical 1:1 mappings. Location and Organization are referenced FROM Encounter, but they are not what PV1 itself becomes."
+    ],
+    explain: {
+      'encounter': "Correct. <code>PV1</code> always becomes a FHIR <code>Encounter</code>. Patient class (inpatient / outpatient / emergency) becomes <code>Encounter.class</code>, the assigned location becomes a <code>Location</code> reference (a separate resource), and the attending physician becomes a <code>Practitioner</code> reference inside <code>Encounter.participant</code>.",
+      'patient': "Not quite. PV1 is <em>about</em> a patient's visit, but the patient already has its own segment (PID). The visit needs its own resource because one patient can have many encounters.",
+      'organization': "Close in spirit but wrong target. The facility name in PV1 may produce an <code>Organization</code> reference, but the segment as a whole describes a specific visit, not the facility.",
+      'location': "PV1 names the assigned room or unit, which produces a <code>Location</code> reference, but the segment describes the visit itself. Location is something the Encounter <em>references</em>, not what PV1 becomes."
+    }
+  },
+  '2': {
+    type: 'fillin',
+    fields: ['p2_a','p2_b','p2_c','p2_d'],
+    answers: {
+      'p2_a': ['Patient.name.family'],
+      'p2_b': ['Patient.birthDate'],
+      'p2_c': ['Patient.gender'],
+      'p2_d': ['Patient.identifier']
+    },
+    hints: [
+      "FHIR field names are camelCase, not snake_case or lowercase. Date of birth is two words run together; gender is one word.",
+      "<code>name</code> is itself an object that has sub-fields like <code>family</code>, <code>given</code>, and <code>prefix</code>. The MRN is one of potentially many business identifiers, so it goes into the <code>identifier</code> array.",
+      "Family name → <code>Patient.name.family</code>. DOB → <code>Patient.birthDate</code>. Sex → <code>Patient.gender</code>. MRN → <code>Patient.identifier</code> (with the type code MR distinguishing it from other identifiers like SSN)."
+    ],
+    explain: "Correct. FHIR uses camelCase throughout, and the Patient resource cleanly separates <em>names</em> (an array of HumanName objects, each with family/given/prefix) from <em>identifiers</em> (an array of Identifier objects for MRN, SSN, NPI, etc.). One PID can produce multiple <code>Patient.identifier</code> entries — one per MRN, alias, or SSN carried in PID-3."
+  },
+  '3': {
+    type: 'mcq',
+    correct: 'allergyintolerance',
+    hints: [
+      "OBX is poly-target — it does not always become Observation. The route depends on what OBX-3 contains, not on the segment itself.",
+      "Look at the LOINC code in OBX-3: <code>52473-6</code> is the LOINC for \"Allergen.\" The OBX is reporting <em>which substance</em> the patient is allergic to, not a lab measurement.",
+      "The answer is <code>AllergyIntolerance</code>. When OBX-3 is an allergy-coded LOINC, the converter routes the OBX to AllergyIntolerance, not to Observation. The penicillin SNOMED code in OBX-5 becomes <code>AllergyIntolerance.code</code>."
+    ],
+    explain: {
+      'allergyintolerance': "Correct. The HL7 v2-to-FHIR Implementation Guide treats OBX as poly-target. The OBX-3 LOINC code is what tells the converter where to send the segment. Allergy-coded LOINCs (52473-6 Allergen, 52472-8 Reaction, and a handful of others) route to <code>AllergyIntolerance</code>; lab-analyte LOINCs go to <code>Observation</code>; vital-sign LOINCs go to <code>Observation</code> with the vital-signs profile.",
+      'observation-lab': "OBX defaults to Observation, but the LOINC in OBX-3 here (52473-6) is specifically the \"Allergen\" code, not a lab analyte. The IG diverts allergy-coded OBXes to a different resource.",
+      'observation-vitals': "Vital-signs profile is for codes like 8867-4 (heart rate) or 8480-6 (systolic BP). 52473-6 is not a vital sign.",
+      'medication': "Penicillin is a drug, but this OBX is recording the patient's <em>reaction</em> to it (an allergy), not prescribing or administering it. Medication resources are for active medication records, not allergies."
+    }
+  },
+  '4': {
+    type: 'fillin',
+    fields: ['p4_a','p4_b','p4_c'],
+    answers: {
+      'p4_a': ['Patient/pat-jane'],
+      'p4_b': ['Encounter/enc-001'],
+      'p4_c': ['Observation/obs-001']
+    },
+    hints: [
+      "FHIR references are written as the resource type, then a forward slash, then the id — exactly like a URL path. The resource type is capitalized; the id is whatever the converter generated (here: pat-jane, enc-001, obs-001).",
+      "<code>subject</code> in any clinical resource almost always points to the Patient. <code>encounter</code> always points to the Encounter. The DiagnosticReport <code>result</code> array contains references to the individual Observations that make up the report.",
+      "<code>Patient/pat-jane</code> for the subject. <code>Encounter/enc-001</code> for the encounter. <code>Observation/obs-001</code> for the result reference."
+    ],
+    explain: "Correct. These three reference strings are the literal contents of the FHIR JSON — the converter writes them as the values of <code>subject.reference</code>, <code>encounter.reference</code>, and <code>result[0].reference</code>. The format is always <code>ResourceType/id</code>. Reference strings like <code>Patient/MRN12345</code> are wrong: that string is a business identifier, not a FHIR resource id. The MRN belongs in <code>Patient.identifier[].value</code>; the FHIR id is what references use."
+  },
+  '5': {
+    type: 'match',
+    pairs: { 'PID': 'Patient', 'PV1': 'Encounter', 'DG1': 'Condition', 'AL1': 'AllergyIntolerance', 'IN1': 'Coverage', 'MSH': 'Bundle metadata' },
+    hints: [
+      "Two of the easier ones first: PID always goes to Patient, PV1 always goes to Encounter. If you have done the earlier problems those should be quick.",
+      "DG1 is Diagnosis → Condition. AL1 is Allergy → AllergyIntolerance. IN1 is Insurance → Coverage. MSH does not become a clinical resource — it populates the Bundle envelope.",
+      "Final pairs: PID↔Patient, PV1↔Encounter, DG1↔Condition, AL1↔AllergyIntolerance, IN1↔Coverage, MSH↔Bundle metadata."
+    ],
+    explain: "All six pairs are correct. This is the canonical 1:1 mapping for the most common clinical segments. The same pattern repeats for segments you will see less often — RXA/RXE → MedicationAdministration, NK1 → RelatedPerson, OBR → DiagnosticReport, OBX → Observation (or AllergyIntolerance/Condition depending on OBX-3, as you saw in Problem 3)."
+  }
+};
+
+const state = {};
+for (const id of Object.keys(PROBLEMS)) {
+  state[id] = {
+    attempts: 0,
+    hintIndex: 0,
+    solved: false,
+    locked: false,
+    matchSelected: { left: null, right: null },
+    matchAttempts: {},
+    matchedKeys: new Set()
+  };
+}
+
+// ─── HINT button: reveals one hint at a time, accumulating ───
+function showHint(pid) {
+  const s = state[pid];
+  const p = PROBLEMS[pid];
+  if (s.hintIndex >= p.hints.length) return;
+
+  const stack = document.querySelector(`.hint-stack[data-hints="${pid}"]`);
+  const card = document.createElement('div');
+  card.className = 'hint-card';
+  card.innerHTML = `<span class="hint-card-label">Hint ${s.hintIndex + 1} of ${p.hints.length}</span>${p.hints[s.hintIndex]}`;
+  stack.appendChild(card);
+  s.hintIndex++;
+
+  // Disable hint button if all hints shown
+  if (s.hintIndex >= p.hints.length) {
+    const btn = document.querySelector(`button[data-action="hint"][data-problem="${pid}"]`);
+    if (btn) btn.disabled = true;
+  }
+}
+
+// ─── ATTEMPT TRACKER UI ───
+function updateAttemptDots(pid, isSuccess) {
+  const s = state[pid];
+  const dots = document.querySelectorAll(`#p${pid} .attempt-dot`);
+  dots.forEach((dot, i) => {
+    dot.classList.remove('used','success');
+    if (isSuccess && i < s.attempts) {
+      dot.classList.add('success');
+    } else if (i < s.attempts) {
+      dot.classList.add('used');
+    }
+  });
+}
+
+// ─── FEEDBACK BANNER ───
+function setFeedback(pid, kind, html) {
+  const fb = document.querySelector(`.feedback[data-feedback="${pid}"]`);
+  fb.className = `feedback visible ${kind}`;
+  fb.innerHTML = html;
+}
+function clearFeedback(pid) {
+  const fb = document.querySelector(`.feedback[data-feedback="${pid}"]`);
+  fb.className = 'feedback';
+  fb.innerHTML = '';
+}
+
+// ─── MCQ HANDLERS ───
+function handleMcqSelection(pid, value) {
+  const s = state[pid];
+  if (s.locked || s.solved) return;
+  document.querySelectorAll(`.mcq-options[data-problem="${pid}"] .mcq-option`).forEach(opt => {
+    opt.classList.toggle('selected', opt.dataset.value === value);
+    const inp = opt.querySelector('input');
+    if (inp) inp.checked = (opt.dataset.value === value);
+  });
+  state[pid].selected = value;
+}
+
+function submitMcq(pid) {
+  const s = state[pid];
+  const p = PROBLEMS[pid];
+  if (s.solved || s.locked) return;
+  if (!s.selected) {
+    setFeedback(pid, 'failure', '<strong>Please choose an answer.</strong> Select one of the options before submitting.');
+    return;
+  }
+
+  s.attempts++;
+  const isCorrect = (s.selected === p.correct);
+
+  if (isCorrect) {
+    s.solved = true;
+    s.locked = true;
+    // Mark correct option
+    document.querySelectorAll(`.mcq-options[data-problem="${pid}"] .mcq-option`).forEach(opt => {
+      opt.classList.add('locked');
+      opt.classList.remove('selected');
+      if (opt.dataset.value === p.correct) opt.classList.add('correct');
+    });
+    setFeedback(pid, 'success', `<strong>✓ Correct on attempt ${s.attempts} of 3.</strong> ${p.explain[s.selected]}`);
+    updateAttemptDots(pid, true);
+    document.querySelector(`button[data-action="submit"][data-problem="${pid}"]`).disabled = true;
+  } else {
+    // Wrong answer — mark it incorrect, then clear after a moment
+    const wrongOpt = document.querySelector(`.mcq-options[data-problem="${pid}"] .mcq-option[data-value="${s.selected}"]`);
+    if (wrongOpt) wrongOpt.classList.add('incorrect');
+
+    if (s.attempts >= 3) {
+      // Reveal answer
+      s.locked = true;
+      document.querySelectorAll(`.mcq-options[data-problem="${pid}"] .mcq-option`).forEach(opt => {
+        opt.classList.add('locked');
+        opt.classList.remove('selected','incorrect');
+        if (opt.dataset.value === p.correct) opt.classList.add('correct');
+      });
+      setFeedback(pid, 'revealed', `<strong>Answer revealed after 3 attempts.</strong> ${p.explain[p.correct]}`);
+      updateAttemptDots(pid, false);
+      document.querySelector(`button[data-action="submit"][data-problem="${pid}"]`).disabled = true;
+    } else {
+      const remaining = 3 - s.attempts;
+      setFeedback(pid, 'failure', `<strong>Not quite. ${remaining} attempt${remaining===1?'':'s'} remaining.</strong> ${p.explain[s.selected] || ''} <em>Your selection has been cleared — pick again.</em>`);
+      updateAttemptDots(pid, false);
+      // Clear the wrong selection after a beat so the user can re-pick
+      setTimeout(() => {
+        document.querySelectorAll(`.mcq-options[data-problem="${pid}"] .mcq-option`).forEach(opt => {
+          opt.classList.remove('selected','incorrect');
+          const inp = opt.querySelector('input'); if (inp) inp.checked = false;
+        });
+        state[pid].selected = null;
+      }, 1400);
+    }
+  }
+}
+
+// ─── FILL-IN HANDLERS ───
+function normalizeAnswer(s) {
+  return (s||'').trim();
+}
+function checkFillin(pid) {
+  const p = PROBLEMS[pid];
+  const allCorrect = [];
+  for (const fid of p.fields) {
+    const inp = document.getElementById(fid);
+    const userVal = normalizeAnswer(inp.value);
+    const accepted = p.answers[fid].map(a => a.toLowerCase());
+    const isCorrect = userVal.length > 0 && accepted.includes(userVal.toLowerCase());
+    allCorrect.push({ fid, isCorrect, userVal, inp });
+  }
+  return allCorrect;
+}
+
+function submitFillin(pid) {
+  const s = state[pid];
+  const p = PROBLEMS[pid];
+  if (s.solved || s.locked) return;
+
+  // Check empties
+  const results = checkFillin(pid);
+  const empties = results.filter(r => r.userVal.length === 0);
+  if (empties.length > 0) {
+    setFeedback(pid, 'failure', `<strong>${empties.length} blank${empties.length===1?'':'s'} still empty.</strong> Fill in every field before submitting.`);
+    return;
+  }
+
+  s.attempts++;
+  const allCorrect = results.every(r => r.isCorrect);
+
+  // Mark each input
+  results.forEach(r => {
+    r.inp.classList.remove('correct','incorrect','revealed');
+    if (r.isCorrect) r.inp.classList.add('correct');
+    else r.inp.classList.add('incorrect');
+  });
+
+  if (allCorrect) {
+    s.solved = true;
+    s.locked = true;
+    results.forEach(r => r.inp.disabled = true);
+    setFeedback(pid, 'success', `<strong>✓ All correct on attempt ${s.attempts} of 3.</strong> ${p.explain}`);
+    updateAttemptDots(pid, true);
+    document.querySelector(`button[data-action="submit"][data-problem="${pid}"]`).disabled = true;
+  } else {
+    const wrongCount = results.filter(r => !r.isCorrect).length;
+    if (s.attempts >= 3) {
+      s.locked = true;
+      // Reveal correct answers in red-highlighted blanks
+      results.forEach(r => {
+        r.inp.disabled = true;
+        if (!r.isCorrect) {
+          r.inp.value = p.answers[r.fid][0];
+          r.inp.classList.remove('incorrect','correct');
+          r.inp.classList.add('revealed');
+        }
+      });
+      setFeedback(pid, 'revealed', `<strong>Answers revealed after 3 attempts.</strong> Incorrect blanks are now filled with the correct values (highlighted in tan). ${p.explain}`);
+      updateAttemptDots(pid, false);
+      document.querySelector(`button[data-action="submit"][data-problem="${pid}"]`).disabled = true;
+    } else {
+      const remaining = 3 - s.attempts;
+      setFeedback(pid, 'failure', `<strong>${wrongCount} of ${results.length} answer${wrongCount===1?'':'s'} wrong. ${remaining} attempt${remaining===1?'':'s'} remaining.</strong> Wrong blanks are highlighted in coral. <em>Incorrect entries will clear in a moment — try again.</em>`);
+      updateAttemptDots(pid, false);
+      // Clear wrong inputs after a beat so the user can retry
+      setTimeout(() => {
+        results.forEach(r => {
+          if (!r.isCorrect) {
+            r.inp.value = '';
+            r.inp.classList.remove('incorrect');
+          }
+        });
+      }, 1400);
+    }
+  }
+}
+
+// ─── MATCH PAIRS HANDLER (Problem 5) ───
+function updateMatchProgress(pid) {
+  const s = state[pid];
+  const tracker = document.querySelector(`#p${pid} [data-match-progress]`);
+  if (tracker) {
+    tracker.innerHTML = `Pairs <strong style="color: var(--text-primary); margin: 0 4px;">${s.matchedKeys.size}</strong>/6`;
+  }
+}
+
+function handleMatchClick(pid, side, key) {
+  const s = state[pid];
+  if (s.locked) return;
+
+  // Already matched? Skip.
+  const item = document.querySelector(`#p${pid} [data-match-side="${side}"] [data-key="${key}"]`);
+  if (item.classList.contains('matched-correct') || item.classList.contains('matched-incorrect')) return;
+
+  // Toggle selection on this side
+  const prev = s.matchSelected[side];
+  if (prev === key) {
+    s.matchSelected[side] = null;
+    item.classList.remove('selected');
+    return;
+  }
+  // Clear other selection on same side
+  document.querySelectorAll(`#p${pid} [data-match-side="${side}"] .match-item`).forEach(el => el.classList.remove('selected'));
+  s.matchSelected[side] = key;
+  item.classList.add('selected');
+
+  // If both sides have a selection, attempt match
+  if (s.matchSelected.left && s.matchSelected.right) {
+    attemptMatch(pid, s.matchSelected.left, s.matchSelected.right);
+  }
+}
+
+function attemptMatch(pid, leftKey, rightKey) {
+  const s = state[pid];
+  const p = PROBLEMS[pid];
+  const leftEl  = document.querySelector(`#p${pid} [data-match-side="left"]  [data-key="${leftKey}"]`);
+  const rightEl = document.querySelector(`#p${pid} [data-match-side="right"] [data-key="${rightKey}"]`);
+
+  // Track per-segment attempts
+  if (!(leftKey in s.matchAttempts)) s.matchAttempts[leftKey] = 0;
+  s.matchAttempts[leftKey]++;
+
+  const expected = p.pairs[leftKey];
+  const isCorrect = (rightKey === expected);
+
+  if (isCorrect) {
+    leftEl.classList.add('matched-correct','matched');
+    rightEl.classList.add('matched-correct','matched');
+    leftEl.querySelector('[data-tag]').textContent  = '✓ paired';
+    rightEl.querySelector('[data-tag]').textContent = '✓ paired';
+    leftEl.classList.remove('selected');
+    rightEl.classList.remove('selected');
+    s.matchSelected = { left: null, right: null };
+    s.matchedKeys.add(leftKey);
+    updateMatchProgress(pid);
+
+    if (s.matchedKeys.size === 6) {
+      s.solved = true;
+      s.locked = true;
+      setFeedback(pid, 'success', `<strong>✓ All six pairs matched.</strong> ${p.explain}`);
+    }
+  } else {
+    // Wrong pair — flash incorrect, then clear
+    leftEl.classList.add('matched-incorrect');
+    rightEl.classList.add('matched-incorrect');
+
+    if (s.matchAttempts[leftKey] >= 3) {
+      // Auto-reveal this pair
+      // Find the correct right item
+      const correctRight = document.querySelector(`#p${pid} [data-match-side="right"] [data-key="${expected}"]`);
+      if (correctRight && !correctRight.classList.contains('matched')) {
+        leftEl.classList.remove('matched-incorrect','selected');
+        rightEl.classList.remove('matched-incorrect','selected');
+        leftEl.classList.add('matched-correct','matched');
+        correctRight.classList.add('matched-correct','matched');
+        leftEl.querySelector('[data-tag]').textContent = '↪ revealed';
+        correctRight.querySelector('[data-tag]').textContent = '↪ revealed';
+        s.matchedKeys.add(leftKey);
+        updateMatchProgress(pid);
+      }
+      s.matchSelected = { left: null, right: null };
+      setFeedback(pid, 'revealed', `<strong>Pair for ${leftKey} revealed after 3 attempts.</strong> ${leftKey} → <code>${expected}</code>. Continue with the remaining pairs.`);
+
+      if (s.matchedKeys.size === 6) {
+        s.solved = true;
+        s.locked = true;
+        setFeedback(pid, 'success', `<strong>✓ All six pairs resolved.</strong> ${p.explain}`);
+      }
+    } else {
+      const remaining = 3 - s.matchAttempts[leftKey];
+      setFeedback(pid, 'failure', `<strong>Wrong pair for ${leftKey}. ${remaining} attempt${remaining===1?'':'s'} remaining on this segment.</strong> Selections will clear in a moment.`);
+      setTimeout(() => {
+        leftEl.classList.remove('matched-incorrect','selected');
+        rightEl.classList.remove('matched-incorrect','selected');
+        s.matchSelected = { left: null, right: null };
+      }, 1200);
+    }
+  }
+}
+
+function revealAllMatches(pid) {
+  const s = state[pid];
+  const p = PROBLEMS[pid];
+  if (s.locked) return;
+  for (const leftKey of Object.keys(p.pairs)) {
+    if (s.matchedKeys.has(leftKey)) continue;
+    const expected = p.pairs[leftKey];
+    const leftEl  = document.querySelector(`#p${pid} [data-match-side="left"]  [data-key="${leftKey}"]`);
+    const rightEl = document.querySelector(`#p${pid} [data-match-side="right"] [data-key="${expected}"]`);
+    if (leftEl && rightEl) {
+      leftEl.classList.remove('matched-incorrect','selected');
+      rightEl.classList.remove('matched-incorrect','selected');
+      leftEl.classList.add('matched-correct','matched');
+      rightEl.classList.add('matched-correct','matched');
+      leftEl.querySelector('[data-tag]').textContent = '↪ revealed';
+      rightEl.querySelector('[data-tag]').textContent = '↪ revealed';
+      s.matchedKeys.add(leftKey);
+    }
+  }
+  updateMatchProgress(pid);
+  s.solved = true;
+  s.locked = true;
+  setFeedback(pid, 'revealed', `<strong>All remaining pairs revealed.</strong> ${p.explain}`);
+}
+
+// ─── RESET ───
+function resetProblem(pid) {
+  const p = PROBLEMS[pid];
+  state[pid] = {
+    attempts: 0,
+    hintIndex: 0,
+    solved: false,
+    locked: false,
+    matchSelected: { left: null, right: null },
+    matchAttempts: {},
+    matchedKeys: new Set()
+  };
+  // Clear hint stack
+  const stack = document.querySelector(`.hint-stack[data-hints="${pid}"]`);
+  if (stack) stack.innerHTML = '';
+  // Clear feedback
+  clearFeedback(pid);
+  // Re-enable buttons
+  const submitBtn = document.querySelector(`button[data-action="submit"][data-problem="${pid}"]`);
+  if (submitBtn) submitBtn.disabled = false;
+  const hintBtn = document.querySelector(`button[data-action="hint"][data-problem="${pid}"]`);
+  if (hintBtn) hintBtn.disabled = false;
+  // Clear attempt dots
+  document.querySelectorAll(`#p${pid} .attempt-dot`).forEach(d => d.classList.remove('used','success'));
+
+  if (p.type === 'mcq') {
+    document.querySelectorAll(`.mcq-options[data-problem="${pid}"] .mcq-option`).forEach(opt => {
+      opt.classList.remove('selected','correct','incorrect','locked');
+      const inp = opt.querySelector('input'); if (inp) inp.checked = false;
+    });
+  } else if (p.type === 'fillin') {
+    p.fields.forEach(fid => {
+      const inp = document.getElementById(fid);
+      inp.value = '';
+      inp.disabled = false;
+      inp.classList.remove('correct','incorrect','revealed');
+    });
+  } else if (p.type === 'match') {
+    document.querySelectorAll(`#p${pid} .match-item`).forEach(el => {
+      el.classList.remove('selected','matched','matched-correct','matched-incorrect');
+      const tag = el.querySelector('[data-tag]'); if (tag) tag.textContent = '';
+    });
+    updateMatchProgress(pid);
+  }
+}
+
+// ─── BIND EVENT HANDLERS ───
+document.querySelectorAll('.mcq-options').forEach(opts => {
+  const pid = opts.dataset.problem;
+  opts.querySelectorAll('.mcq-option').forEach(opt => {
+    opt.addEventListener('click', () => handleMcqSelection(pid, opt.dataset.value));
+  });
+});
+
+document.querySelectorAll('button[data-action="submit"]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const pid = btn.dataset.problem;
+    const p = PROBLEMS[pid];
+    if (p.type === 'mcq') submitMcq(pid);
+    else if (p.type === 'fillin') submitFillin(pid);
+  });
+});
+
+document.querySelectorAll('button[data-action="hint"]').forEach(btn => {
+  btn.addEventListener('click', () => showHint(btn.dataset.problem));
+});
+
+document.querySelectorAll('button[data-action="reset"]').forEach(btn => {
+  btn.addEventListener('click', () => resetProblem(btn.dataset.problem));
+});
+
+document.querySelectorAll('button[data-action="reveal-all"]').forEach(btn => {
+  btn.addEventListener('click', () => revealAllMatches(btn.dataset.problem));
+});
+
+document.querySelectorAll('.match-list .match-item').forEach(item => {
+  item.addEventListener('click', () => {
+    const list = item.closest('.match-list');
+    const side = list.dataset.matchSide;
+    const pid = item.closest('.problem').id.replace('p','');
+    handleMatchClick(pid, side, item.dataset.key);
+  });
+});
+
+// Submit on Enter for fill-in inputs
+document.querySelectorAll('.fillin-input').forEach(inp => {
+  inp.addEventListener('keydown', e => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      // Find the problem this input belongs to
+      const problem = inp.closest('.problem');
+      if (problem) {
+        const pid = problem.id.replace('p','');
+        submitFillin(pid);
+      }
+    }
+  });
+});
+
+updateMatchProgress('5');
+
+// ───────────────────────────────────────────────────────────────
+// ASK AI PANEL
+// ───────────────────────────────────────────────────────────────
+const aiToggle = document.getElementById('ask-ai-toggle');
+const aiPanel  = document.getElementById('ask-ai-panel');
+const aiClose  = document.getElementById('ai-close');
+const aiBody   = document.getElementById('ai-body');
+const aiInput  = document.getElementById('ai-input');
+const aiSend   = document.getElementById('ai-send');
+
+aiToggle.addEventListener('click', () => {
+  aiPanel.classList.add('open');
+  aiPanel.setAttribute('aria-hidden','false');
+  setTimeout(() => aiInput.focus(), 250);
+});
+aiClose.addEventListener('click', () => {
+  aiPanel.classList.remove('open');
+  aiPanel.setAttribute('aria-hidden','true');
+});
+
+function appendMsg(role, text) {
+  const msg = document.createElement('div');
+  msg.className = `ai-msg ${role}`;
+  msg.innerHTML = `<span class="ai-msg-label">${role==='user'?'You':'Tutor'}</span>${text}`;
+  aiBody.appendChild(msg);
+  aiBody.scrollTop = aiBody.scrollHeight;
+}
+
+function sendAiQuestion() {
+  const q = aiInput.value.trim();
+  if (!q) return;
+  appendMsg('user', escapeHtml(q));
+  aiInput.value = '';
+
+  // Build the formatted prompt the user can copy/use
+  const formatted = `Context: I'm working through Station 11 (Segment-to-Resource Mapping) in the HL7 v2 → FHIR tutorial series. I'm new to the segment-to-resource concept but familiar with MSH and PID.\n\nQuestion: ${q}`;
+
+  setTimeout(() => {
+    // Build the assistant message DOM rather than using innerHTML with inline onclick
+    // (inline onclick with > inside the JS breaks HTML attribute parsing).
+    const msg = document.createElement('div');
+    msg.className = 'ai-msg assistant';
+
+    const label = document.createElement('span');
+    label.className = 'ai-msg-label';
+    label.textContent = 'Tutor';
+    msg.appendChild(label);
+
+    const intro = document.createElement('div');
+    intro.textContent = "I've prepared this as a focused prompt for your main Claude session:";
+    msg.appendChild(intro);
+
+    const promptBox = document.createElement('div');
+    promptBox.style.cssText = 'background: var(--bg-soft); border-radius: var(--radius-sm); padding: 8px 10px; margin: 6px 0; font-family: var(--mono); font-size: 12px; color: var(--text-primary); white-space: pre-wrap; line-height: 1.45;';
+    promptBox.textContent = formatted;
+    msg.appendChild(promptBox);
+
+    const copyBtn = document.createElement('button');
+    copyBtn.className = 'ai-send';
+    copyBtn.style.cssText = 'font-size: 11px; padding: 5px 10px; margin-top: 4px;';
+    copyBtn.textContent = 'Copy to clipboard';
+    copyBtn.addEventListener('click', () => {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(formatted).then(
+          () => { copyBtn.textContent = 'Copied ✓'; },
+          () => { fallbackCopy(formatted, copyBtn); }
+        );
+      } else {
+        fallbackCopy(formatted, copyBtn);
+      }
+    });
+    msg.appendChild(copyBtn);
+
+    const note = document.createElement('div');
+    note.style.cssText = 'font-size: 11.5px; color: var(--text-muted); margin-top: 8px; font-style: italic;';
+    note.textContent = 'Paste into Claude (or your usual AI chat) to get a full answer with the tutorial context already loaded.';
+    msg.appendChild(note);
+
+    aiBody.appendChild(msg);
+    aiBody.scrollTop = aiBody.scrollHeight;
+  }, 350);
+}
+
+function fallbackCopy(text, btn) {
+  // Fallback for environments without clipboard API
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.position = 'fixed';
+  ta.style.left = '-9999px';
+  document.body.appendChild(ta);
+  ta.select();
+  try {
+    document.execCommand('copy');
+    btn.textContent = 'Copied ✓';
+  } catch (e) {
+    btn.textContent = 'Copy failed';
+  }
+  document.body.removeChild(ta);
+}
+
+function escapeHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+function escapeForTemplate(s) {
+  return s.replace(/\\/g,'\\\\').replace(/`/g,'\\`').replace(/\$/g,'\\$').replace(/\n/g,'\\n');
+}
+
+aiSend.addEventListener('click', sendAiQuestion);
+aiInput.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendAiQuestion();
+  }
+});
+
+</script>
+</body>
+</html>

@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>dbt Healthcare Data Modeling — Live SQLite Tutorial</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Crimson+Pro:wght@400;600;700&family=Rubik:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#080d14;--surface:#0e1520;--surface-raised:#151e2c;--surface-inset:#070b10;
+    --border:#1e2d42;--border-accent:#2d4263;--text:#e4ecf4;--text-muted:#8fa3ba;--text-dim:#4a6280;
+    --accent:#ff694a;--accent-glow:rgba(255,105,74,.07);
+    --green:#34d399;--green-bg:rgba(52,211,153,.06);
+    --red:#fb7185;--red-bg:rgba(251,113,133,.06);
+    --orange:#fbbf24;--orange-bg:rgba(251,191,36,.06);
+    --c-src:#38bdf8;--c-src-glow:rgba(56,189,248,.06);
+    --c-mod:#fb923c;--c-mod-glow:rgba(251,146,60,.06);
+    --c-ref:#a78bfa;--c-ref-glow:rgba(167,139,250,.06);
+    --c-tst:#f472b6;--c-tst-glow:rgba(244,114,182,.06);
+    --c-jnj:#fbbf24;--c-jnj-glow:rgba(251,191,36,.06);
+    --c-sed:#4ade80;--c-sed-glow:rgba(74,222,128,.06);
+    --keyword:#fb7185;--string:#86efac;--comment:#4a6280;--clause:#fbbf24;
+    --radius:8px;--mono:'IBM Plex Mono',monospace;--serif:'Crimson Pro',Georgia,serif;--sans:'Rubik',system-ui,sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}
+  body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:16px;line-height:1.7;min-height:100vh}
+  .topbar{position:sticky;top:0;z-index:100;background:rgba(8,13,20,.93);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:12px 24px;display:flex;align-items:center;gap:16px}
+  .topbar-logo{font-family:var(--mono);font-weight:600;font-size:13px;letter-spacing:.5px;background:linear-gradient(90deg,var(--accent),var(--c-mod),var(--c-ref));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+  .topbar-progress{flex:1;height:4px;background:var(--surface-raised);border-radius:2px;overflow:hidden}
+  .topbar-progress-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--accent),var(--c-mod),var(--c-ref));border-radius:2px;transition:width .5s ease}
+  .topbar-score{font-family:var(--mono);font-size:13px;color:var(--text-muted)}
+  .topbar-db{font-family:var(--mono);font-size:11px;padding:3px 10px;border-radius:20px;border:1px solid var(--border)}
+  .topbar-db.loading{color:var(--orange);border-color:rgba(251,191,36,.3)}
+  .topbar-db.ready{color:var(--green);border-color:rgba(52,211,153,.3)}
+  .topbar-db.error{color:var(--red);border-color:rgba(251,113,133,.3)}
+  .container{max-width:960px;margin:0 auto;padding:0 24px 120px}
+  .hero{padding:80px 0 50px;text-align:center;position:relative}
+  .hero::before{content:'';position:absolute;top:-30px;left:50%;transform:translateX(-50%);width:800px;height:400px;background:radial-gradient(ellipse at 30% 40%,rgba(255,105,74,.05) 0%,transparent 50%),radial-gradient(ellipse at 70% 50%,rgba(251,146,60,.04) 0%,transparent 50%);pointer-events:none}
+  .dbt-brand{display:inline-flex;align-items:center;gap:10px;margin-bottom:20px}
+  .dbt-badge{background:linear-gradient(135deg,#ff694a,#e6522c);color:#fff;font-family:var(--mono);font-weight:700;font-size:18px;padding:6px 16px;border-radius:8px;letter-spacing:1px}
+  .dbt-x{color:rgba(255,255,255,.2);font-size:22px;font-weight:300}
+  .dbt-label{color:var(--text);font-size:16px;font-weight:600}
+  .hero h1{font-family:var(--serif);font-size:clamp(1.5rem,4vw,2.3rem);font-weight:700;line-height:1.25;margin-bottom:16px}
+  .hero h1 .src{color:var(--c-src)} .hero h1 .mod{color:var(--c-mod)} .hero h1 .ref{color:var(--c-ref)} .hero h1 .tst{color:var(--c-tst)}
+  .hero>p{color:var(--text-muted);font-size:16px;max-width:660px;margin:0 auto 20px;font-weight:300}
+  .legend{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:20px}
+  .legend-pill{display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);font-size:10px;padding:3px 11px;border-radius:20px;border:1px solid;letter-spacing:.3px}
+  .legend-pill.src{color:var(--c-src);border-color:rgba(56,189,248,.3);background:var(--c-src-glow)}
+  .legend-pill.mod{color:var(--c-mod);border-color:rgba(251,146,60,.3);background:var(--c-mod-glow)}
+  .legend-pill.ref{color:var(--c-ref);border-color:rgba(167,139,250,.3);background:var(--c-ref-glow)}
+  .legend-pill.tst{color:var(--c-tst);border-color:rgba(244,114,182,.3);background:var(--c-tst-glow)}
+  .legend-pill.jnj{color:var(--c-jnj);border-color:rgba(251,191,36,.3);background:var(--c-jnj-glow)}
+  .legend-pill.sed{color:var(--c-sed);border-color:rgba(74,222,128,.3);background:var(--c-sed-glow)}
+  .legend-dot{width:6px;height:6px;border-radius:50%}
+  .legend-pill.src .legend-dot{background:var(--c-src)} .legend-pill.mod .legend-dot{background:var(--c-mod)}
+  .legend-pill.ref .legend-dot{background:var(--c-ref)} .legend-pill.tst .legend-dot{background:var(--c-tst)}
+  .legend-pill.jnj .legend-dot{background:var(--c-jnj)} .legend-pill.sed .legend-dot{background:var(--c-sed)}
+  .hero-badge{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:11px;color:var(--text-dim);margin-bottom:20px;padding:5px 13px;background:var(--surface);border:1px solid var(--border);border-radius:20px}
+  .dev-credit{font-family:var(--mono);font-size:12px;color:var(--text-muted);letter-spacing:.5px;margin-bottom:20px}
+  .dev-credit span{color:var(--accent);font-weight:600}
+  .hero-cta{display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,#e6522c,var(--accent));color:#fff;font-family:var(--sans);font-weight:600;font-size:15px;padding:12px 28px;border-radius:6px;border:none;cursor:pointer;transition:transform .15s,box-shadow .15s}
+  .hero-cta:hover{transform:translateY(-1px);box-shadow:0 4px 24px rgba(255,105,74,.3)}
+  .section{margin-top:64px}
+  .section-label{font-family:var(--mono);font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin-bottom:8px}
+  .section h2{font-family:var(--serif);font-size:1.45rem;font-weight:700;margin-bottom:16px}
+  .section p,.section li{color:var(--text-muted);line-height:1.8;font-weight:300}
+  .section ul{padding-left:20px;margin:12px 0}.section li{margin-bottom:6px}.section li::marker{color:var(--accent)}.section strong{font-weight:600}
+  .callout{border-left:3px solid;border-radius:0 var(--radius) var(--radius) 0;padding:14px 18px;margin:18px 0;font-size:14px;color:var(--text-muted);font-weight:300}
+  .callout strong{display:block;margin-bottom:4px;font-weight:600}
+  .callout.src{background:var(--c-src-glow);border-left-color:var(--c-src)} .callout.src strong{color:var(--c-src)}
+  .callout.mod{background:var(--c-mod-glow);border-left-color:var(--c-mod)} .callout.mod strong{color:var(--c-mod)}
+  .callout.ref{background:var(--c-ref-glow);border-left-color:var(--c-ref)} .callout.ref strong{color:var(--c-ref)}
+  .callout.tst{background:var(--c-tst-glow);border-left-color:var(--c-tst)} .callout.tst strong{color:var(--c-tst)}
+  .callout.jnj{background:var(--c-jnj-glow);border-left-color:var(--c-jnj)} .callout.jnj strong{color:var(--c-jnj)}
+  .callout.sed{background:var(--c-sed-glow);border-left-color:var(--c-sed)} .callout.sed strong{color:var(--c-sed)}
+  .callout.neutral{background:var(--accent-glow);border-left-color:var(--accent)} .callout.neutral strong{color:var(--accent)}
+  .code-block{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 20px;margin:16px 0;overflow-x:auto;font-family:var(--mono);font-size:12.5px;line-height:1.85;position:relative}
+  .kw{color:var(--keyword);font-weight:500} .str{color:var(--string)} .cmt{color:var(--comment);font-style:italic} .fn{color:var(--c-src);font-weight:500} .cl{color:var(--clause)} .dl{color:var(--c-mod);font-weight:500}
+  .pipeline-set{margin-top:56px;padding:20px 0 0;border-top:2px solid var(--border)}
+  .pipeline-label{font-family:var(--mono);font-size:10px;letter-spacing:2.5px;text-transform:uppercase;padding:4px 14px;border-radius:20px;display:inline-block;margin-bottom:8px}
+  .pipeline-label.p1{color:var(--c-src);background:var(--c-src-glow);border:1px solid rgba(56,189,248,.2)}
+  .pipeline-label.p2{color:var(--c-mod);background:var(--c-mod-glow);border:1px solid rgba(251,146,60,.2)}
+  .pipeline-label.p3{color:var(--c-tst);background:var(--c-tst-glow);border:1px solid rgba(244,114,182,.2)}
+  .pipeline-title{font-family:var(--serif);font-size:1.2rem;font-weight:700;margin-bottom:6px}
+  .pipeline-desc{color:var(--text-muted);font-size:14px;font-weight:300;margin-bottom:0}
+  .exercise{background:var(--surface);border:1px solid var(--border);border-radius:12px;margin-top:48px;overflow:hidden;transition:border-color .3s}
+  .exercise.solved{border-color:var(--green)}
+  .exercise-header{display:flex;align-items:center;gap:12px;padding:18px 22px;border-bottom:1px solid var(--border);background:var(--surface-raised);flex-wrap:wrap}
+  .exercise-num{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:12px;font-weight:600;background:var(--accent-glow);color:var(--accent);border:1px solid rgba(255,105,74,.3);flex-shrink:0;transition:all .3s}
+  .exercise.solved .exercise-num{background:var(--green-bg);color:var(--green);border-color:rgba(52,211,153,.3)}
+  .exercise-title{font-weight:600;font-size:14px;flex:1;min-width:180px}
+  .exercise-diff{font-family:var(--mono);font-size:10px;letter-spacing:.5px;padding:3px 9px;border-radius:20px;flex-shrink:0}
+  .diff-easy{background:var(--green-bg);color:var(--green)} .diff-med{background:var(--orange-bg);color:var(--orange)} .diff-hard{background:var(--red-bg);color:var(--red)}
+  .tech-tags{display:flex;gap:5px;flex-wrap:wrap;width:100%;margin-top:4px}
+  .tech-tag{font-family:var(--mono);font-size:9px;letter-spacing:.5px;text-transform:uppercase;padding:2px 7px;border-radius:3px}
+  .tech-tag.src{background:var(--c-src-glow);color:var(--c-src);border:1px solid rgba(56,189,248,.2)}
+  .tech-tag.mod{background:var(--c-mod-glow);color:var(--c-mod);border:1px solid rgba(251,146,60,.2)}
+  .tech-tag.ref{background:var(--c-ref-glow);color:var(--c-ref);border:1px solid rgba(167,139,250,.2)}
+  .tech-tag.tst{background:var(--c-tst-glow);color:var(--c-tst);border:1px solid rgba(244,114,182,.2)}
+  .tech-tag.jnj{background:var(--c-jnj-glow);color:var(--c-jnj);border:1px solid rgba(251,191,36,.2)}
+  .tech-tag.sed{background:var(--c-sed-glow);color:var(--c-sed);border:1px solid rgba(74,222,128,.2)}
+  .exercise-body{padding:22px}.exercise-body>p{color:var(--text-muted);margin-bottom:14px;font-size:14px;font-weight:300}
+  .intro-box{background:var(--surface-raised);border:1px solid var(--border);border-radius:var(--radius);padding:16px 20px;margin-bottom:20px}
+  .intro-box h4{font-family:var(--serif);font-size:13px;font-weight:600;color:var(--accent);margin-bottom:6px;display:flex;align-items:center;gap:7px}
+  .intro-box h4 .icon{font-size:15px}
+  .intro-box p{font-size:13px;color:var(--text-muted);line-height:1.7;font-weight:300}
+  .intro-box code{background:var(--surface-inset);padding:1px 5px;border-radius:3px;font-family:var(--mono);font-size:12px}
+  .schema-box{background:rgba(255,105,74,.03);border:1px solid rgba(255,105,74,.1);border-radius:var(--radius);padding:12px 16px;margin-bottom:18px;font-family:var(--mono);font-size:12px;line-height:1.6;color:var(--accent)}
+  .schema-box .tname{color:var(--clause);font-weight:600}.schema-box .cols{color:var(--text-muted)}
+  .fill-code{background:var(--surface-inset);border:1px solid var(--border);border-radius:var(--radius);padding:18px 22px;font-family:var(--mono);font-size:12.5px;line-height:2.6;margin-bottom:12px;white-space:pre-wrap;word-break:break-word;overflow-x:auto}
+  .fill-code .blank-wrap{display:inline-block;position:relative;vertical-align:baseline;margin:0 1px;padding-bottom:14px}
+  .fill-code input{background:var(--surface-raised);border:1px dashed var(--border-accent);border-radius:4px;color:var(--accent);font-family:var(--mono);font-size:12.5px;padding:2px 7px;height:23px;outline:none;transition:border-color .2s,box-shadow .2s;vertical-align:baseline}
+  .fill-code input:focus{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-glow)}
+  .fill-code input.correct{border-color:var(--green);color:var(--green);background:var(--green-bg)}
+  .fill-code input.wrong{border-color:var(--red);color:var(--red);background:var(--red-bg);animation:shake .3s}
+  .fill-code input.t-src{border-color:rgba(56,189,248,.4);color:var(--c-src)} .fill-code input.t-src:focus{box-shadow:0 0 0 2px var(--c-src-glow);border-color:var(--c-src)}
+  .fill-code input.t-mod{border-color:rgba(251,146,60,.4);color:var(--c-mod)} .fill-code input.t-mod:focus{box-shadow:0 0 0 2px var(--c-mod-glow);border-color:var(--c-mod)}
+  .fill-code input.t-ref{border-color:rgba(167,139,250,.4);color:var(--c-ref)} .fill-code input.t-ref:focus{box-shadow:0 0 0 2px var(--c-ref-glow);border-color:var(--c-ref)}
+  .fill-code input.t-tst{border-color:rgba(244,114,182,.4);color:var(--c-tst)} .fill-code input.t-tst:focus{box-shadow:0 0 0 2px var(--c-tst-glow);border-color:var(--c-tst)}
+  .fill-code input.t-jnj{border-color:rgba(251,191,36,.4);color:var(--c-jnj)} .fill-code input.t-jnj:focus{box-shadow:0 0 0 2px var(--c-jnj-glow);border-color:var(--c-jnj)}
+  .fill-code input.t-sed{border-color:rgba(74,222,128,.4);color:var(--c-sed)} .fill-code input.t-sed:focus{box-shadow:0 0 0 2px var(--c-sed-glow);border-color:var(--c-sed)}
+  @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+  .blank-label{position:absolute;left:0;right:0;bottom:-1px;font-size:8px;letter-spacing:.4px;color:var(--text-dim);text-align:center;white-space:nowrap;overflow:visible;line-height:1;display:flex;align-items:center;justify-content:center;gap:2px}
+  .blank-reveal-btn{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;background:transparent;border:1px solid rgba(251,113,133,.2);border-radius:3px;color:var(--red);cursor:pointer;font-size:11px;vertical-align:baseline;margin-left:2px;opacity:.45;transition:opacity .15s,background .15s,border-color .15s;position:relative;top:-1px}
+  .blank-reveal-btn:hover{opacity:1;background:var(--red-bg);border-color:rgba(251,113,133,.5)}
+  .blank-reveal-btn.used{opacity:.2;pointer-events:none;border-color:rgba(52,211,153,.2);color:var(--green)}
+  .exercise-actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:8px}
+  .btn{font-family:var(--sans);font-size:12px;font-weight:600;padding:7px 16px;border-radius:6px;border:1px solid var(--border);cursor:pointer;transition:all .15s}
+  .btn-check{background:linear-gradient(135deg,#e6522c,var(--accent));color:#fff;border-color:var(--accent)} .btn-check:hover{box-shadow:0 2px 12px rgba(255,105,74,.3)}
+  .btn-run{background:var(--green);color:#000;border-color:var(--green)} .btn-run:hover{box-shadow:0 2px 12px rgba(52,211,153,.3)} .btn-run:disabled{opacity:.35;cursor:not-allowed;box-shadow:none}
+  .btn-hint{background:transparent;color:var(--orange);border-color:rgba(251,191,36,.3)} .btn-hint:hover{background:var(--orange-bg)}
+  .btn-reveal{background:transparent;color:var(--red);border-color:rgba(251,113,133,.3)} .btn-reveal:hover{background:var(--red-bg)}
+  .btn-reset{background:transparent;color:var(--text-muted);border-color:var(--border)} .btn-reset:hover{background:var(--surface-raised)}
+  .hint-area{margin-top:12px;padding:10px 14px;border-radius:var(--radius);font-size:13px;display:none;font-weight:400}
+  .hint-area.visible{display:block}
+  .hint-area.hint{background:var(--orange-bg);color:var(--orange)} .hint-area.success{background:var(--green-bg);color:var(--green)} .hint-area.error{background:var(--red-bg);color:var(--red)}
+  .results-area{margin-top:14px;display:none}.results-area.visible{display:block}
+  .results-header{font-family:var(--mono);font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--green);margin-bottom:6px;display:flex;align-items:center;gap:6px}
+  .results-header .rows{color:var(--text-dim);text-transform:none;letter-spacing:0}
+  .results-table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:var(--radius)}
+  .results-table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:11px}
+  .results-table th{background:var(--surface-raised);color:var(--text-muted);font-weight:600;text-align:left;padding:7px 12px;border-bottom:1px solid var(--border);white-space:nowrap}
+  .results-table td{padding:6px 12px;border-bottom:1px solid rgba(30,45,66,.5);color:var(--text);white-space:nowrap}
+  .results-table tr:last-child td{border-bottom:none}.results-table tr:hover td{background:rgba(255,105,74,.02)}
+  .results-msg{font-size:12px;color:var(--text-muted);padding:10px;font-style:italic}
+  .note-box{background:var(--surface-raised);border:1px solid var(--border);border-radius:var(--radius);padding:18px 22px;margin-top:18px}
+  .note-box h4{font-family:var(--mono);font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent);margin-bottom:10px;display:flex;align-items:center;gap:7px}
+  .note-box h4::before{content:'';display:inline-block;width:3px;height:12px;background:var(--accent);border-radius:2px}
+  .note-section{margin-bottom:12px}.note-section:last-child{margin-bottom:0}
+  .note-section-title{font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.5px;margin-bottom:5px}
+  .note-section-title.hints{color:var(--orange)} .note-section-title.consider{color:var(--c-src)}
+  .note-section ul{padding-left:14px;margin:0}
+  .note-section li{font-size:12px;color:var(--text-muted);line-height:1.65;margin-bottom:3px;font-weight:300}.note-section li::marker{color:var(--text-dim)}
+  .explanation{margin-top:14px;border-top:1px solid var(--border);padding-top:14px;display:none}.explanation.visible{display:block}
+  .explanation p{color:var(--text-muted);font-size:13px;margin-bottom:6px;line-height:1.75;font-weight:300}
+  .explanation code{background:var(--surface-raised);padding:1px 5px;border-radius:3px;font-family:var(--mono);font-size:11px;color:var(--accent)}
+  .explanation code.src{color:var(--c-src)} .explanation code.mod{color:var(--c-mod)} .explanation code.ref{color:var(--c-ref)} .explanation code.tst{color:var(--c-tst)}
+  .exercise.sample{border-color:rgba(255,105,74,.35);background:linear-gradient(180deg,var(--surface) 0%,rgba(255,105,74,.02) 100%)}
+  .exercise.sample .exercise-header{background:linear-gradient(90deg,rgba(255,105,74,.08),rgba(255,105,74,.03))}
+  .exercise.sample .exercise-num{background:var(--accent-glow);color:var(--accent);border-color:rgba(255,105,74,.5);font-size:10px;width:auto;border-radius:12px;padding:0 10px}
+  .sample-badge{font-family:var(--mono);font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--accent);background:var(--accent-glow);border:1px solid rgba(255,105,74,.25);padding:2px 8px;border-radius:3px;margin-left:auto}
+  .sample-code{background:var(--surface-inset);border:1px solid var(--border);border-radius:var(--radius);padding:18px 22px;font-family:var(--mono);font-size:12.5px;line-height:2.2;margin-bottom:12px;white-space:pre-wrap;word-break:break-word;overflow-x:auto}
+  .sample-step{background:var(--surface-raised);border:1px solid var(--border);border-radius:var(--radius);padding:14px 18px;margin:12px 0}
+  .sample-step h5{font-family:var(--mono);font-size:11px;letter-spacing:.5px;color:var(--accent);margin-bottom:6px;display:flex;align-items:center;gap:6px}
+  .sample-step h5::before{content:'';display:inline-block;width:8px;height:8px;border-radius:50%;border:2px solid var(--accent);flex-shrink:0}
+  .sample-step p{font-size:13px;color:var(--text-muted);line-height:1.7;font-weight:300}
+  .sample-step code{background:var(--surface-inset);padding:1px 5px;border-radius:3px;font-family:var(--mono);font-size:11px}
+  .footer{text-align:center;padding:60px 0 40px;color:var(--text-dim);font-size:12px;font-weight:300}
+  @media(max-width:640px){.container{padding:0 16px 80px}.fill-code{padding:12px 14px;font-size:11px}.exercise-body{padding:14px}.fill-code input{font-size:11px;height:21px}}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="topbar-logo">dbt::TRANSFORM</div>
+  <div class="topbar-progress"><div class="topbar-progress-fill" id="progressFill"></div></div>
+  <div class="topbar-score" id="scoreLabel">0 / 9</div>
+  <div class="topbar-db loading" id="dbStatus">SQLite Loading…</div>
+</div>
+<div class="container">
+<div class="hero">
+  <div class="dbt-brand"><div class="dbt-badge">dbt</div><span class="dbt-x">×</span><span class="dbt-label">Healthcare Data Modeling</span></div>
+  <h1>Transform EHR Data with<br><span class="src">Sources</span> · <span class="mod">Models</span> · <span class="ref">ref()</span> · <span class="tst">Tests</span></h1>
+  <p>Build a layered dbt analytics pipeline — from raw EHR sources through staging models to analytical marts — in a <strong style="color:var(--text)">live SQLite database</strong>. Three mini-pipelines cover sources, Jinja, and reusable tests.</p>
+  <div class="legend">
+    <span class="legend-pill src"><span class="legend-dot"></span>Source</span>
+    <span class="legend-pill sed"><span class="legend-dot"></span>Seed</span>
+    <span class="legend-pill mod"><span class="legend-dot"></span>Model</span>
+    <span class="legend-pill ref"><span class="legend-dot"></span>ref()</span>
+    <span class="legend-pill jnj"><span class="legend-dot"></span>Jinja</span>
+    <span class="legend-pill tst"><span class="legend-dot"></span>Test</span>
+  </div>
+  <div class="hero-badge">&#9881; Live SQLite via sql.js WebAssembly</div><br>
+  <div class="dev-credit">Developed by: &nbsp;<span>Joe Williams</span></div>
+  <button class="hero-cta" onclick="document.getElementById('overview').scrollIntoView()">Start Learning &darr;</button>
+</div>
+
+<div class="section" id="overview">
+  <div class="section-label">Overview</div>
+  <h2>dbt for Healthcare Data Transformation</h2>
+  <p>dbt (data build tool) transforms raw data <em>already in your warehouse</em> into clean, tested, documented models. Unlike Great Expectations (pre-load validation), dbt operates <strong style="color:var(--text)">post-load</strong> — structuring raw EHR feeds into layered staging, intermediate, and mart models using pure SQL + Jinja templating.</p>
+  <div class="callout src"><strong>Sources — Raw Data Entry Points</strong>Raw tables loaded by your EL process (Fivetran, Airbyte, etc.). Defined in YAML with <code style="font-family:var(--mono);color:var(--c-src)">sources:</code>. Accessed in SQL via <code style="font-family:var(--mono);color:var(--c-src)">{{ source('schema', 'table') }}</code>. Provides lineage tracking and freshness monitoring.</div>
+  <div class="callout sed"><strong>Seeds — Static Reference Data</strong>CSV files in <code style="font-family:var(--mono);color:var(--c-sed)">seeds/</code> loaded with <code style="font-family:var(--mono);color:var(--c-sed)">dbt seed</code>. Perfect for lookup tables: ICD-10 codes, CPT descriptions, facility mappings. Referenced just like models with <code style="font-family:var(--mono);color:var(--c-sed)">{{ ref('seed_name') }}</code>.</div>
+  <div class="callout mod"><strong>Models — SQL Transformations</strong>Each model is a <code style="font-family:var(--mono);color:var(--c-mod)">SELECT</code> statement in a .sql file. dbt materializes it as a view or table. Models reference other models with <code style="font-family:var(--mono);color:var(--c-mod)">{{ ref('model_name') }}</code>, building a DAG (Directed Acyclic Graph) of dependencies.</div>
+  <div class="callout tst"><strong>Tests — Data Quality Guards</strong>SQL queries that return failing rows — a test <strong>passes when zero rows are returned</strong>. Built-in tests: <code style="font-family:var(--mono);color:var(--c-tst)">unique</code>, <code style="font-family:var(--mono);color:var(--c-tst)">not_null</code>, <code style="font-family:var(--mono);color:var(--c-tst)">accepted_values</code>, <code style="font-family:var(--mono);color:var(--c-tst)">relationships</code>. Singular tests go in <code style="font-family:var(--mono)">tests/</code>. Reusable tests use Jinja macros.</div>
+  <div class="callout jnj"><strong>Jinja — Dynamic SQL Templating</strong>dbt uses Jinja2: <code style="font-family:var(--mono);color:var(--c-jnj)">{{ expressions }}</code>, <code style="font-family:var(--mono);color:var(--c-jnj)">{% statements %}</code>, <code style="font-family:var(--mono);color:var(--c-jnj)">{# comments #}</code>. Key functions: <code style="font-family:var(--mono)">ref()</code> (models/seeds), <code style="font-family:var(--mono)">source()</code> (raw data), <code style="font-family:var(--mono)">config()</code> (settings).</div>
+  <div class="callout neutral"><strong>How this tutorial works:</strong> Each exercise simulates a dbt model or test as a <strong>SQL query</strong> run against live SQLite. You fill in blanks to build the transformation logic, then execute to see results — the same SQL that dbt would compile and run in your warehouse.</div>
+</div>
+
+<div class="section">
+  <div class="section-label">Sample Data</div>
+  <h2>Raw EHR Tables</h2>
+  <p>The SQLite database simulates a healthcare warehouse with raw EHR data, reference seeds, and staging layers — the same structure a dbt project would transform.</p>
+  <div class="schema-box"><span class="tname">raw_encounters</span> <span class="cols">(encounter_id TEXT PK, patient_id TEXT, facility TEXT, encounter_date TEXT, encounter_type TEXT, provider_id TEXT)</span><br>— 10 raw encounter records from PNW facilities</div>
+  <div class="schema-box"><span class="tname">raw_diagnoses</span> <span class="cols">(diag_id INT PK, encounter_id TEXT FK, code_system TEXT, code TEXT, description TEXT, coding_status TEXT)</span><br>— 12 diagnosis records with ICD-10 codes (some invalid)</div>
+  <div class="schema-box"><span class="tname">raw_procedures</span> <span class="cols">(proc_id INT PK, encounter_id TEXT FK, cpt_code TEXT, description TEXT, status TEXT)</span><br>— 10 procedure records with CPT codes</div>
+  <div class="schema-box"><span class="tname">ref_icd10_codes</span> <span class="cols">(code_system TEXT, code TEXT, description TEXT)</span><br>— Seed: 6 trusted ICD-10 reference entries</div>
+  <div class="schema-box"><span class="tname">ref_cpt_codes</span> <span class="cols">(code_system TEXT, code TEXT, description TEXT)</span><br>— Seed: 6 trusted CPT reference entries</div>
+  <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
+    <button class="btn btn-reset" onclick="previewTable('raw_encounters')">raw_encounters</button>
+    <button class="btn btn-reset" onclick="previewTable('raw_diagnoses')">raw_diagnoses</button>
+    <button class="btn btn-reset" onclick="previewTable('raw_procedures')">raw_procedures</button>
+    <button class="btn btn-reset" onclick="previewTable('ref_icd10_codes')">ref_icd10</button>
+    <button class="btn btn-reset" onclick="previewTable('ref_cpt_codes')">ref_cpt</button>
+  </div>
+  <div id="preview-area" class="results-area" style="margin-top:12px"></div>
+</div>
+
+<div class="section" id="exercises">
+  <div class="section-label">Exercises</div>
+  <h2>Three Mini-Pipelines</h2>
+  <p>Nine exercises across three skill tiers, each simulating a dbt pattern. Click <strong style="color:var(--red)">◔</strong> beside any blank to reveal just that answer. Once correct, <strong style="color:var(--green)">▶ Run Model</strong> executes against the live database.</p>
+</div>
+<div id="exerciseContainer"></div>
+<div class="footer">dbt Healthcare Data Modeling Tutorial · Sources · Models · ref() · Tests · Jinja · Developed by Joe Williams</div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.3/sql-wasm.js"></script>
+<script>
+let db=null;const dbStatusEl=document.getElementById('dbStatus');
+async function initDB(){try{const SQL=await initSqlJs({locateFile:f=>`https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.3/${f}`});db=new SQL.Database();seedDatabase();dbStatusEl.className='topbar-db ready';dbStatusEl.textContent='SQLite Ready'}catch(e){dbStatusEl.className='topbar-db error';dbStatusEl.textContent='DB Error';console.error(e)}}
+function seedDatabase(){db.run(`
+CREATE TABLE raw_encounters(encounter_id TEXT PRIMARY KEY,patient_id TEXT,facility TEXT,encounter_date TEXT,encounter_type TEXT,provider_id TEXT);
+INSERT INTO raw_encounters VALUES('ENC-001','P-101','PNW-Central','2026-03-15','office_visit','DR-101');
+INSERT INTO raw_encounters VALUES('ENC-002','P-102','PNW-Central','2026-03-15','office_visit','DR-102');
+INSERT INTO raw_encounters VALUES('ENC-003','P-103','PNW-Central','2026-03-15','urgent_care','DR-103');
+INSERT INTO raw_encounters VALUES('ENC-004','P-101','PNW-Central','2026-03-16','office_visit','DR-101');
+INSERT INTO raw_encounters VALUES('ENC-005','P-104','PNW-Central','2026-03-16','office_visit','DR-104');
+INSERT INTO raw_encounters VALUES('ENC-006','P-105','PNW-Central','2026-03-16','lab_only','DR-102');
+INSERT INTO raw_encounters VALUES('ENC-007','P-102','PNW-East','2026-03-16','office_visit','DR-201');
+INSERT INTO raw_encounters VALUES('ENC-008','P-106','PNW-Central','2026-03-17','office_visit','DR-103');
+INSERT INTO raw_encounters VALUES('ENC-009','P-103','PNW-Central','2026-03-17','follow_up','DR-101');
+INSERT INTO raw_encounters VALUES('ENC-010','P-107','PNW-Central','2026-03-17','office_visit','DR-104');
+CREATE TABLE raw_diagnoses(diag_id INTEGER PRIMARY KEY,encounter_id TEXT,code_system TEXT,code TEXT,description TEXT,coding_status TEXT);
+INSERT INTO raw_diagnoses VALUES(1,'ENC-001','ICD-10','E11.9','Type 2 diabetes mellitus without complications','final');
+INSERT INTO raw_diagnoses VALUES(2,'ENC-002','ICD-10','I10','Essential (primary) hypertension','final');
+INSERT INTO raw_diagnoses VALUES(3,'ENC-003','ICD-10',NULL,'Anxiety disorder, unspecified','final');
+INSERT INTO raw_diagnoses VALUES(4,'ENC-003','ICD-10','J069','Acute upper respiratory infection','final');
+INSERT INTO raw_diagnoses VALUES(5,'ENC-004','ICD-10','M54.5',NULL,'final');
+INSERT INTO raw_diagnoses VALUES(6,'ENC-005','ICD-10','E78.5','Hyperlipidemia, unspecified','preliminary');
+INSERT INTO raw_diagnoses VALUES(7,'ENC-006','ICD-10','F41.9','Anxiety disorder, unspecified','final');
+INSERT INTO raw_diagnoses VALUES(8,'ENC-007','ICD-10','E11.65','Type 2 DM with hyperglycemia','final');
+INSERT INTO raw_diagnoses VALUES(9,'ENC-008','ICD-10','ZZZZZ','Unknown condition','final');
+INSERT INTO raw_diagnoses VALUES(10,'ENC-009','ICD-10','I10','Essential (primary) hypertension','final');
+INSERT INTO raw_diagnoses VALUES(11,'ENC-010','ICD-10','G43.909','Migraine, unspecified','final');
+INSERT INTO raw_diagnoses VALUES(12,'ENC-004','ICD-10','N18.3','Chronic kidney disease, stage 3','preliminary');
+CREATE TABLE raw_procedures(proc_id INTEGER PRIMARY KEY,encounter_id TEXT,cpt_code TEXT,description TEXT,status TEXT);
+INSERT INTO raw_procedures VALUES(1,'ENC-001','99213','Office visit, est patient, level 3','completed');
+INSERT INTO raw_procedures VALUES(2,'ENC-002','99214','Office visit, est patient, level 4','completed');
+INSERT INTO raw_procedures VALUES(3,'ENC-003',NULL,'Lab draw','completed');
+INSERT INTO raw_procedures VALUES(4,'ENC-003','85260','Urinalysis with microscopy','completed');
+INSERT INTO raw_procedures VALUES(5,'ENC-005','71046','Chest x-ray, two views','completed');
+INSERT INTO raw_procedures VALUES(6,'ENC-006','80053','Comprehensive metabolic panel','completed');
+INSERT INTO raw_procedures VALUES(7,'ENC-007','99213','Office visit, est patient, level 3','completed');
+INSERT INTO raw_procedures VALUES(8,'ENC-008','36415','Venipuncture','draft');
+INSERT INTO raw_procedures VALUES(9,'ENC-009','99213','Office visit, est patient, level 3','completed');
+INSERT INTO raw_procedures VALUES(10,'ENC-010','93000','Electrocardiogram, routine ECG','completed');
+CREATE TABLE ref_icd10_codes(code_system TEXT,code TEXT,description TEXT);
+INSERT INTO ref_icd10_codes VALUES('ICD-10','E11.9','Type 2 diabetes mellitus without complications');
+INSERT INTO ref_icd10_codes VALUES('ICD-10','I10','Essential (primary) hypertension');
+INSERT INTO ref_icd10_codes VALUES('ICD-10','J06.9','Acute upper respiratory infection, unspecified');
+INSERT INTO ref_icd10_codes VALUES('ICD-10','M54.5','Low back pain');
+INSERT INTO ref_icd10_codes VALUES('ICD-10','E78.5','Hyperlipidemia, unspecified');
+INSERT INTO ref_icd10_codes VALUES('ICD-10','F41.9','Anxiety disorder, unspecified');
+CREATE TABLE ref_cpt_codes(code_system TEXT,code TEXT,description TEXT);
+INSERT INTO ref_cpt_codes VALUES('CPT','93000','Electrocardiogram, routine ECG with at least 12 leads');
+INSERT INTO ref_cpt_codes VALUES('CPT','99213','Office visit, established patient, 20-29 min');
+INSERT INTO ref_cpt_codes VALUES('CPT','99214','Office visit, established patient, 30-39 min');
+INSERT INTO ref_cpt_codes VALUES('CPT','36415','Venipuncture (routine blood draw)');
+INSERT INTO ref_cpt_codes VALUES('CPT','80053','Comprehensive metabolic panel');
+INSERT INTO ref_cpt_codes VALUES('CPT','71046','Chest X-ray, 2 views');
+`)}
+function runSQL(sql,p){try{return{data:db.exec(sql,p)}}catch(e){return{error:e.message}}}
+function renderTable(r){if(!r||!r.columns||r.values.length===0)return'<div class="results-msg">No rows returned.</div>';let h='<div class="results-table-wrap"><table class="results-table"><thead><tr>';r.columns.forEach(c=>h+=`<th>${c}</th>`);h+='</tr></thead><tbody>';r.values.forEach(row=>{h+='<tr>';row.forEach(v=>h+=`<td>${v===null?'<span style="color:var(--text-dim)">NULL</span>':v}</td>`);h+='</tr>'});return h+'</tbody></table></div>'}
+function previewTable(t){const a=document.getElementById('preview-area');if(!db){a.className='results-area visible';a.innerHTML='<div class="results-msg" style="color:var(--red)">Database not loaded.</div>';return}const r=runSQL(`SELECT * FROM ${t} LIMIT 20`);a.className='results-area visible';if(r.error)a.innerHTML=`<div class="results-msg" style="color:var(--red)">${r.error}</div>`;else if(r.data&&r.data.length>0)a.innerHTML=`<div class="results-header">&#128202; ${t} <span class="rows">(${r.data[0].values.length} rows)</span></div>`+renderTable(r.data[0]);else a.innerHTML='<div class="results-msg">Empty table.</div>'}
+
+// ═══════ SAMPLES ═══════
+const sampleProblems={
+pipeline1:{title:"Worked Sample — Query a Raw Source Table",difficulty:"easy",techs:["src","mod"],
+intro:"In dbt, raw tables are declared as <strong>sources</strong> in YAML. You access them in SQL with <code>{{ source('schema_name', 'table_name') }}</code>. This compiles to the fully-qualified table name. This query simulates a basic staging model that reads from a raw source.",
+sql:`<span class="cmt">-- dbt model: models/staging/stg_encounters.sql</span>
+<span class="cmt">-- In dbt: FROM {{ source('ehr_raw', 'encounters') }}</span>
+<span class="cmt">-- Compiled: FROM ehr_raw.encounters</span>
+
+<span class="kw">SELECT</span>
+    encounter_id,
+    patient_id,
+    facility,
+    encounter_date,
+    encounter_type
+<span class="kw">FROM</span> raw_encounters
+<span class="kw">WHERE</span> encounter_date >= <span class="str">'2026-03-15'</span>
+<span class="kw">ORDER BY</span> encounter_date, encounter_id`,
+runnableSQL:"SELECT encounter_id, patient_id, facility, encounter_date, encounter_type FROM raw_encounters WHERE encounter_date >= '2026-03-15' ORDER BY encounter_date, encounter_id",
+steps:[
+{title:"source() → raw table reference",text:"In a real dbt project, <code>FROM {{ source('ehr_raw', 'encounters') }}</code> would compile to <code>FROM ehr_raw.encounters</code>. The source function resolves the schema + table name and registers a lineage dependency."},
+{title:"Staging models are thin wrappers",text:"A staging model (prefixed <code>stg_</code>) typically just selects columns, renames them, and does light type casting. No business logic — that goes in intermediate and mart models downstream."},
+{title:"dbt build runs everything",text:"Running <code>dbt build</code> compiles this SQL, executes it in your warehouse, and materializes the result as a view or table. The DAG ensures sources are checked and upstream models run first."}
+]},
+
+pipeline2:{title:"Worked Sample — Join Staging Models with ref()",difficulty:"med",techs:["mod","ref","jnj"],
+intro:"Once staging models exist, you build <strong>intermediate models</strong> that join them using <code>{{ ref('model_name') }}</code>. This Jinja function creates DAG dependencies — dbt knows to build the staging models first. This sample joins encounters with diagnoses.",
+sql:`<span class="cmt">-- dbt model: models/intermediate/int_encounter_diagnoses.sql</span>
+<span class="cmt">-- In dbt: FROM {{ ref('stg_encounters') }}</span>
+<span class="cmt">-- In dbt: JOIN {{ ref('stg_diagnoses') }}</span>
+
+<span class="kw">SELECT</span>
+    e.encounter_id,
+    e.patient_id,
+    e.facility,
+    e.encounter_date,
+    d.code <span class="kw">AS</span> icd10_code,
+    d.description <span class="kw">AS</span> diagnosis_description,
+    d.coding_status
+<span class="kw">FROM</span> raw_encounters e
+<span class="kw">JOIN</span> raw_diagnoses d
+    <span class="kw">ON</span> e.encounter_id = d.encounter_id
+<span class="kw">WHERE</span> d.coding_status = <span class="str">'final'</span>
+<span class="kw">ORDER BY</span> e.encounter_date, e.encounter_id`,
+runnableSQL:"SELECT e.encounter_id, e.patient_id, e.facility, e.encounter_date, d.code AS icd10_code, d.description AS diagnosis_description, d.coding_status FROM raw_encounters e JOIN raw_diagnoses d ON e.encounter_id = d.encounter_id WHERE d.coding_status = 'final' ORDER BY e.encounter_date, e.encounter_id",
+steps:[
+{title:"ref() builds the DAG",text:"<code>{{ ref('stg_encounters') }}</code> does two things: (1) resolves the model's compiled table name, and (2) tells dbt that this model <em>depends on</em> stg_encounters, so it must run first."},
+{title:"Intermediate models add business logic",text:"Prefixed <code>int_</code>, these models join, filter, and reshape staging data. Here we join encounters with their final diagnoses — excluding preliminary records."},
+{title:"Models vs Sources",text:"Use <code>ref()</code> for dbt models and seeds. Use <code>source()</code> for raw tables managed outside dbt. Both create lineage, but only <code>ref()</code> creates build dependencies."}
+]},
+
+pipeline3:{title:"Worked Sample — Singular Test for Code Mismatches",difficulty:"hard",techs:["tst","ref","sed"],
+intro:"A dbt <strong>singular test</strong> is a SQL query in <code>tests/</code> that returns failing rows. It <strong>passes when zero rows come back</strong>. This test LEFT JOINs encounters against the reference seed to find description mismatches — rows where the EHR description doesn't match the trusted reference.",
+sql:`<span class="cmt">-- dbt test: tests/assert_diagnosis_desc_matches_ref.sql</span>
+<span class="cmt">-- In dbt: FROM {{ ref('stg_diagnoses') }} AS d</span>
+<span class="cmt">-- In dbt: LEFT JOIN {{ ref('ref_icd10_codes') }} AS r</span>
+
+<span class="kw">SELECT</span>
+    d.diag_id,
+    d.code,
+    d.description   <span class="kw">AS</span> ehr_description,
+    r.description   <span class="kw">AS</span> expected_description
+<span class="kw">FROM</span> raw_diagnoses d
+<span class="kw">LEFT JOIN</span> ref_icd10_codes r
+    <span class="kw">ON</span> d.code = r.code
+<span class="kw">WHERE</span> d.code <span class="kw">IS NOT NULL</span>
+    <span class="kw">AND</span> r.description <span class="kw">IS NOT NULL</span>
+    <span class="kw">AND</span> d.description <> r.description`,
+runnableSQL:"SELECT d.diag_id, d.code, d.description AS ehr_description, r.description AS expected_description FROM raw_diagnoses d LEFT JOIN ref_icd10_codes r ON d.code = r.code WHERE d.code IS NOT NULL AND r.description IS NOT NULL AND d.description <> r.description",
+steps:[
+{title:"Test passes = zero rows returned",text:"This is the core dbt test philosophy: the query describes what <em>bad</em> data looks like. If the query returns nothing, all data is clean. Any returned rows are failures that block the pipeline."},
+{title:"LEFT JOIN against the seed reference",text:"We join the diagnoses against <code>ref_icd10_codes</code> (a dbt seed). The <code><></code> operator catches mismatches. <code>r.description IS NOT NULL</code> ensures we only check codes that exist in the reference."},
+{title:"Singular vs generic tests",text:"This is a <em>singular</em> test (standalone .sql file in <code>tests/</code>). For reuse across models, convert it to a <em>generic</em> test macro with <code>{%- test test_name(model, column) -%}</code> in <code>tests/generic/</code>."}
+]}
+};
+
+// ═══════ 9 EXERCISES ═══════
+const exercises=[
+// ═══ P1: SOURCES & SEEDS (mid-beginner) ═══
+{id:1,title:"Query a Raw Source Table",difficulty:"easy",pipeline:1,
+techs:["src","mod"],
+schema:{table:"raw_encounters",cols:"encounter_id, patient_id, facility, encounter_date, encounter_type"},
+intro:"In dbt, the first step is reading raw data via <code>source()</code>. This exercise builds a basic staging model that selects and renames columns from the raw encounters table — exactly what <code>models/staging/stg_encounters.sql</code> would contain.",
+description:"Build a staging query that selects key columns from raw_encounters, filtering to a specific facility.",
+codeLines:['-- dbt: FROM {{ source(\'ehr_raw\', \'encounters\') }}','-- Simulated as direct table reference','{0} encounter_id, patient_id, facility,','    encounter_date, encounter_type','{1} raw_encounters','WHERE facility = {2}','ORDER BY encounter_date'],
+blanks:[
+{answer:"SELECT",tech:"mod",hint:"SQL keyword to retrieve columns.",label:"query verb"},
+{answer:"FROM",tech:"src",hint:"SQL keyword specifying the source table.",label:"source keyword"},
+{answer:"'PNW-Central'",tech:"src",hint:"The target facility name in quotes.",label:"facility filter",accept:["'PNW-Central'","\"PNW-Central\""]}
+],
+runnableSQL:"SELECT encounter_id, patient_id, facility, encounter_date, encounter_type FROM raw_encounters WHERE facility = 'PNW-Central' ORDER BY encounter_date",
+runParams:[],
+notes:{hints:["In dbt, this model would live at <code>models/staging/stg_encounters.sql</code>.","The <code>source()</code> function compiles to the raw schema.table reference."],consider:["Staging models should be thin wrappers — no business logic, just column selection and renaming.","Run with <code>dbt run --select stg_encounters</code>."]},
+explanation:"This staging model selects from the raw source and filters to one facility. In dbt, <code class='src'>{{ source('ehr_raw', 'encounters') }}</code> would replace the table name, and dbt would track the lineage from the raw EHR feed into this model."
+},
+
+{id:2,title:"Load and Query a Seed Reference Table",difficulty:"easy",pipeline:1,
+techs:["sed","ref"],
+schema:{table:"ref_icd10_codes",cols:"code_system, code, description"},
+intro:"dbt <strong>seeds</strong> are CSV files in <code>seeds/</code> that get loaded with <code>dbt seed</code>. They're perfect for static lookup data like ICD-10 reference codes. You reference them with <code>{{ ref('seed_name') }}</code> — the same function used for models.",
+description:"Query the ICD-10 reference seed to look up the canonical description for a specific diagnosis code.",
+codeLines:['-- dbt seed: seeds/ref_icd10_codes.csv','-- Access via {{ ref(\'ref_icd10_codes\') }}','SELECT code, {0}','FROM {1}','WHERE code = {2}'],
+blanks:[
+{answer:"description",tech:"sed",hint:"The column holding the canonical description.",label:"desc column"},
+{answer:"ref_icd10_codes",tech:"ref",hint:"The seed table name — same as the CSV filename.",label:"seed table"},
+{answer:"'E11.9'",tech:"sed",hint:"ICD-10 code for Type 2 diabetes.",label:"lookup code",accept:["'E11.9'","\"E11.9\""]}
+],
+runnableSQL:"SELECT code, description FROM ref_icd10_codes WHERE code = 'E11.9'",
+runParams:[],
+notes:{hints:["Seeds are loaded with <code>dbt seed</code> before models run.","E11.9 maps to 'Type 2 diabetes mellitus without complications'."],consider:["Seeds are best for small, rarely-changing reference data (under ~1000 rows).","For large lookup tables, use a source or a model that reads from an external table."]},
+explanation:"The seed returns <code>'Type 2 diabetes mellitus without complications'</code> for code <code>E11.9</code>. In dbt, seeds are CSVs loaded with <code class='sed'>dbt seed</code> and referenced with <code class='ref'>{{ ref('ref_icd10_codes') }}</code> — identical syntax to model references."
+},
+
+{id:3,title:"Built-in Test: not_null + accepted_values",difficulty:"easy",pipeline:1,
+techs:["tst","mod"],
+schema:{table:"raw_diagnoses",cols:"diag_id, coding_status"},
+intro:"dbt has four built-in generic tests: <code>unique</code>, <code>not_null</code>, <code>accepted_values</code>, and <code>relationships</code>. These are configured in YAML, not written as SQL. This exercise simulates the SQL that dbt generates for a <code>not_null</code> test on <code>code</code> and an <code>accepted_values</code> test on <code>coding_status</code>.",
+description:"Find rows that would fail either a not_null test on code OR an accepted_values test on coding_status (only 'final' and 'preliminary' are valid).",
+codeLines:['-- dbt built-in: not_null on code','-- dbt built-in: accepted_values on coding_status','SELECT diag_id, code, coding_status,','    CASE','      WHEN code IS {0}','        THEN \'FAIL: null code\'','      WHEN coding_status NOT IN ({1}, {2})',  '        THEN \'FAIL: bad status\'','      ELSE \'PASS\'','    END AS test_result','FROM raw_diagnoses','WHERE code IS NULL','   OR coding_status NOT IN (\'final\', \'preliminary\')'],
+blanks:[
+{answer:"NULL",tech:"tst",hint:"The not_null test checks for this value.",label:"null check"},
+{answer:"'final'",tech:"tst",hint:"First accepted value for coding_status.",label:"accepted val 1",accept:["'final'","\"final\""]},
+{answer:"'preliminary'",tech:"tst",hint:"Second accepted value.",label:"accepted val 2",accept:["'preliminary'","\"preliminary\""]}
+],
+runnableSQL:"SELECT diag_id, code, coding_status, CASE WHEN code IS NULL THEN 'FAIL: null code' WHEN coding_status NOT IN ('final', 'preliminary') THEN 'FAIL: bad status' ELSE 'PASS' END AS test_result FROM raw_diagnoses WHERE code IS NULL OR coding_status NOT IN ('final', 'preliminary')",
+runParams:[],
+notes:{hints:["Row 3 has a NULL code — fails not_null.","Both 'final' and 'preliminary' are the only valid statuses."],consider:["In dbt YAML: <code>tests: [not_null]</code> under the column definition.","<code>accepted_values</code> takes a <code>values:</code> list in the YAML config."]},
+explanation:"Row 3 fails with a null code. dbt's built-in <code class='tst'>not_null</code> test generates exactly this pattern: <code>SELECT * FROM model WHERE column IS NULL</code>. If any rows return, the test fails and blocks downstream models."
+},
+
+// ═══ P2: STAGING MODELS & JINJA (advanced beginner) ═══
+{id:4,title:"Build a Staging Model with Column Aliasing",difficulty:"med",pipeline:2,
+techs:["mod","src","ref"],
+schema:{table:"raw_diagnoses → stg_diagnoses",cols:"diagnosis_id, encounter_id, icd10_code, description, coding_status"},
+intro:"Staging models rename raw columns to consistent, clean names. In dbt, this model would be <code>models/staging/stg_diagnoses.sql</code> reading from a source. Column aliasing with <code>AS</code> standardizes naming conventions across the project.",
+description:"Build a staging model that renames raw_diagnoses columns to standardized names, filtering only to ICD-10 records.",
+codeLines:['-- dbt model: models/staging/stg_diagnoses.sql','SELECT','    diag_id AS {0},','    encounter_id,','    code AS {1},','    description,','    coding_status','FROM raw_diagnoses','WHERE {2} = \'ICD-10\''],
+blanks:[
+{answer:"diagnosis_id",tech:"mod",hint:"Standardized name for the diagnosis identifier.",label:"id alias",accept:["diagnosis_id","diag_id"]},
+{answer:"icd10_code",tech:"mod",hint:"Descriptive alias for the code column.",label:"code alias",accept:["icd10_code","icd_code","diagnosis_code"]},
+{answer:"code_system",tech:"src",hint:"Column that identifies the coding vocabulary.",label:"system filter"}
+],
+runnableSQL:"SELECT diag_id AS diagnosis_id, encounter_id, code AS icd10_code, description, coding_status FROM raw_diagnoses WHERE code_system = 'ICD-10'",
+runParams:[],
+notes:{hints:["Staging models standardize column names: <code>diag_id</code> → <code>diagnosis_id</code>.","The code_system column distinguishes ICD-10 from CPT."],consider:["In dbt, this model references the source: <code>FROM {{ source('ehr_raw', 'diagnoses') }}</code>.","Downstream models use <code>{{ ref('stg_diagnoses') }}</code> to depend on this model."]},
+explanation:"The staging model renames <code>diag_id</code> → <code class='mod'>diagnosis_id</code> and <code>code</code> → <code class='mod'>icd10_code</code> for clarity. Filtering on <code>code_system = 'ICD-10'</code> scopes the model to only diagnosis codes. In a real dbt project, this standardization makes downstream models readable and consistent."
+},
+
+{id:5,title:"Intermediate Model: Join Encounters + Diagnoses",difficulty:"med",pipeline:2,
+techs:["mod","ref","jnj"],
+schema:{table:"raw_encounters + raw_diagnoses → int_encounter_diagnoses",cols:"encounter_id, patient_id, facility, icd10_code, description"},
+intro:"Intermediate models (prefixed <code>int_</code>) join staging models to build richer datasets. In dbt, the FROM and JOIN clauses use <code>{{ ref() }}</code> to reference staging models, creating DAG dependencies. This exercise joins encounters with their diagnoses.",
+description:"Build an intermediate model joining encounters with finalized diagnoses, showing only PNW-Central records.",
+codeLines:['-- dbt: FROM {{ ref(\'stg_encounters\') }} e','-- dbt: JOIN {{ ref(\'stg_diagnoses\') }} d','SELECT','    e.encounter_id, e.patient_id, e.facility,','    d.code AS icd10_code, d.description','FROM raw_encounters e','{0} raw_diagnoses d','    {1} e.encounter_id = d.encounter_id','WHERE d.coding_status = \'final\'','AND e.facility = {2}'],
+blanks:[
+{answer:"JOIN",tech:"ref",hint:"SQL keyword to combine two tables.",label:"join keyword",accept:["JOIN","INNER JOIN"]},
+{answer:"ON",tech:"ref",hint:"Keyword specifying the join condition.",label:"join condition"},
+{answer:"'PNW-Central'",tech:"mod",hint:"Filter to the Central facility.",label:"facility value",accept:["'PNW-Central'","\"PNW-Central\""]}
+],
+runnableSQL:"SELECT e.encounter_id, e.patient_id, e.facility, d.code AS icd10_code, d.description FROM raw_encounters e JOIN raw_diagnoses d ON e.encounter_id = d.encounter_id WHERE d.coding_status = 'final' AND e.facility = 'PNW-Central'",
+runParams:[],
+notes:{hints:["<code>JOIN</code> (or <code>INNER JOIN</code>) returns only matching rows from both tables.","The <code>ON</code> clause specifies how the tables relate — here via encounter_id."],consider:["In dbt, both FROM and JOIN use <code>{{ ref() }}</code> to build DAG dependencies.","The DAG ensures stg_encounters and stg_diagnoses run before this intermediate model."]},
+explanation:"This intermediate model joins encounters with their final diagnoses, filtered to PNW-Central. In dbt, <code class='ref'>{{ ref('stg_encounters') }}</code> and <code class='ref'>{{ ref('stg_diagnoses') }}</code> create the DAG: dbt knows to build both staging models before this join."
+},
+
+{id:6,title:"Aggregate Mart: Diagnoses per Patient",difficulty:"med",pipeline:2,
+techs:["mod","ref"],
+schema:{table:"raw_encounters + raw_diagnoses → mart_patient_diagnosis_summary",cols:"patient_id, total_diagnoses, unique_codes, latest_encounter"},
+intro:"<strong>Mart models</strong> (prefixed <code>mart_</code> or <code>fct_</code> / <code>dim_</code>) are the final analytical layer. They aggregate intermediate data into business-ready tables. This mart counts diagnoses per patient — the kind of summary a clinical dashboard consumes.",
+description:"Build a mart model that aggregates diagnosis counts per patient, including unique code count and latest encounter date.",
+codeLines:['-- dbt model: models/marts/mart_patient_dx_summary.sql','SELECT','    e.patient_id,','    {0}(*) AS total_diagnoses,','    COUNT({1} d.code) AS unique_codes,','    {2}(e.encounter_date) AS latest_encounter','FROM raw_encounters e','JOIN raw_diagnoses d ON e.encounter_id = d.encounter_id','WHERE d.code IS NOT NULL','GROUP BY e.patient_id','ORDER BY total_diagnoses DESC'],
+blanks:[
+{answer:"COUNT",tech:"mod",hint:"Aggregate function to count rows.",label:"count fn"},
+{answer:"DISTINCT",tech:"mod",hint:"Keyword to count only unique values.",label:"unique keyword"},
+{answer:"MAX",tech:"mod",hint:"Aggregate to find the most recent date.",label:"latest fn"}
+],
+runnableSQL:"SELECT e.patient_id, COUNT(*) AS total_diagnoses, COUNT(DISTINCT d.code) AS unique_codes, MAX(e.encounter_date) AS latest_encounter FROM raw_encounters e JOIN raw_diagnoses d ON e.encounter_id = d.encounter_id WHERE d.code IS NOT NULL GROUP BY e.patient_id ORDER BY total_diagnoses DESC",
+runParams:[],
+notes:{hints:["<code>COUNT(*)</code> counts all rows; <code>COUNT(DISTINCT code)</code> counts unique codes.","<code>MAX(encounter_date)</code> finds the latest (most recent) date per patient."],consider:["In dbt, this mart references the intermediate model: <code>FROM {{ ref('int_encounter_diagnoses') }}</code>.","Mart models are typically materialized as <code>table</code> (not view) for query performance."]},
+explanation:"The mart shows P-101 has the most diagnoses (3 across 2 visits). <code class='mod'>COUNT(DISTINCT d.code)</code> reveals unique conditions, while <code class='mod'>MAX(encounter_date)</code> shows recency. In dbt, mart models are the final consumer-facing layer, materialized as tables for dashboard performance."
+},
+
+// ═══ P3: TESTS & REUSABLE MACROS (lower-intermediate) ═══
+{id:7,title:"Singular Test: Description Mismatch Detection",difficulty:"hard",pipeline:3,
+techs:["tst","ref","sed"],
+schema:{table:"raw_diagnoses + ref_icd10_codes",cols:""},
+intro:"A dbt singular test is a <code>.sql</code> file in <code>tests/</code> that returns rows which <em>disprove</em> an assertion. This test checks whether EHR descriptions match the reference seed. It <strong>passes when zero rows are returned</strong>.",
+description:"Write a singular test that finds diagnoses where the EHR description doesn't match the trusted ICD-10 reference. Use a LEFT JOIN against the seed.",
+codeLines:['-- tests/assert_diagnosis_desc_matches_ref.sql','SELECT','    d.diag_id, d.code,','    d.description AS ehr_desc,','    r.description AS expected_desc','FROM raw_diagnoses d','{0} ref_icd10_codes r','    ON d.code = r.{1}','WHERE d.code IS NOT NULL','  AND r.description IS NOT NULL','  AND d.description {2} r.description'],
+blanks:[
+{answer:"LEFT JOIN",tech:"tst",hint:"Outer join to keep all diagnoses, even unmatched ones.",label:"join type",accept:["LEFT JOIN","LEFT OUTER JOIN"]},
+{answer:"code",tech:"sed",hint:"Column in the reference seed to match against.",label:"ref join col"},
+{answer:"<>",tech:"tst",hint:"Inequality operator — catches mismatches.",label:"mismatch op",accept:["<>","!="]}
+],
+runnableSQL:"SELECT d.diag_id, d.code, d.description AS ehr_desc, r.description AS expected_desc FROM raw_diagnoses d LEFT JOIN ref_icd10_codes r ON d.code = r.code WHERE d.code IS NOT NULL AND r.description IS NOT NULL AND d.description <> r.description",
+runParams:[],
+notes:{hints:["<code><></code> is SQL's inequality operator — rows where descriptions differ.","The LEFT JOIN ensures we also catch codes that don't exist in the reference."],consider:["A dbt test passes when the query returns <strong>zero</strong> rows.","Run with: <code>dbt test --select assert_diagnosis_desc_matches_ref</code>"]},
+explanation:"The test returns rows where EHR descriptions don't match the reference — these are mismatches. In dbt, returning any rows means the test <code class='tst'>FAILS</code>. This blocks downstream models until the data is corrected, preventing bad descriptions from reaching billing or reporting."
+},
+
+{id:8,title:"Reusable Generic Test Macro",difficulty:"hard",pipeline:3,
+techs:["tst","jnj","ref"],
+schema:{table:"Any model + any reference seed",cols:"Uses Jinja parameters"},
+intro:"A <strong>reusable generic test</strong> is a Jinja macro in <code>tests/generic/</code> that can be applied to any model via YAML. The macro uses <code>{{ model }}</code> for the model being tested and additional parameters for flexibility. This exercise builds the SQL that such a macro would generate.",
+description:"Build the compiled SQL for a generic test that checks if a column's values exist in a reference table. This simulates what a reusable 'relationships' test generates.",
+codeLines:['-- Generic test: tests/generic/test_code_in_reference.sql','-- Jinja header: {%- test code_in_reference(model, column, ref_table) -%}','-- Applied to stg_diagnoses.code → ref_icd10_codes','SELECT','    src.diag_id,','    src.code AS tested_value','FROM raw_diagnoses AS {0}','WHERE src.code IS NOT NULL','AND src.code {1} (','    SELECT code FROM {2}',')'],
+blanks:[
+{answer:"src",tech:"jnj",hint:"Alias for the model being tested — short for source.",label:"model alias",accept:["src"]},
+{answer:"NOT IN",tech:"tst",hint:"Find values that DON'T exist in the reference.",label:"exclusion op",accept:["NOT IN"]},
+{answer:"ref_icd10_codes",tech:"ref",hint:"The reference table to check against.",label:"ref table"}
+],
+runnableSQL:"SELECT src.diag_id, src.code AS tested_value FROM raw_diagnoses AS src WHERE src.code IS NOT NULL AND src.code NOT IN (SELECT code FROM ref_icd10_codes)",
+runParams:[],
+notes:{hints:["<code>NOT IN (SELECT ...)</code> finds values that don't exist in the reference table.","In Jinja: <code>FROM {{ model }} AS src</code> receives the model being tested."],consider:["Generic tests are configured in YAML: <code>tests: [code_in_reference: ...]</code> under the column.","The Jinja macro wraps with <code>{%- test name(model, ...) -%}</code> and <code>{%- endtest -%}</code>."]},
+explanation:"The test finds codes like <code>ZZZZZ</code>, <code>J069</code>, and others not in the reference. In dbt, this would be a reusable macro: <code class='jnj'>{%- test code_in_reference(model, column, ref_table) -%}</code> — applicable to any model/column combination via YAML config."
+},
+
+{id:9,title:"Full DAG: Source → Stage → Test Pipeline",difficulty:"hard",pipeline:3,
+techs:["src","mod","ref","tst","sed"],
+schema:{table:"Full pipeline: raw → staging → mart + tests",cols:""},
+intro:"This capstone exercise builds the full dbt DAG: query the source, stage it, join with the reference seed, and run a test — all in one pipeline. This is what <code>dbt build</code> executes: seeds → models → tests, in dependency order.",
+description:"Build a query that stages diagnoses, enriches them with reference descriptions, flags mismatches, and summarizes the pipeline health — simulating a complete dbt build.",
+codeLines:['-- Simulates: dbt build (seed + model + test)','-- Step 1: Stage + enrich with reference','WITH stg_diagnoses AS (','    SELECT diag_id, encounter_id, code, description, coding_status','    FROM raw_diagnoses','    WHERE code IS NOT NULL','),','enriched AS (','    SELECT','        s.diag_id, s.code, s.description AS ehr_desc,','        r.description AS ref_desc,','        CASE WHEN r.description IS NULL THEN \'no_ref\'','             WHEN s.description = r.description THEN \'match\'','             ELSE \'mismatch\' END AS {0}','    FROM stg_diagnoses s','    {1} ref_icd10_codes r ON s.code = r.code',')','SELECT','    {2} AS total_codes,','    SUM(CASE WHEN test_status = \'match\' THEN 1 ELSE 0 END) AS passing,','    SUM(CASE WHEN test_status = \'mismatch\' THEN 1 ELSE 0 END) AS mismatches,','    SUM(CASE WHEN test_status = \'no_ref\' THEN 1 ELSE 0 END) AS unmatched,','    CASE WHEN SUM(CASE WHEN test_status = \'mismatch\' THEN 1 ELSE 0 END) = 0','         THEN \'PASS\' ELSE \'FAIL\' END AS {3}','FROM enriched'],
+blanks:[
+{answer:"test_status",tech:"tst",hint:"Column name for the match/mismatch classification.",label:"status column",accept:["test_status","status","match_status"]},
+{answer:"LEFT JOIN",tech:"ref",hint:"Outer join to keep codes even without a reference match.",label:"join type",accept:["LEFT JOIN","LEFT OUTER JOIN"]},
+{answer:"COUNT(*)",tech:"mod",hint:"Aggregate counting all rows.",label:"total count",accept:["COUNT(*)","count(*)"]},
+{answer:"dbt_test_result",tech:"tst",hint:"Column showing overall pipeline pass/fail.",label:"result column",accept:["dbt_test_result","test_result","pipeline_result","result"]}
+],
+runnableSQL:"WITH stg_diagnoses AS (SELECT diag_id, encounter_id, code, description, coding_status FROM raw_diagnoses WHERE code IS NOT NULL), enriched AS (SELECT s.diag_id, s.code, s.description AS ehr_desc, r.description AS ref_desc, CASE WHEN r.description IS NULL THEN 'no_ref' WHEN s.description = r.description THEN 'match' ELSE 'mismatch' END AS test_status FROM stg_diagnoses s LEFT JOIN ref_icd10_codes r ON s.code = r.code) SELECT COUNT(*) AS total_codes, SUM(CASE WHEN test_status = 'match' THEN 1 ELSE 0 END) AS passing, SUM(CASE WHEN test_status = 'mismatch' THEN 1 ELSE 0 END) AS mismatches, SUM(CASE WHEN test_status = 'no_ref' THEN 1 ELSE 0 END) AS unmatched, CASE WHEN SUM(CASE WHEN test_status = 'mismatch' THEN 1 ELSE 0 END) = 0 THEN 'PASS' ELSE 'FAIL' END AS dbt_test_result FROM enriched",
+runParams:[],
+notes:{hints:["The CTE <code>stg_diagnoses</code> simulates the staging model.","<code>enriched</code> adds the reference lookup — like an intermediate model.","The final SELECT is the test summary — like <code>dbt test</code> output."],consider:["<code>dbt build</code> runs this entire pipeline: <code>dbt seed</code> → <code>dbt run</code> → <code>dbt test</code>.","A FAIL result would block deployment in CI/CD."]},
+explanation:"The full pipeline: stage → enrich → test. The result shows mismatches exist, so <code class='tst'>dbt_test_result = 'FAIL'</code>. In production, <code>dbt build</code> would halt here, preventing bad data from reaching downstream marts. The <code>no_ref</code> count shows codes not in the seed — candidates for seed expansion."
+}
+];
+
+// ═══════ RENDER ENGINE ═══════
+let solved=new Set();
+function updateProgress(){const p=(solved.size/exercises.length)*100;document.getElementById('progressFill').style.width=p+'%';document.getElementById('scoreLabel').textContent=`${solved.size} / ${exercises.length}`}
+
+function renderSample(s,cid){const c=document.getElementById(cid);const d=document.createElement('div');d.className='exercise sample';
+const tl={src:"Source",sed:"Seed",mod:"Model",ref:"ref()",tst:"Test",jnj:"Jinja"};
+const tt=[...new Set(s.techs)].map(t=>`<span class="tech-tag ${t}">${tl[t]}</span>`).join('');
+const dc=s.difficulty==='easy'?'diff-easy':s.difficulty==='med'?'diff-med':'diff-hard';
+const dl=s.difficulty==='easy'?'Easy':s.difficulty==='med'?'Medium':'Hard';
+const sid='s-'+Math.random().toString(36).slice(2,8);
+window._sSQL=window._sSQL||{};window._sSQL[sid]=s.runnableSQL;
+d.innerHTML=`<div class="exercise-header"><div class="exercise-num">DEMO</div><div class="exercise-title">${s.title}</div><div class="exercise-diff ${dc}">${dl}</div><span class="sample-badge">&#9733; Worked Example</span><div class="tech-tags">${tt}</div></div><div class="exercise-body"><div class="intro-box"><h4><span class="icon">&#128218;</span> Introduction</h4><p>${s.intro}</p></div><div class="sample-code">${s.sql}</div>${s.steps.map(st=>`<div class="sample-step"><h5>${st.title}</h5><p>${st.text}</p></div>`).join('')}<div class="exercise-actions" style="margin-top:16px"><button class="btn btn-run" onclick="runS('${sid}')">&#9654; Run Sample</button></div><div class="results-area" id="r-${sid}"></div></div>`;
+c.appendChild(d)}
+function runS(id){const sql=window._sSQL[id];const a=document.getElementById(`r-${id}`);if(!db){a.className='results-area visible';a.innerHTML='<div class="results-msg" style="color:var(--red)">DB not loaded.</div>';return}const r=runSQL(sql);a.className='results-area visible';if(r.error)a.innerHTML=`<div class="results-msg" style="color:var(--red)">${r.error}</div>`;else if(r.data&&r.data.length>0){const d=r.data[r.data.length-1];a.innerHTML=`<div class="results-header">&#9989; Result <span class="rows">(${d.values.length} rows)</span></div>`+renderTable(d)}else a.innerHTML='<div class="results-msg">Executed successfully.</div>'}
+
+function renderExercises(){const c=document.getElementById('exerciseContainer');let cp=0;
+const pi=[null,
+{label:'p1',title:'Pipeline 1 — Sources & Seeds',desc:'Mid-level beginner: read raw sources, load seed reference data, and apply built-in tests.',sample:'pipeline1'},
+{label:'p2',title:'Pipeline 2 — Staging & Marts',desc:'Advanced beginner: build staging models with aliasing, join with ref(), and aggregate into marts.',sample:'pipeline2'},
+{label:'p3',title:'Pipeline 3 — Tests & Reusable Macros',desc:'Lower-intermediate: singular tests, generic test macros, and full DAG pipeline simulation.',sample:'pipeline3'}];
+
+exercises.forEach(ex=>{
+if(ex.pipeline!==cp){cp=ex.pipeline;const p=pi[cp];const sd=document.createElement('div');sd.className='pipeline-set';sd.innerHTML=`<span class="pipeline-label ${p.label}">${p.label.toUpperCase()}: ${cp===1?'MID-BEGINNER':cp===2?'ADVANCED BEGINNER':'LOWER-INTERMEDIATE'}</span><div class="pipeline-title">${p.title}</div><p class="pipeline-desc">${p.desc}</p>`;c.appendChild(sd);renderSample(sampleProblems[p.sample],'exerciseContainer')}
+
+const d=document.createElement('div');d.className='exercise';d.id=`ex-${ex.id}`;
+const dc=ex.difficulty==='easy'?'diff-easy':ex.difficulty==='med'?'diff-med':'diff-hard';
+const dl=ex.difficulty==='easy'?'Easy':ex.difficulty==='med'?'Medium':'Hard';
+const tl={src:"Source",sed:"Seed",mod:"Model",ref:"ref()",tst:"Test",jnj:"Jinja"};
+const tt=[...new Set(ex.techs)].map(t=>`<span class="tech-tag ${t}">${tl[t]}</span>`).join('');
+let sh=`<div class="schema-box"><span class="tname">${ex.schema.table}</span> <span class="cols">${ex.schema.cols?'('+ex.schema.cols+')':''}</span></div>`;
+
+const j=ex.codeLines.join('\n');
+let ch=j.replace(/\{(\d+)\}/g,(_,idx)=>{const i=parseInt(idx);const b=ex.blanks[i];const w=Math.max(b.answer.length+2,6);const tc=b.tech?` t-${b.tech}`:'';return`<span class="blank-wrap"><input type="text" class="${tc}" data-ex="${ex.id}" data-blank="${i}" style="width:${w}ch" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="???" /><button class="blank-reveal-btn" title="Reveal this blank" onclick="revealBlank(${ex.id},${i})">&#9684;</button><span class="blank-label">${b.label}</span></span>`});
+ch=ch.replace(/\b(SELECT|FROM|WHERE|AND|OR|JOIN|INNER JOIN|LEFT JOIN|LEFT OUTER JOIN|ON|GROUP BY|ORDER BY|DESC|ASC|AS|INTO|UNION ALL|UNION|WITH|CASE|WHEN|THEN|ELSE|END|NOT|IN|IS|NULL|NOT NULL|BETWEEN|LIKE|LIMIT|HAVING)\b/g,'<span class="kw">$1</span>').replace(/\b(COUNT|SUM|AVG|MAX|MIN|DISTINCT|ROUND|LOWER|LENGTH)\b/g,'<span class="fn">$1</span>').replace(/(--[^\n]*)/g,'<span class="cmt">$1</span>');
+
+let nh='';if(ex.notes){nh='<div class="note-box"><h4>NOTE</h4>';if(ex.notes.hints)nh+=`<div class="note-section"><div class="note-section-title hints">&#128161; Hints</div><ul>${ex.notes.hints.map(h=>`<li>${h}</li>`).join('')}</ul></div>`;if(ex.notes.consider)nh+=`<div class="note-section"><div class="note-section-title consider">&#9889; Points to Consider</div><ul>${ex.notes.consider.map(c=>`<li>${c}</li>`).join('')}</ul></div>`;nh+='</div>'}
+
+d.innerHTML=`<div class="exercise-header"><div class="exercise-num">${ex.id}</div><div class="exercise-title">${ex.title}</div><div class="exercise-diff ${dc}">${dl}</div><div class="tech-tags">${tt}</div></div><div class="exercise-body"><div class="intro-box"><h4><span class="icon">&#128218;</span> Introduction</h4><p>${ex.intro}</p></div><p>${ex.description}</p>${sh}<div class="fill-code">${ch}</div><div class="exercise-actions"><button class="btn btn-check" onclick="checkExercise(${ex.id})">Check Answer</button><button class="btn btn-run" id="run-${ex.id}" onclick="runExercise(${ex.id})" disabled>&#9654; Run Model</button><button class="btn btn-hint" onclick="showHint(${ex.id})">Hint</button><button class="btn btn-reveal" onclick="revealAnswer(${ex.id})">Reveal All</button><button class="btn btn-reset" onclick="resetExercise(${ex.id})">Reset</button></div><div class="hint-area" id="hint-${ex.id}"></div><div class="results-area" id="results-${ex.id}"></div>${nh}<div class="explanation" id="explain-${ex.id}"><p>${ex.explanation}</p></div></div>`;
+c.appendChild(d)})}
+
+function getExercise(id){return exercises.find(e=>e.id===id)}
+function getInputs(id){return Array.from(document.querySelectorAll(`input[data-ex="${id}"]`))}
+function normalize(s){return s.trim().replace(/\s+/g,' ').replace(/[""]/g,'"').replace(/['']/g,"'").toUpperCase()}
+function checkBlank(ex,i,v){const b=ex.blanks[i];const nv=normalize(v);const na=normalize(b.answer);if(nv===na)return true;if(b.accept)return b.accept.some(a=>normalize(a)===nv);return false}
+
+function checkExercise(id){const ex=getExercise(id);const inputs=getInputs(id);const ha=document.getElementById(`hint-${id}`);let ok=true;
+inputs.forEach((inp,i)=>{inp.classList.remove('correct','wrong');if(checkBlank(ex,i,inp.value))inp.classList.add('correct');else{inp.classList.add('wrong');ok=false}});
+if(ok){ha.className='hint-area visible success';ha.textContent='✓ All correct! Click ▶ Run Model to execute.';document.getElementById(`run-${id}`).disabled=false;solved.add(id);document.getElementById(`ex-${id}`).classList.add('solved');document.getElementById(`explain-${id}`).classList.add('visible');updateProgress()}
+else{const wc=inputs.filter((inp,i)=>!checkBlank(ex,i,inp.value)).length;ha.className='hint-area visible error';ha.textContent=`✗ ${wc} blank${wc>1?'s':''} still incorrect.`;document.getElementById(`run-${id}`).disabled=true}}
+
+function runExercise(id){const ex=getExercise(id);const a=document.getElementById(`results-${id}`);if(!db){a.className='results-area visible';a.innerHTML='<div class="results-msg" style="color:var(--red)">DB not loaded.</div>';return}
+const r=runSQL(ex.runnableSQL,ex.runParams);a.className='results-area visible';if(r.error)a.innerHTML=`<div class="results-msg" style="color:var(--red)">Error: ${r.error}</div>`;else if(r.data&&r.data.length>0){const d=r.data[r.data.length-1];a.innerHTML=`<div class="results-header">&#9989; Result <span class="rows">(${d.values.length} row${d.values.length!==1?'s':''})</span></div>`+renderTable(d)}else a.innerHTML='<div class="results-msg">Executed successfully (no rows — test passes!).</div>'}
+
+function showHint(id){const ex=getExercise(id);const inputs=getInputs(id);const ha=document.getElementById(`hint-${id}`);let ti=inputs.findIndex((inp,i)=>!checkBlank(ex,i,inp.value));if(ti<0)ti=0;const b=ex.blanks[ti];const tn={src:"Source",sed:"Seed",mod:"Model",ref:"ref()",tst:"Test",jnj:"Jinja"}[b.tech]||"";ha.className='hint-area visible hint';ha.innerHTML=`<strong>[${tn}] Hint for "${b.label}":</strong> ${b.hint}`}
+
+function checkAllDone(id){const ex=getExercise(id);const inputs=getInputs(id);if(inputs.every((inp,i)=>checkBlank(ex,i,inp.value))){const ha=document.getElementById(`hint-${id}`);ha.className='hint-area visible success';ha.textContent='✓ All blanks complete! Click ▶ Run Model to execute.';document.getElementById(`run-${id}`).disabled=false;solved.add(id);document.getElementById(`ex-${id}`).classList.add('solved');document.getElementById(`explain-${id}`).classList.add('visible');updateProgress()}}
+
+function revealBlank(id,i){const ex=getExercise(id);const inp=document.querySelector(`input[data-ex="${id}"][data-blank="${i}"]`);if(!inp)return;inp.value=ex.blanks[i].answer;inp.classList.remove('wrong');inp.classList.add('correct');const btn=inp.nextElementSibling;if(btn&&btn.classList.contains('blank-reveal-btn'))btn.classList.add('used');checkAllDone(id)}
+
+function revealAnswer(id){const ex=getExercise(id);getInputs(id).forEach((inp,i)=>{inp.value=ex.blanks[i].answer;inp.classList.remove('wrong');inp.classList.add('correct');const btn=inp.nextElementSibling;if(btn&&btn.classList.contains('blank-reveal-btn'))btn.classList.add('used')});const ha=document.getElementById(`hint-${id}`);ha.className='hint-area visible success';ha.textContent='Answers revealed. Click ▶ Run Model to see results!';document.getElementById(`run-${id}`).disabled=false;solved.add(id);document.getElementById(`ex-${id}`).classList.add('solved');document.getElementById(`explain-${id}`).classList.add('visible');updateProgress()}
+
+function resetExercise(id){getInputs(id).forEach(inp=>{inp.value='';inp.classList.remove('correct','wrong');const btn=inp.nextElementSibling;if(btn&&btn.classList.contains('blank-reveal-btn'))btn.classList.remove('used')});document.getElementById(`hint-${id}`).className='hint-area';document.getElementById(`results-${id}`).className='results-area';document.getElementById(`explain-${id}`).classList.remove('visible');document.getElementById(`run-${id}`).disabled=true}
+
+renderExercises();updateProgress();initDB();
+</script>
+</body>
+</html>

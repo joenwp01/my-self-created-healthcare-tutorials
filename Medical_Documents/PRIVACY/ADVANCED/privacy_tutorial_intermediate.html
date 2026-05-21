@@ -1,0 +1,1308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Healthcare Privacy &amp; De-Identification &#8212; Intermediate Tutorial</title>
+<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&family=JetBrains+Mono:wght@400;500;600&family=Source+Sans+3:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#7a9ab5;--hdr:#7a9ab5;--thdr:#1e4670;
+  --surface:#d3dde8;--sur2:#c8d3e0;--sur3:#a8b4c2;
+  --border:#8693a3;--bda:#5d6e85;
+  --text:#111111;--tmut:#1a2a3a;--tdim:#3a4a5a;
+  --acc:#7a5418;--aglo:rgba(184,134,42,.12);--adim:#5d3f10;--abadge:#b8862a;
+  --grn:#1f6843;--grnb:rgba(31,104,67,.12);
+  --red:#9c382d;--redb:rgba(156,56,45,.10);
+  --org:#8e4d10;--orgb:rgba(142,77,16,.10);
+  --blu:#1a4a7a;--blub:rgba(26,74,122,.10);
+  --pur:#553a80;--purb:rgba(85,58,128,.08);
+  --r:8px;--rl:12px;--sh:0 2px 16px rgba(0,0,0,.18);
+  --ff:'Crimson Pro',Georgia,serif;
+  --fn:'Source Sans 3',system-ui,sans-serif;
+  --fm:'JetBrains Mono','Consolas',monospace;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{font-family:var(--fn);background:var(--bg);color:var(--text);line-height:1.72;font-size:16px;min-height:100vh;}
+.pgb{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,var(--abadge),#f4c97c);z-index:300;transition:width .35s ease;}
+.hdr{background:var(--hdr);border-bottom:2px solid var(--abadge);padding:16px 28px 12px;position:sticky;top:0;z-index:200;}
+.hdr-top{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;}
+.hdr-brand{display:flex;align-items:baseline;gap:10px;}
+.hdr-brand h1{font-family:var(--ff);font-size:23px;font-weight:700;color:#000;letter-spacing:.3px;}
+.hdr-brand .hdiv{font-family:var(--fm);color:#0a1520;font-size:18px;margin:0 4px;}
+.hdr-brand .hsub{font-size:13px;color:#0a1520;font-weight:600;}
+.hdr-credit{font-size:11px;color:#0a1520;font-family:var(--fm);font-weight:600;}
+.hdr-btns{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px;}
+.hbtn{font-family:var(--fm);font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;
+  padding:7px 15px;cursor:pointer;border-radius:6px;background:var(--abadge);color:#000;border:1px solid var(--abadge);transition:all .2s;}
+.hbtn:hover{background:#cc9633;border-color:#cc9633;}
+.hpart{font-family:var(--fm);font-size:11px;color:#0a1520;font-weight:600;}
+.pipe-bar{position:sticky;top:0;z-index:190;background:rgba(125,139,157,.97);backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border);padding:8px 18px;overflow-x:auto;white-space:nowrap;
+  display:flex;gap:3px;align-items:center;scrollbar-width:thin;scrollbar-color:var(--bda) transparent;}
+.pipe-bar::-webkit-scrollbar{height:4px;}
+.pipe-bar::-webkit-scrollbar-thumb{background:var(--bda);border-radius:2px;}
+.stn-pill{font-family:var(--fm);font-size:10px;font-weight:500;padding:5px 11px;border-radius:20px;
+  cursor:pointer;border:1px solid #525861;background:#73798a;color:#000;
+  transition:all .2s;flex-shrink:0;display:inline-flex;align-items:center;gap:5px;}
+.stn-pill:hover{background:#8a92a0;border-color:#5d6470;color:#000;}
+.stn-pill .stn-num{font-weight:700;color:#000;}
+.stn-pill.active{background:#4a90c2;border-color:#3a7aa6;color:#000;}
+.stn-pill.active .stn-num,.stn-pill.done .stn-num{color:#000;}
+.stn-pill.done{background:#5cae6a;border-color:#3d9555;color:#000;}
+.stn-pill.done::before{content:'&#10003;';font-size:9px;margin-right:1px;color:#000;}
+.stn-pill.done.active{background:#4a90c2;border-color:#3a7aa6;color:#000;}
+.pipe-arrow{color:#5d6470;font-size:11px;flex-shrink:0;margin:0 1px;}
+.main{max-width:960px;margin:0 auto;padding:28px 24px 100px;}
+.pri-station{animation:sfade .35s ease both;}
+@keyframes sfade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.sta{margin-bottom:0;}
+.sta-nav{display:flex;align-items:center;justify-content:space-between;padding:24px 0 0;margin-top:32px;border-top:1px solid var(--border);}
+.sta-nav-info{font-family:var(--fm);font-size:11px;color:var(--tdim);letter-spacing:.5px;}
+.nav-btn{font-family:var(--fm);font-size:12px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;
+  padding:10px 22px;border-radius:6px;cursor:pointer;border:1px solid;transition:all .2s;display:flex;align-items:center;gap:6px;}
+.nav-btn.prev{background:var(--abadge);color:#000;border-color:var(--abadge);}
+.nav-btn.prev:hover{background:#cc9633;border-color:#cc9633;}
+.nav-btn.next{background:var(--abadge);color:#000;border-color:var(--abadge);}
+.nav-btn.next:hover{background:#cc9633;border-color:#cc9633;}
+.scorecard{position:fixed;top:90px;right:18px;background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--r);padding:10px 14px;font-family:var(--fm);font-size:10px;color:var(--tdim);
+  z-index:100;min-width:118px;box-shadow:var(--sh);}
+.scorecard .scr{display:flex;justify-content:space-between;gap:12px;margin-bottom:4px;}
+.scorecard .scr:last-child{margin-bottom:0;}
+.scorecard .scv{color:var(--blu);font-weight:600;}
+.modal-ov{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:500;display:none;align-items:center;justify-content:center;}
+.modal-ov.open{display:flex;}
+.modal{background:var(--surface);border:1px solid var(--bda);border-radius:var(--rl);
+  width:90%;max-width:760px;max-height:82vh;display:flex;flex-direction:column;box-shadow:0 8px 40px rgba(0,0,0,.35);}
+.mhdr{display:flex;justify-content:space-between;align-items:center;padding:16px 24px;border-bottom:1px solid var(--border);background:var(--thdr);border-radius:var(--rl) var(--rl) 0 0;}
+.mhdr h3{font-family:var(--ff);font-size:19px;color:#f4c97c;}
+.mclose{background:none;border:none;color:#a8b8c8;font-size:24px;cursor:pointer;padding:4px 8px;line-height:1;}
+.mclose:hover{color:#fff;}
+.mbody{padding:20px 24px;overflow-y:auto;font-size:14px;line-height:1.8;color:var(--tmut);font-weight:600;}
+.shd{display:flex;align-items:center;gap:14px;margin-bottom:8px;}
+.sn{font-family:var(--fm);font-size:11px;letter-spacing:2.5px;text-transform:uppercase;color:var(--tdim);}
+.stg{font-family:var(--fm);font-size:10px;letter-spacing:1.5px;text-transform:uppercase;padding:3px 10px;border-radius:4px;border:1px solid;margin-left:auto;}
+.tgn{color:var(--red);border-color:rgba(156,56,45,.3);background:rgba(156,56,45,.06);}
+.tga{color:var(--tdim);border-color:var(--border);background:rgba(0,0,0,.03);}
+.tgi{color:var(--blu);border-color:rgba(26,74,122,.3);background:rgba(26,74,122,.06);}
+.sta h2{font-family:var(--ff);font-size:27px;font-weight:700;margin-bottom:14px;color:var(--text);border-bottom:1px solid var(--border);padding-bottom:11px;}
+.sta h3{font-family:var(--ff);font-size:19px;font-weight:700;margin:24px 0 10px;color:var(--acc);}
+.sta p{margin-bottom:13px;color:var(--tmut);font-weight:600;}
+.kt{color:var(--blu);font-weight:700;}
+em{color:var(--blu);font-style:italic;font-family:var(--ff);}
+strong{color:var(--text);font-weight:600;}
+code{font-family:var(--fm);font-size:.85em;background:var(--sur3);padding:2px 6px;border-radius:4px;color:var(--pur);border:1px solid var(--border);}
+.cn{background:var(--blub);border:1px solid rgba(44,86,128,.2);border-left:4px solid var(--blu);border-radius:var(--r);padding:16px 20px;margin:16px 0;}
+.cnt{font-family:var(--fm);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--blu);margin-bottom:8px;display:block;}
+.cn p{margin-bottom:0;color:var(--tmut);font-size:14.5px;line-height:1.75;font-weight:600;}
+.sc-box{background:var(--aglo);border:1px solid rgba(184,134,42,.3);border-left:4px solid var(--abadge);border-radius:var(--r);padding:14px 18px;margin:0 0 16px;}
+.sc-box .sc-lbl{font-family:var(--fm);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--acc);margin-bottom:6px;display:block;font-weight:700;}
+.sc-box p{margin-bottom:0;color:var(--tmut);font-size:14px;line-height:1.7;font-weight:600;}
+.cv-box{background:var(--purb);border:1px solid rgba(85,58,128,.2);border-left:4px solid var(--pur);border-radius:var(--r);padding:14px 18px;margin:12px 0;}
+.cv-box .cv-lbl{font-family:var(--fm);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--pur);margin-bottom:8px;display:block;font-weight:700;}
+.cv-box p,.cv-box ul{margin-bottom:0;color:var(--tmut);font-size:13.5px;line-height:1.75;font-weight:600;}
+.cv-box ul{padding-left:18px;}.cv-box li{margin-bottom:4px;font-weight:600;}
+.fb{background:var(--sur3);border-left:3px solid var(--blu);border-radius:0 var(--r) var(--r) 0;padding:14px 20px;margin:16px 0;font-family:var(--fm);font-size:13px;line-height:2;overflow-x:auto;color:var(--tmut);font-weight:600;}
+.fb .lb{display:block;font-family:var(--fn);font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--blu);margin-bottom:5px;font-weight:600;}
+.nt{width:100%;border-collapse:collapse;margin:12px 0 18px;font-size:15px;}
+.nt th{text-align:left;padding:9px 14px;background:var(--thdr);color:#f4c97c;font-family:var(--fm);font-size:10px;letter-spacing:1.5px;text-transform:uppercase;border-bottom:2px solid var(--bda);}
+.nt td{padding:9px 14px;border-bottom:1px solid var(--border);vertical-align:top;color:var(--tmut);font-weight:600;}
+.nt td:first-child{font-family:var(--fm);color:var(--acc);font-weight:600;white-space:nowrap;width:145px;}
+.nt tr:last-child td{border-bottom:none;}
+.ctw{overflow-x:auto;margin:10px 0;}
+.ct{width:100%;border-collapse:collapse;font-size:13px;font-family:var(--fm);}
+.ct th{padding:7px 11px;background:var(--thdr);color:#d0dce8;font-size:10px;letter-spacing:1px;text-transform:uppercase;border-bottom:2px solid var(--bda);white-space:nowrap;}
+.ct td{padding:6px 11px;border-bottom:1px solid var(--border);color:var(--tmut);white-space:nowrap;background:var(--surface);font-weight:600;}
+.ct tr:last-child td{border-bottom:none;}
+.ct tr:hover td{background:var(--sur2);}
+.cd{background:rgba(156,56,45,.10)!important;color:#8a2010;}
+.cq{background:rgba(142,77,16,.10)!important;color:#7a4810;}
+.cs{background:rgba(85,58,128,.08)!important;color:#3a2060;}
+.ck{color:var(--grn);font-weight:600;}
+.cx{color:#9a9a9a;text-decoration:line-through;}
+.cg{color:var(--blu);font-weight:600;}
+.ck1{background:rgba(156,56,45,.10)!important;color:#8a2010;font-weight:600;}
+.ck2{background:rgba(31,104,67,.10)!important;color:#1f6843;font-weight:600;}
+.dt{display:flex;align-items:center;gap:10px;width:100%;background:var(--sur2);border:1px solid var(--border);border-radius:var(--rl);padding:13px 18px;cursor:pointer;text-align:left;transition:background .2s,border-color .2s;margin-bottom:4px;}
+.dt:hover{background:var(--surface);border-color:var(--bda);}
+.dt .di{font-size:17px;flex-shrink:0;}
+.dt .dl{font-family:var(--fm);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--blu);font-weight:700;}
+.dt .tt{font-family:var(--ff);font-size:15px;color:var(--tmut);flex:1;font-weight:600;}
+.dt .da{font-family:var(--fm);font-size:12px;color:var(--tdim);transition:transform .2s;margin-left:auto;}
+.dt.op .da{transform:rotate(90deg);}
+.dt.op{border-color:var(--blu);background:var(--blub);}
+.dt.adv{border-color:var(--abadge);background:rgba(184,134,42,.05);}
+.dt.adv.op{border-color:var(--acc);background:var(--aglo);}
+.dt.adv .dl{color:var(--acc);}
+.dc{display:none;background:var(--surface);border:1px solid var(--blu);border-top:none;border-radius:0 0 var(--rl) var(--rl);padding:20px 24px;margin-bottom:16px;}
+.dc.op{display:block;}
+.dc.adv{border-color:var(--abadge);background:#dfe4ed;}
+.sl{font-family:var(--fm);font-size:10px;letter-spacing:2px;text-transform:uppercase;margin-bottom:7px;padding:3px 9px;border-radius:4px;display:inline-block;}
+.slb{color:var(--red);background:rgba(156,56,45,.06);border:1px solid rgba(156,56,45,.2);}
+.slo{color:var(--acc);background:rgba(184,134,42,.08);border:1px solid rgba(184,134,42,.2);}
+.sla{color:var(--grn);background:rgba(31,104,67,.06);border:1px solid rgba(31,104,67,.2);}
+.dp{background:var(--sur3);border-radius:var(--r);padding:14px 16px;margin:9px 0;}
+.dot{font-family:var(--fm);font-size:12.5px;color:var(--tmut);line-height:2;padding:6px 0;font-weight:600;}
+.dn{font-size:14px;color:var(--tmut);margin-top:12px;line-height:1.7;padding:11px 15px;background:var(--blub);border-left:2px solid var(--blu);border-radius:0 var(--r) var(--r) 0;font-weight:600;}
+.ex{background:var(--surface);border:1px solid var(--bda);border-radius:var(--rl);padding:24px 26px;margin:8px 0 28px;position:relative;box-shadow:var(--sh);}
+.ex::before{content:'&#9998;';position:absolute;top:-13px;left:18px;background:var(--blu);color:#fff;width:27px;height:27px;display:flex;align-items:center;justify-content:center;border-radius:50%;font-size:13px;}
+.ex.adv::before{background:var(--acc);}
+.ext{font-family:var(--ff);font-size:18px;font-weight:600;margin-bottom:4px;color:var(--text);}
+.exd{font-family:var(--fm);font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--grn);margin-bottom:12px;}
+.exd.di-adv{color:var(--acc);}
+.pb{margin:12px 0;}.pa{display:none;margin:12px 0;}.pa.vs{display:block;}
+.pl{font-family:var(--fm);font-size:10px;letter-spacing:2px;text-transform:uppercase;margin-bottom:7px;display:inline-block;padding:3px 9px;border-radius:4px;}
+.plb{color:var(--red);background:rgba(156,56,45,.06);border:1px solid rgba(156,56,45,.2);}
+.pla{color:var(--grn);background:rgba(31,104,67,.06);border:1px solid rgba(31,104,67,.2);}
+.pbx{background:var(--sur3);border-radius:var(--r);padding:12px 14px;}
+.hb{background:var(--abadge);color:#000;border:1px solid var(--abadge);font-family:var(--fm);font-size:11px;letter-spacing:1px;text-transform:uppercase;padding:6px 15px;border-radius:5px;cursor:pointer;margin:9px 0;font-weight:700;transition:background .2s;}
+.hb:hover{background:#cc9633;border-color:#cc9633;}
+.hbx{display:none;background:var(--orgb);border:1px solid rgba(142,77,16,.25);border-radius:var(--r);padding:12px 16px;margin:8px 0 12px;color:#5a3208;font-size:14.5px;line-height:1.7;font-weight:600;}
+.hbx.vs{display:block;}
+.fl{font-weight:600;margin:14px 0 6px;font-size:15px;color:var(--text);}
+.fi{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px;margin:8px 0;line-height:2.6;font-size:15px;color:var(--tmut);font-weight:600;}
+.fi .ts{white-space:nowrap;}
+.bw{display:inline-flex;flex-direction:column;align-items:center;}
+.bi{background:#fff;border:1px solid var(--bda);border-bottom:2px solid var(--blu);color:var(--text);font-family:var(--fm);font-size:13.5px;padding:4px 9px;border-radius:4px 4px 0 0;text-align:center;transition:border-color .25s;}
+.bi:focus{outline:none;border-color:var(--blu);box-shadow:0 0 0 2px rgba(44,86,128,.18);}
+.bi.ok{border-color:var(--grn);border-bottom-color:var(--grn);background:var(--grnb);color:#000;}
+.bi.no{border-color:var(--red);border-bottom-color:var(--red);background:var(--redb);color:#000;}
+.rb{background:none;border:none;color:var(--tdim);font-size:10px;font-family:var(--fm);cursor:pointer;margin-top:2px;padding:2px 4px;transition:color .2s;}
+.rb:hover{color:var(--blu);}
+.bg{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:14px;}
+.cb{background:var(--abadge);color:#000;border:1px solid var(--abadge);font-family:var(--fm);font-size:12px;letter-spacing:1px;text-transform:uppercase;padding:10px 26px;border-radius:6px;cursor:pointer;font-weight:700;transition:background .2s;}
+.cb:hover{background:#cc9633;border-color:#cc9633;}
+.rab{background:transparent;color:var(--adim);border:1px solid var(--abadge);font-family:var(--fm);font-size:12px;letter-spacing:1px;text-transform:uppercase;padding:10px 26px;border-radius:6px;cursor:pointer;font-weight:700;transition:all .2s;}
+.rab:hover{background:var(--aglo);}
+.res{display:none;margin-top:14px;padding:13px 18px;border-radius:var(--r);font-size:14.5px;line-height:1.65;}
+.res.vs{display:block;}
+.res.ok{background:var(--grnb);border:1px solid rgba(31,104,67,.25);color:#000;}
+.res.no{background:var(--redb);border:1px solid rgba(156,56,45,.25);color:#000;}
+.res.sl{background:var(--orgb);border:1px solid rgba(142,77,16,.25);color:#000;}
+.od{display:none;background:var(--grnb);border:1px solid rgba(31,104,67,.25);border-radius:var(--r);padding:16px 20px;margin-top:12px;font-family:var(--fm);font-size:13px;line-height:1.9;color:#000;}
+.od.vs{display:block;}
+.ol{font-family:var(--fn);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--grn);margin-bottom:8px;font-weight:600;}
+.mg{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:12px;margin:14px 0;}
+.mc{background:var(--sur3);border-radius:var(--r);padding:16px 18px;border-top:3px solid;}
+.mc.pr{border-color:var(--red);}
+.mc.jo{border-color:var(--abadge);}
+.mc.ma{border-color:var(--blu);}
+.mn{font-family:var(--fm);font-size:10px;letter-spacing:2px;text-transform:uppercase;margin-bottom:7px;font-weight:700;}
+.mc.pr .mn{color:var(--red);}
+.mc.jo .mn{color:var(--acc);}
+.mc.ma .mn{color:var(--blu);}
+.mf{font-family:var(--fm);font-size:12px;color:var(--text);margin:7px 0;padding:6px 10px;background:var(--sur2);border-radius:4px;border:1px solid var(--border);}
+.mc p{font-size:13px;color:var(--tmut);line-height:1.6;font-weight:600;}
+.rm{display:flex;align-items:center;gap:12px;margin:5px 0;}
+.rw{flex:1;height:9px;background:var(--sur2);border-radius:5px;overflow:hidden;border:1px solid var(--border);}
+.rb2{height:100%;border-radius:5px;}
+.rb2.h{background:linear-gradient(90deg,#c0392b,#e74c3c);width:100%;}
+.rb2.m{background:linear-gradient(90deg,#b8862a,#e67e22);width:60%;}
+.rb2.l{background:linear-gradient(90deg,#1f6843,#27ae60);width:10%;}
+.rl{font-family:var(--fm);font-size:11px;min-width:90px;text-align:right;font-weight:600;}
+.rl.h{color:var(--red);}
+.rl.m{color:var(--acc);}
+.rl.l{color:var(--grn);}
+.rt{width:100%;border-collapse:collapse;font-size:13px;margin:10px 0;}
+.rt th{padding:7px 11px;background:var(--thdr);color:#d0dce8;font-family:var(--fm);font-size:10px;letter-spacing:1px;text-transform:uppercase;border-bottom:2px solid var(--bda);}
+.rt td{padding:7px 11px;border-bottom:1px solid var(--border);font-family:var(--fm);font-size:12px;color:var(--tmut);background:var(--surface);font-weight:600;}
+.rt .ps{color:var(--grn);font-weight:700;}
+.rt .fl2{color:var(--red);font-weight:700;}
+.ig{display:grid;grid-template-columns:repeat(auto-fill,minmax(185px,1fr));gap:6px;margin:12px 0;}
+.ii{background:var(--sur3);border-radius:6px;padding:7px 11px;border-left:3px solid var(--red);font-size:13px;color:var(--tmut);font-weight:600;}
+.ii .in{font-family:var(--fm);font-size:10px;color:var(--red);margin-bottom:2px;font-weight:700;}
+.sg{display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:12px;margin:20px 0;}
+.sc{background:var(--sur2);border-radius:var(--r);padding:16px 18px;border-top:3px solid var(--blu);box-shadow:var(--sh);}
+.ss{font-family:var(--fm);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--blu);margin-bottom:4px;display:block;}
+.sm{font-family:var(--ff);font-size:16px;font-weight:600;margin-bottom:6px;color:var(--text);}
+.sp{font-size:13px;color:var(--grn);line-height:1.55;}
+.sl2{font-size:12px;color:var(--red);margin-top:5px;font-style:italic;line-height:1.5;}
+.dv{border:none;height:1px;background:var(--border);margin:36px 0;}
+@media(max-width:680px){.main{padding:20px 14px 90px;}.ex,.dc{padding:18px 14px;}.fi{font-size:14px;}.mg{grid-template-columns:1fr;}.scorecard{display:none;}}
+</style></head>
+<body>
+<div class="pgb" id="pgb"></div>
+<header class="hdr">
+  <div class="hdr-top">
+    <div class="hdr-brand">
+      <h1>Healthcare Privacy</h1>
+      <span class="hdiv">|</span>
+      <span class="hsub">De-Identification &amp; Risk Methods &#8212; Intermediate Tutorial</span>
+    </div>
+    <div class="hdr-credit">Developed by: Joe Williams</div>
+  </div>
+  <div class="hdr-btns">
+    <button class="hbtn" onclick="openCohort()">&#9824; Meridian Cohort</button>
+    <button class="hbtn" onclick="openGlossary()">&#128218; Glossary</button>
+    <button class="hbtn" onclick="resetAll()">&#8635; Reset Progress</button>
+    <span style="flex:1;"></span>
+    <span class="hpart">14 Exercises &#183; 11 Stations &#183; <span style="color:var(--acc);">Intermediate</span> + <span style="color:var(--abadge);">Advanced Intermediate</span></span>
+  </div>
+</header>
+<nav class="pipe-bar" id="pipeBar">
+  <button class="stn-pill active" data-idx="0" onclick="goTo(0)"><span class="stn-num">01</span>De-ID</button>
+  <span class="pipe-arrow">&#8250;</span><button class="stn-pill" data-idx="1" onclick="goTo(1)"><span class="stn-num">02</span>Safe Harbor</button>
+  <span class="pipe-arrow">&#8250;</span><button class="stn-pill" data-idx="2" onclick="goTo(2)"><span class="stn-num">03</span>Re-ID Risk</button>
+  <span class="pipe-arrow">&#8250;</span><button class="stn-pill" data-idx="3" onclick="goTo(3)"><span class="stn-num">04</span>k-Anonymity</button>
+  <span class="pipe-arrow">&#8250;</span><button class="stn-pill" data-idx="4" onclick="goTo(4)"><span class="stn-num">05</span>l-Diversity</button>
+  <span class="pipe-arrow">&#8250;</span><button class="stn-pill" data-idx="5" onclick="goTo(5)"><span class="stn-num">06</span>Cond.Prob</button>
+  <span class="pipe-arrow">&#8250;</span><button class="stn-pill" data-idx="6" onclick="goTo(6)"><span class="stn-num">07</span>Unicity</button>
+  <span class="pipe-arrow">&#8250;</span><button class="stn-pill" data-idx="7" onclick="goTo(7)"><span class="stn-num">08</span>Bayes</button>
+  <span class="pipe-arrow">&#8250;</span><button class="stn-pill" data-idx="8" onclick="goTo(8)"><span class="stn-num">09</span>F&#8209;S Linkage</button>
+  <span class="pipe-arrow">&#8250;</span><button class="stn-pill" data-idx="9" onclick="goTo(9)"><span class="stn-num">10</span>Bloom PPRL</button>
+  <span class="pipe-arrow">&#8250;</span><button class="stn-pill" data-idx="10" onclick="goTo(10)"><span class="stn-num">11</span>Diff.Privacy</button>
+  <span class="pipe-arrow">&#8250;</span><button class="stn-pill" data-idx="11" onclick="goTo(11)"><span class="stn-num">&#9733;</span>Summary</button>
+</nav>
+<div class="scorecard">
+  <div class="scr"><span>Complete</span><span class="scv" id="scDone">0 / 14</span></div>
+  <div class="scr"><span>Reveals</span><span class="scv" id="scReveals">0</span></div>
+  <div class="scr"><span>Station</span><span class="scv" id="scStn">01</span></div>
+</div>
+<main class="main">
+
+<!-- ═══════ STATION 0 &#8212; De-Identification ═══════ -->
+<div class="pri-station" id="sta-0">
+<section class="sta">
+  <div class="shd"><div class="sn">Station 01 &#8212; Intermediate</div><span class="stg tgi">INTERMEDIATE</span></div>
+  <h2>De-Identification &#8212; Field Classification &amp; Transformation Burden</h2>
+  <p><span class="kt">De-identification</span> is the process of removing or transforming information so individuals cannot be readily identified. At the intermediate level, we move past identifying single fields and instead quantify the <em>transformation burden</em> across a full dataset &#8212; counting how many cells are suppressed, generalized, or retained, and computing the resulting information loss as a percentage.</p>
+  <div class="cn"><span class="cnt">Three Categories &#8212; Quick Reference</span><p>
+    <strong>Direct Identifiers</strong> &#8212; alone identify an individual: names, SSNs, MRNs, phone, email, full addresses, biometrics. Action: <em>suppress</em>.<br><br>
+    <strong>Quasi-Identifiers (QI)</strong> &#8212; identifying in combination: date of birth, ZIP code, sex, age, race. Action: <em>generalize</em>.<br><br>
+    <strong>Sensitive Attributes</strong> &#8212; clinical data we want to analyze: diagnoses, labs, medications. Action: <em>retain</em>.
+  </p></div>
+  <div class="fb"><span class="lb">Information Loss Metric</span>Total cells = N&#215;F (N records, F fields per record)<br>Information-loss rate = (suppressed_cells + generalized_cells) / total_cells<br>A higher loss rate reduces re-identification risk but also reduces analytical utility.</div>
+
+  <button class="dt" onclick="toggleDemo('d01')"><span class="di">&#128218;</span><span class="dl">Focused Tutorial</span><span class="tt">Counting Transformations &#8212; A 100-Record Cohort with 9 Fields</span><span class="da">&#9658;</span></button>
+  <div class="dc" id="d01">
+    <div class="sc-box"><span class="sc-lbl">&#128204; Scenario</span><p>Riverside Medical Center is preparing a 100-record research dataset with 9 fields per record (total = 900 cells). The privacy officer wants to quantify the information-loss rate before approving release. She classifies each field once, then multiplies by the record count.</p></div>
+    <div class="cv-box"><span class="cv-lbl">&#9881; Method</span><ul>
+      <li>Classify each <em>field</em> (column) as Direct / Quasi / Sensitive based on HIPAA guidance.</li>
+      <li>Count fields per category, then multiply each count by N=100 to get cell totals.</li>
+      <li>Information-loss = (suppressed cells + generalized cells) / total cells.</li>
+      <li>Generalization loses information but retains structure; suppression loses both.</li>
+    </ul></div>
+    <div class="dp"><table class="ct"><thead><tr><th>Field</th><th>Category</th><th>Action</th></tr></thead><tbody>
+      <tr><td>Full Name</td><td class="cd">Direct</td><td>Suppress</td></tr>
+      <tr><td>SSN</td><td class="cd">Direct</td><td>Suppress</td></tr>
+      <tr><td>MRN</td><td class="cd">Direct</td><td>Suppress</td></tr>
+      <tr><td>Email</td><td class="cd">Direct</td><td>Suppress</td></tr>
+      <tr><td>Date of Birth</td><td class="cq">Quasi</td><td>Generalize (year)</td></tr>
+      <tr><td>ZIP Code</td><td class="cq">Quasi</td><td>Generalize (3-digit)</td></tr>
+      <tr><td>Sex</td><td class="cq">Quasi</td><td>Retain as-is*</td></tr>
+      <tr><td>Primary Diagnosis</td><td class="cs">Sensitive</td><td>Retain</td></tr>
+      <tr><td>HbA1c Lab Value</td><td class="cs">Sensitive</td><td>Retain</td></tr>
+    </tbody></table></div>
+    <div class="sl slo">OPERATION &#8212; Aggregate Cell Counts</div>
+    <div class="dp"><div class="dot">4 Direct fields &#215; 100 records = <strong>400 suppressed cells</strong><br>3 Quasi fields &#215; 100 records = <strong>300 generalized cells</strong>* (Sex is QI but coarse enough to keep)<br>2 Sensitive fields &#215; 100 records = <strong>200 retained cells</strong><br><br>Total cells = 900<br>Information-loss = (400 + 300) / 900 = 700/900 &#8776; <strong>77.8%</strong></div></div>
+    <div class="cv-box" style="margin-top:14px;"><span class="cv-lbl">&#128270; Interpretation</span><p>Nearly 78% of the dataset&#39;s cells lose information through suppression or generalization. This is typical for HIPAA-compliant releases. The remaining 200 cells (sensitive attributes) are the only ones that contribute to clinical/analytical utility. The challenge: maintain enough QI granularity (year, ZIP-3) that the retained sensitive data is still tied to a useful demographic context, without making any patient uniquely identifiable.</p></div>
+    <div class="dn">&#128161; Information loss is not the same as privacy. A dataset can have very high loss and still be re-identifiable if the surviving QIs combine uniquely. Conversely, lower loss with smarter generalization (e.g., 5-year age bands instead of decades) can be both more useful and equally safe.</div>
+  </div>
+
+  <div class="ex" id="ex01">
+    <div class="ext">Exercise 1 &#8212; Transformation Burden in a Behavioral Health Release</div>
+    <div class="exd di-int">&#9679; Difficulty: Intermediate &#8212; Multi-Step Cell Counting</div>
+    <div class="sc-box"><span class="sc-lbl">&#128204; Scenario</span><p>A regional behavioral health authority is preparing <strong>250 patient records</strong> for release to an academic research partner. Each record contains <strong>10 fields</strong>. After review, the privacy officer classifies the fields as follows: <strong>3 direct identifiers</strong> (Name, SSN, Phone), <strong>4 quasi-identifiers</strong> (DOB, ZIP, Sex, Race), and <strong>3 sensitive attributes</strong> (Primary Diagnosis, Substance Use Status, Medication List). Compute the total cell counts, the information-loss rate, and the utility-retention rate.</p></div>
+    <button class="hb" onclick="toggleHint('h01')">&#128161; Show Hint</button>
+    <div class="hbx" id="h01">Total cells = 250 records &#215; 10 fields = 2,500. Multiply each field category by 250: 3&#215;250=750 suppressed, 4&#215;250=1,000 generalized, 3&#215;250=750 retained. Information-loss rate = (suppressed + generalized) / total. Utility-retention = retained / total. Verify the three percentages sum to 100%.</div>
+    <div class="fl">Fill in each blank:</div>
+    <div class="fi"><span class="ts">Total cells = 250 &#215; 10 =</span><span class="bw"><input class="bi" id="e01a" style="width:78px" data-answer="2500" placeholder="?"><button class="rb" onclick="revealAnswer('e01a')">reveal</button></span></div>
+    <div class="fi"><span class="ts">Suppressed cells = 3 &#215; 250 =</span><span class="bw"><input class="bi" id="e01b" style="width:68px" data-answer="750" placeholder="?"><button class="rb" onclick="revealAnswer('e01b')">reveal</button></span></div>
+    <div class="fi"><span class="ts">Generalized cells = 4 &#215; 250 =</span><span class="bw"><input class="bi" id="e01c" style="width:78px" data-answer="1000" placeholder="?"><button class="rb" onclick="revealAnswer('e01c')">reveal</button></span></div>
+    <div class="fi"><span class="ts">Retained cells = 3 &#215; 250 =</span><span class="bw"><input class="bi" id="e01d" style="width:68px" data-answer="750" placeholder="?"><button class="rb" onclick="revealAnswer('e01d')">reveal</button></span></div>
+    <div class="fi"><span class="ts">Information-loss rate = (750 + 1,000) / 2,500 =</span><span class="bw"><input class="bi" id="e01e" style="width:68px" data-answer="0.70" data-tolerance="0.01" placeholder="?"><button class="rb" onclick="revealAnswer('e01e')">reveal</button></span><span class="ts">=</span><span class="bw"><input class="bi" id="e01f" style="width:58px" data-answer="70" data-tolerance="1" placeholder="?"><button class="rb" onclick="revealAnswer('e01f')">reveal</button></span><span class="ts">%</span></div>
+    <div class="fi"><span class="ts">Utility-retention rate = 750 / 2,500 =</span><span class="bw"><input class="bi" id="e01g" style="width:68px" data-answer="0.30" data-tolerance="0.01" placeholder="?"><button class="rb" onclick="revealAnswer('e01g')">reveal</button></span><span class="ts">=</span><span class="bw"><input class="bi" id="e01h" style="width:58px" data-answer="30" data-tolerance="1" placeholder="?"><button class="rb" onclick="revealAnswer('e01h')">reveal</button></span><span class="ts">%</span></div>
+    <div class="fi"><span class="ts">Sum check: 70% + 30% =</span><span class="bw"><input class="bi" id="e01i" style="width:58px" data-answer="100" placeholder="?"><button class="rb" onclick="revealAnswer('e01i')">reveal</button></span><span class="ts">%</span></div>
+    <div class="bg">
+      <button class="cb" onclick="subEx('ex01',0,['e01a','e01b','e01c','e01d','e01e','e01f','e01g','e01h','e01i'])">Submit</button>
+      <button class="rab" onclick="revAll('ex01',0,['e01a','e01b','e01c','e01d','e01e','e01f','e01g','e01h','e01i'])">Reveal All</button>
+    </div>
+    <div class="res" id="ex01r"></div>
+    <div class="pa" id="ex01a">
+      <div class="od vs"><div class="ol">&#128270; Key Insight</div>Information-loss rate &#8776; <strong>70%</strong>; utility-retention &#8776; <strong>30%</strong>. Behavioral health datasets typically have higher loss rates than general datasets because of 42 CFR Part 2&#39;s stricter handling of substance use information. Note: a high information-loss rate does NOT guarantee privacy &#8212; the 30% of retained data could still be uniquely identifying if the remaining quasi-identifiers (year + ZIP-3 + sex + race) form rare combinations. That residual risk is exactly what Stations 03&#8211;05 quantify.</div>
+    </div>
+  </div>
+</section>
+<div class="sta-nav">
+  <button class="nav-btn prev" onclick="goTo(0)" style="visibility:hidden;">&#8592; Previous</button>
+  <span class="sta-nav-info">Station 1 of 12 &#8212; Intermediate</span>
+  <button class="nav-btn next" onclick="goTo(1)">Safe Harbor &#8594;</button>
+</div>
+</div>
+
+<!-- ═══════ STATION 1 &#8212; Safe Harbor ═══════ -->
+<div class="pri-station" id="sta-1" style="display:none">
+<section class="sta">
+  <div class="shd"><div class="sn">Station 02 &#8212; Intermediate</div><span class="stg tgi">INTERMEDIATE</span></div>
+  <h2>HIPAA Safe Harbor &#8212; Edge Cases &amp; Aggregate Compliance Burden</h2>
+  <p>HIPAA <span class="kt">Safe Harbor</span> requires removal of 18 categories of identifiers, with three numerical rules that introduce real arithmetic on real records: ZIP populations &lt;20,000 must be replaced with 000, exact birth dates must be reduced to year only, and patients aged &#8805;90 must have their birth year replaced with &#8220;Age 90+&#8221;. At the intermediate level, we apply these rules across a cohort and compute the aggregate triggering rate.</p>
+  <div class="fb"><span class="lb">Three Numerical Safe Harbor Rules</span>Rule 1: 3-digit ZIP prefix retained only if total population in that prefix &#8805; 20,000<br>Rule 2: All birth dates &#8594; year only (month and day suppressed)<br>Rule 3: If patient age &#8805; 90, replace birth year with &#8220;Age 90+&#8221; bucket</div>
+  <div class="cn"><span class="cnt">Why the 20,000-Person Threshold</span><p>The Census-derived rule prevents very small geographies from re-introducing identifiability. A 3-digit ZIP prefix with only ~5,000 residents combined with sex and a specific birth year may yield only a handful of matches in a voter file. The 20,000 minimum keeps the anonymity set large enough that the residual QI combination &#123;sex, birth year, ZIP-3&#125; alone cannot single out an individual under typical Census distributions.</p></div>
+
+  <button class="dt" onclick="toggleDemo('d02')"><span class="di">&#128218;</span><span class="dl">Focused Tutorial</span><span class="tt">Counting Rule Triggers Across a 500-Patient Cohort</span><span class="da">&#9658;</span></button>
+  <div class="dc" id="d02">
+    <div class="sc-box"><span class="sc-lbl">&#128204; Scenario</span><p>A community health network has a 500-patient cohort serving urban Seattle (ZIP-3 prefix 981, population ~700,000) and rural Walla Walla County (ZIP-3 prefix 993, population ~18,500). Approximately 4% of patients are aged 90 or older. Compute the total number of records affected by each Safe Harbor numerical rule.</p></div>
+    <div class="cv-box"><span class="cv-lbl">&#9881; How to Apply Each Rule</span><ul>
+      <li><strong>Rule 1 (ZIP population):</strong> any record from a ZIP-3 region with pop &lt; 20,000 needs that prefix replaced with 000. ZIP 981 &#8594; KEEP. ZIP 993 &#8594; REPLACE.</li>
+      <li><strong>Rule 2 (year-only DOB):</strong> applies to ALL records, always. So 500/500 records are affected.</li>
+      <li><strong>Rule 3 (Age 90+):</strong> 4% &#215; 500 = 20 records.</li>
+    </ul></div>
+    <div class="dp"><div class="dot">Suppose 380 patients live in ZIP-3 prefix 981 and 120 in ZIP-3 prefix 993.<br><br>Rule 1: ZIP 993 has pop 18,500 &lt; 20,000 &#8594; <strong>120 records</strong> need ZIP prefix replaced with 000.<br>Rule 2: ALL records have full DOB &#8594; <strong>500 records</strong> have DOB reduced to year only.<br>Rule 3: 4% &#215; 500 = <strong>20 records</strong> with Age 90+ replacement.<br><br>Records triggering BOTH Rule 1 and Rule 3 (overlap): 4% &#215; 120 &#8776; <strong>5 records</strong>.<br>Records triggering at least one of the three rules: <strong>500</strong> (because Rule 2 applies to all).</div></div>
+    <div class="cv-box" style="margin-top:14px;"><span class="cv-lbl">&#128270; Practical Note</span><p>Even though Rule 2 applies universally, organizations usually batch their Safe Harbor pipeline in three passes (one per rule) to make audit logs cleaner. Rule 1 lookups require a current Census-derived ZIP-3 population table; many compliance failures stem from using stale lookup tables when a ZIP&#39;s population dropped below 20,000 since the last refresh.</p></div>
+    <div class="dn">&#128161; Aggregate Safe Harbor compliance is binary: either all 18 categories are addressed for every record, or the dataset is non-compliant. The intermediate-level question is not &#8220;compliant?&#8221; but &#8220;how many records were affected by which rule?&#8221; &#8212; useful for audit trails and information-loss accounting.</div>
+  </div>
+
+  <div class="ex" id="ex02">
+    <div class="ext">Exercise 2 &#8212; Safe Harbor Rule Triggers Across a Mixed-Geography Cohort</div>
+    <div class="exd di-int">&#9679; Difficulty: Intermediate &#8212; Aggregate Rule Application</div>
+    <div class="sc-box"><span class="sc-lbl">&#128204; Scenario</span><p>A statewide diabetes registry contains <strong>2,400 patients</strong> distributed across three ZIP-3 regions: prefix <strong>980</strong> (pop 420,000, with 1,500 patients), prefix <strong>982</strong> (pop 95,000, with 600 patients), and prefix <strong>995</strong> (pop 17,400, with 300 patients). Approximately <strong>3.5%</strong> of patients in the registry are aged 90 or older, distributed proportionally across all three regions. Compute the records triggering each rule and the total compliance work.</p></div>
+    <button class="hb" onclick="toggleHint('h02')">&#128161; Show Hint</button>
+    <div class="hbx" id="h02">Rule 1: only ZIP-3 regions with pop &lt; 20,000 trigger the prefix-replacement rule. Pop 420,000 &#8594; SAFE. Pop 95,000 &#8594; SAFE. Pop 17,400 &#8594; UNSAFE &#8594; 300 records affected. Rule 2: applies to ALL 2,400 records. Rule 3: 0.035 &#215; 2,400 = 84 records. Records affected by BOTH Rule 1 AND Rule 3: 0.035 &#215; 300 &#8776; 11 records (the proportional Age 90+ subset of region 995).</div>
+    <div class="fl">Fill in each blank:</div>
+    <div class="fi"><span class="ts">ZIP-3 980 pop 420,000 &#8594; needs 000 replacement?</span><span class="bw"><input class="bi" id="e02a" style="width:58px" data-answer="no" data-type="text" placeholder="?"><button class="rb" onclick="revealAnswer('e02a')">reveal</button></span></div>
+    <div class="fi"><span class="ts">ZIP-3 995 pop 17,400 &#8594; needs 000 replacement?</span><span class="bw"><input class="bi" id="e02b" style="width:58px" data-answer="yes" data-type="text" placeholder="?"><button class="rb" onclick="revealAnswer('e02b')">reveal</button></span></div>
+    <div class="fi"><span class="ts">Rule 1 affected records (ZIP 995 only) =</span><span class="bw"><input class="bi" id="e02c" style="width:68px" data-answer="300" placeholder="?"><button class="rb" onclick="revealAnswer('e02c')">reveal</button></span></div>
+    <div class="fi"><span class="ts">Rule 2 affected records (year-only for ALL) =</span><span class="bw"><input class="bi" id="e02d" style="width:78px" data-answer="2400" placeholder="?"><button class="rb" onclick="revealAnswer('e02d')">reveal</button></span></div>
+    <div class="fi"><span class="ts">Rule 3 affected records = 0.035 &#215; 2,400 =</span><span class="bw"><input class="bi" id="e02e" style="width:68px" data-answer="84" placeholder="?"><button class="rb" onclick="revealAnswer('e02e')">reveal</button></span></div>
+    <div class="fi"><span class="ts">Records triggering BOTH Rule 1 AND Rule 3 = 0.035 &#215; 300 &#8776;</span><span class="bw"><input class="bi" id="e02f" style="width:58px" data-answer="11" data-tolerance="1" placeholder="?"><button class="rb" onclick="revealAnswer('e02f')">reveal</button></span></div>
+    <div class="fi"><span class="ts">Records in ZIP 995 NOT also Age 90+ = 300 &#8722; 11 =</span><span class="bw"><input class="bi" id="e02g" style="width:68px" data-answer="289" data-tolerance="1" placeholder="?"><button class="rb" onclick="revealAnswer('e02g')">reveal</button></span></div>
+    <div class="bg">
+      <button class="cb" onclick="subEx('ex02',1,['e02a','e02b','e02c','e02d','e02e','e02f','e02g'])">Submit</button>
+      <button class="rab" onclick="revAll('ex02',1,['e02a','e02b','e02c','e02d','e02e','e02f','e02g'])">Reveal All</button>
+    </div>
+    <div class="res" id="ex02r"></div>
+    <div class="pa" id="ex02a">
+      <div class="od vs"><div class="ol">&#128270; Compliance Summary</div>Rule 1: 300 records (12.5% of cohort) need ZIP prefix 995 &#8594; 000.<br>Rule 2: all 2,400 records have DOB &#8594; year only.<br>Rule 3: 84 records (3.5% of cohort) have birth year &#8594; &#8220;Age 90+&#8221;.<br>Records hit by Rule 1 + Rule 3 simultaneously: ~11. These are the most heavily transformed records in the dataset.<br><br>For the 289 records in ZIP 995 that are NOT 90+, the ZIP prefix becomes 000 but the year remains. Their residual QI becomes &#123;sex, year, 000&#125; &#8212; effectively a very large anonymity set (the entire small-ZIP rural population, with year). This is by design: Safe Harbor sacrifices ZIP granularity to maintain k-anonymity in low-population regions.</div>
+    </div>
+  </div>
+</section>
+<div class="sta-nav">
+  <button class="nav-btn prev" onclick="goTo(0)">&#8592; De-Identification</button>
+  <span class="sta-nav-info">Station 2 of 12 &#8212; Intermediate</span>
+  <button class="nav-btn next" onclick="goTo(2)">Re-ID Risk &#8594;</button>
+</div>
+</div>
+
+<!-- ═══════ STATION 2 &#8212; Re-ID Risk (Two Exercises) ═══════ -->
+<div class="pri-station" id="sta-2" style="display:none">
+<section class="sta">
+  <div class="shd"><div class="sn">Station 03 &#8212; Intermediate + Advanced Intermediate</div><span class="stg tgi">2 EXERCISES</span></div>
+  <h2>Re-Identification Risk &#8212; Three Attacker Models + Bayesian Attacker</h2>
+  <p>De-identification removes identifiers; <span class="kt">re-identification risk quantification</span> proves the dataset is safe by computing how likely an adversary could link a released record back to a specific individual. The intermediate exercise computes the three standardized attacker metrics (Prosecutor, Journalist, Marketer) across a multi-group cohort. The advanced-intermediate exercise treats re-identification as a <em>Bayesian inference problem</em> &#8212; the attacker starts with a prior 1/N and updates via likelihood ratios for each matching QI field.</p>
+  <h3>The Three Attacker Models &#8212; Quick Reference</h3>
+  <div class="mg">
+    <div class="mc pr"><div class="mn">Prosecutor Model</div><div class="mf">Risk = 1 / min(k)</div><p>Attacker targets a known individual. Even one k=1 record makes risk = 1.0.</p></div>
+    <div class="mc jo"><div class="mn">Journalist Model</div><div class="mf">Risk = (#k=1 records) / N</div><p>Random selection; fraction of dataset trivially exposable.</p></div>
+    <div class="mc ma"><div class="mn">Marketer Model</div><div class="mf">Risk = (1/N) &#215; &#931;(1/k&#7522;)</div><p>Average linkage success when attacker tries every record.</p></div>
+  </div>
+  <div class="cn"><span class="cnt">HIPAA Expert Determination Threshold</span><p>&#8220;Very small&#8221; risk under HIPAA is interpreted in practice as <strong>&#8804; 0.09 (9%)</strong>. Prosecutor risk requires min(k) &#8805; 12 (since 1/12 &#8776; 0.083). All three metrics must pass before release.</p></div>
+
+  <!-- ═══════ FOCUSED TUTORIAL 1: Standard Three-Model Calculation ═══════ -->
+  <button class="dt" onclick="toggleDemo('d03a')"><span class="di">&#128218;</span><span class="dl">Focused Tutorial A</span><span class="tt">Computing All Three Metrics on a 5-Group Dataset</span><span class="da">&#9658;</span></button>
+  <div class="dc" id="d03a">
+    <div class="sc-box"><span class="sc-lbl">&#128204; Scenario</span><p>A privacy analyst is reviewing a 24-patient hypertension dataset for release. After generalization, the records fall into 4 equivalence groups: Group A (k=2, 2 records), Group B (k=4, 4 records), Group C (k=6, 6 records), Group D (k=12, 12 records). She computes all three attacker metrics.</p></div>
+    <div class="dp"><table class="ct"><thead><tr><th>Group</th><th>Size (k)</th><th>1/k contribution</th><th>Total per group</th></tr></thead><tbody>
+      <tr><td>A</td><td>2</td><td>0.500</td><td>2 &#215; 0.500 = 1.000</td></tr>
+      <tr><td>B</td><td>4</td><td>0.250</td><td>4 &#215; 0.250 = 1.000</td></tr>
+      <tr><td>C</td><td>6</td><td>0.167</td><td>6 &#215; 0.167 = 1.000</td></tr>
+      <tr><td>D</td><td>12</td><td>0.083</td><td>12 &#215; 0.083 = 1.000</td></tr>
+    </tbody></table></div>
+    <div class="sl slo">OPERATION &#8212; Apply All Three Formulas</div>
+    <div class="dp"><div class="dot">min(k) = 2 &#8594; Prosecutor = 1/2 = <strong>0.500</strong> FAIL &#10060;<br>k=1 records: 0 &#8594; Journalist = 0/24 = <strong>0.000</strong> PASS &#10003;<br>&#931;(1/k&#7522;) = 1+1+1+1 = 4 (one per group) &#8594; Marketer = 4/24 &#8776; <strong>0.167</strong> FAIL &#10060;</div></div>
+    <div class="cv-box" style="margin-top:14px;"><span class="cv-lbl">&#128270; Marketer Has a Neat Property</span><p>The marketer risk simplifies to (<em>number of equivalence groups</em>) / N when each group contributes exactly 1 to the sum, which it always does since k_group &#215; (1/k_group) = 1. So Marketer = G/N where G is the count of distinct QI combinations. For this dataset: 4/24 &#8776; 0.167.</p></div>
+    <div class="dn">&#128161; Two of three metrics fail. Even though no record is trivially exposable (journalist=0), the prosecutor and marketer models flag the dataset as too risky. Remedy: enlarge the smallest groups by reducing QI granularity (e.g., wider age bands) or merging groups.</div>
+  </div>
+
+  <div class="ex" id="ex03">
+    <div class="ext">Exercise 3 &#8212; Three-Model Risk Across a Mixed-k Cohort</div>
+    <div class="exd di-int">&#9679; Difficulty: Intermediate &#8212; Multi-Step Metric Calculation</div>
+    <div class="sc-box"><span class="sc-lbl">&#128204; Scenario</span><p>A community clinic prepares a <strong>30-patient cohort</strong> for release. After generalization, the records fall into 5 equivalence groups with sizes: Group A (k=1, 1 record), Group B (k=2, 2 records), Group C (k=4, 4 records), Group D (k=8, 8 records), Group E (k=15, 15 records). Compute all three attacker metrics and identify the failure(s).</p></div>
+    <button class="hb" onclick="toggleHint('h03')">&#128161; Show Hint</button>
+    <div class="hbx" id="h03">Prosecutor uses min(k). Find the smallest. Journalist counts only k=1 records. Marketer: each group contributes k&#215;(1/k) = 1, so &#931;(1/k&#7522;) = number of groups = 5. Divide by N=30. The threshold is &#8804;0.09 for all three.</div>
+    <div class="fl">Fill in each blank:</div>
+    <div class="fi"><span class="ts">min(k) across the 5 groups =</span><span class="bw"><input class="bi" id="e03a" style="width:50px" data-answer="1" placeholder="?"><button class="rb" onclick="revealAnswer('e03a')">reveal</button></span></div>
+    <div class="fi"><span class="ts">Prosecutor risk = 1 /</span><span class="bw"><input class="bi" id="e03b" style="width:50px" data-answer="1" placeholder="?"><button class="rb" onclick="revealAnswer('e03b')">reveal</button></span><span class="ts">=</span><span class="bw"><input class="bi" id="e03c" style="width:68px" data-answer="1.0" data-tolerance="0.01" placeholder="?"><button class="rb" onclick="revealAnswer('e03c')">reveal</button></span><span class="ts">&#8594; passes &#8804;0.09?</span><span class="bw"><input class="bi" id="e03d" style="width:58px" data-answer="no" data-type="text" placeholder="?"><button class="rb" onclick="revealAnswer('e03d')">reveal</button></span></div>
+    <div class="fi"><span class="ts">Records with k=1 =</span><span class="bw"><input class="bi" id="e03e" style="width:50px" data-answer="1" placeholder="?"><button class="rb" onclick="revealAnswer('e03e')">reveal</button></span><span class="ts">Journalist = 1/30 &#8776;</span><span class="bw"><input class="bi" id="e03f" style="width:68px" data-answer="0.033" data-tolerance="0.005" placeholder="?"><button class="rb" onclick="revealAnswer('e03f')">reveal</button></span><span class="ts">&#8594; passes?</span><span class="bw"><input class="bi" id="e03g" style="width:58px" data-answer="yes" data-type="text" placeholder="?"><button class="rb" onclick="revealAnswer('e03g')">reveal</button></span></div>
+    <div class="fi"><span class="ts">&#931;(1/k&#7522;) over all records (= # groups) =</span><span class="bw"><input class="bi" id="e03h" style="width:50px" data-answer="5" placeholder="?"><button class="rb" onclick="revealAnswer('e03h')">reveal</button></span></div>
+    <div class="fi"><span class="ts">Marketer = 5 / 30 &#8776;</span><span class="bw"><input class="bi" id="e03i" style="width:68px" data-answer="0.167" data-tolerance="0.01" placeholder="?"><button class="rb" onclick="revealAnswer('e03i')">reveal</button></span><span class="ts">&#8594; passes?</span><span class="bw"><input class="bi" id="e03j" style="width:58px" data-answer="no" data-type="text" placeholder="?"><button class="rb" onclick="revealAnswer('e03j')">reveal</button></span></div>
+    <div class="bg">
+      <button class="cb" onclick="subEx('ex03',2,['e03a','e03b','e03c','e03d','e03e','e03f','e03g','e03h','e03i','e03j'])">Submit</button>
+      <button class="rab" onclick="revAll('ex03',2,['e03a','e03b','e03c','e03d','e03e','e03f','e03g','e03h','e03i','e03j'])">Reveal All</button>
+    </div>
+    <div class="res" id="ex03r"></div>
+    <div class="pa" id="ex03a">
+      <div class="od vs"><div class="ol">&#128270; Diagnostic</div>Prosecutor FAILS (1.0) and Marketer FAILS (0.167). Journalist passes (0.033) because there is only 1 k=1 record out of 30. The journalist model is the most forgiving in this case because the lone outlier dilutes against the larger N. The prosecutor model is the most damning: it pins risk to the WORST individual record. Remedy: suppress Group A&#39;s single record (suppression rate 1/30 &#8776; 3.3%), giving min(k)=2. Prosecutor would then be 0.5, still failing; further generalization would be needed to reach min(k)=12.</div>
+    </div>
+  </div>
+
+  <!-- ═══════ FOCUSED TUTORIAL B: Advanced &#8212; Bayesian Attacker ═══════ -->
+  <button class="dt adv" onclick="toggleDemo('d03b')"><span class="di">&#127942;</span><span class="dl">Focused Tutorial B &#8212; Advanced</span><span class="tt">Bayesian Attacker Model &#8212; QI Matching as Sequential Evidence</span><span class="da">&#9658;</span></button>
+  <div class="dc adv" id="d03b">
+    <div class="sc-box"><span class="sc-lbl">&#128204; The Bayesian View of Re-Identification</span><p>The three attacker models in Focused Tutorial A treat re-identification as a structural property of the dataset (group sizes). A complementary &#8212; and more powerful &#8212; view treats it as a Bayesian inference problem: the attacker starts with uncertainty (a prior of 1/N for any specific record being a known target) and updates that belief each time a known QI value of the target matches a record&#39;s value. This perspective unifies re-identification with probabilistic record linkage (Station 09) and clinical Bayesian reasoning (Station 08).</p></div>
+    <div class="cv-box"><span class="cv-lbl">&#9881; The Model</span><ul>
+      <li><strong>Hypothesis H:</strong> &#8220;This released record belongs to the attacker&#39;s known target.&#8221;</li>
+      <li><strong>Prior P(H):</strong> 1/N where N is the size of the released dataset. Prior odds &#8776; 1/(N&#8722;1) &#8776; 1/N for large N.</li>
+      <li><strong>Evidence E&#7522;:</strong> &#8220;Field i of this record matches the target&#39;s known value for field i.&#8221;</li>
+      <li><strong>Likelihood ratio LR&#7522; = m&#7522;/u&#7522;</strong> where m&#7522; = P(field i matches | record IS the target) (very close to 1 for stable fields), u&#7522; = P(field i matches | record is NOT the target) = the marginal frequency of that value in the population.</li>
+      <li><strong>Posterior odds = prior odds &#215; &#8719; LR&#7522;</strong> (independence assumption on the fields).</li>
+      <li><strong>P(re-id) = posterior odds / (1 + posterior odds).</strong> Compare to 0.09 threshold.</li>
+    </ul></div>
+    <div class="fb"><span class="lb">Bayesian Re-Identification &#8212; Odds Form</span>Prior odds &#8776; 1 / (N &#8722; 1)<br>For each matching QI field: LR&#7522; = m&#7522; / u&#7522;<br>Posterior odds = prior odds &#215; &#8719; LR&#7522;<br>P(re-id) = posterior odds / (1 + posterior odds)</div>
+    <div class="sl slo">WORKED EXAMPLE &#8212; Re-ID Attack on a 1,200-Patient Cohort</div>
+    <div class="dp"><div class="dot">Setup: Released dataset N=1,200. Target known to be in dataset. Attacker has 3 QI values for target: Sex=F, Age band 60&#8211;69, ZIP-3=981.<br><br>Step 1: Prior odds = 1/1,199 &#8776; <strong>0.000834</strong><br>Step 2: LR for each matching field:<br>&nbsp;&nbsp;LR_sex   = m/u = 0.99/0.52 &#8776; <strong>1.904</strong>  (sex is binary &#8212; weak evidence)<br>&nbsp;&nbsp;LR_age   = 0.95/0.12 &#8776; <strong>7.917</strong>  (10 age bands &#8594; moderate evidence)<br>&nbsp;&nbsp;LR_zip3  = 0.92/0.08 &#8776; <strong>11.5</strong>   (geographic specificity &#8212; strong evidence)<br>Step 3: Combined LR = 1.904 &#215; 7.917 &#215; 11.5 &#8776; <strong>173.4</strong><br>Step 4: Posterior odds = 0.000834 &#215; 173.4 &#8776; <strong>0.1446</strong><br>Step 5: P(re-id) = 0.1446 / 1.1446 &#8776; <strong>0.1263 (&#8776; 12.6%)</strong> &#8594; FAILS 9% threshold</div></div>
+    <div class="cv-box" style="margin-top:14px;"><span class="cv-lbl">&#128270; Why This View Matters</span><p>The three classical attacker models give a single number per dataset; the Bayesian model gives a number per attacker scenario (target identity + observable QI vector). This is more granular and matches how real re-identification studies are reported in the academic literature. Notice that the LR values multiplicatively compound &#8212; this is the same mechanism that drives Sweeney&#39;s 87% result (ZIP+DOB+Sex uniquely identifies 87% of U.S. residents). Each independent field acts as a separate Bayesian update, and the prior is rapidly overwhelmed by the cumulative evidence.</p></div>
+    <div class="dn">&#128161; The Bayesian model is also the mathematical foundation for differential privacy&#39;s membership inference defense: DP bounds the maximum LR per query at e<sup>&#949;</sup>, so no matter how many queries an attacker observes, the posterior cannot deviate from the prior by more than a known factor. This is why DP is the only method providing protection regardless of auxiliary knowledge.</div>
+  </div>
+
+  <div class="ex adv" id="ex04">
+    <div class="ext">Exercise 4 &#8212; Bayesian Re-Identification with Three Matching QIs</div>
+    <div class="exd di-adv">&#9679;&#9679; Difficulty: Advanced Intermediate &#8212; Posterior via Odds &#215; LR</div>
+    <div class="sc-box"><span class="sc-lbl">&#128204; Scenario</span><p>An attacker has obtained a 600-patient hospital release with three QI fields visible: Sex, Age band (10 bands), and ZIP-3 prefix. Their target is known to be in the dataset (prior probability 1/600). The attacker knows the target&#39;s Sex=F, Age band=60&#8211;69, ZIP-3=982. From prior matching studies, the attacker estimates:</p></div>
+    <div class="cv-box"><span class="cv-lbl">&#9881; Likelihood Estimates</span><ul>
+      <li>Sex (F): m=0.99 (true matches always agree), u=0.52 (52% of dataset is female)</li>
+      <li>Age band: m=0.95, u=0.10 (10 bands, roughly uniform)</li>
+      <li>ZIP-3 (982): m=0.92, u=0.05 (982 is one of ~20 ZIP-3 prefixes in the dataset)</li>
+    </ul></div>
+    <button class="hb" onclick="toggleHint('h04')">&#128161; Show Hint</button>
+    <div class="hbx" id="h04">Prior odds &#8776; 1/(N&#8722;1) &#8776; 1/599 &#8776; 0.001669. For each field LR&#7522; = m&#7522;/u&#7522;. Multiply prior odds by all three LRs. Convert: P = odds/(1+odds). The threshold is 0.09 &#8212; check whether the posterior exceeds it.</div>
+    <div class="fl">Fill in each blank:</div>
+    <div class="fi"><span class="ts">Prior odds &#8776; 1 / (600 &#8722; 1) &#8776;</span><span class="bw"><input class="bi" id="e04a" style="width:90px" data-answer="0.001669" data-tolerance="0.0001" placeholder="?"><button class="rb" onclick="revealAnswer('e04a')">reveal</button></span></div>
+    <div class="fi"><span class="ts">LR_sex = 0.99 / 0.52 &#8776;</span><span class="bw"><input class="bi" id="e04b" style="width:78px" data-answer="1.904" data-tolerance="0.02" placeholder="?"><button class="rb" onclick="revealAnswer('e04b')">reveal</button></span></div>
+    <div class="fi"><span class="ts">LR_age = 0.95 / 0.10 =</span><span class="bw"><input class="bi" id="e04c" style="width:78px" data-answer="9.5" data-tolerance="0.05" placeholder="?"><button class="rb" onclick="revealAnswer('e04c')">reveal</button></span></div>
+    <div class="fi"><span class="ts">LR_zip3 = 0.92 / 0.05 =</span><span class="bw"><input class="bi" id="e04d" style="width:78px" data-answer="18.4" data-tolerance="0.1" placeholder="?"><button class="rb" onclick="revealAnswer('e04d')">reveal</button></span></div>
+    <div class="fi"><span class="ts">Combined LR = 1.904 &#215; 9.5 &#215; 18.4 &#8776;</span><span class="bw"><input class="bi" id="e04e" style="width:78px" data-answer="332.8" data-tolerance="5" placeholder="?"><button class="rb" onclick="revealAnswer('e04e')">reveal</button></span></div>
+    <div class="fi"><span class="ts">Posterior odds = 0.001669 &#215; 332.8 &#8776;</span><span class="bw"><input class="bi" id="e04f" style="width:78px" data-answer="0.555" data-tolerance="0.03" placeholder="?"><button class="rb" onclick="revealAnswer('e04f')">reveal</button></span></div>
+    <div class="fi"><span class="ts">P(re-id) = 0.555 / (1 + 0.555) &#8776;</span><span class="bw"><input class="bi" id="e04g" style="width:78px" data-answer="0.357" data-tolerance="0.02" placeholder="?"><button class="rb" onclick="revealAnswer('e04g')">reveal</button></span></div>
+    <div class="fi"><span class="ts">Exceeds 0.09 threshold?</span><span class="bw"><input class="bi" id="e04h" style="width:58px" data-answer="yes" data-type="text" placeholder="?"><button class="rb" onclick="revealAnswer('e04h')">reveal</button></span><span class="ts">&#8594; release decision:</span><span class="bw"><input class="bi" id="e04i" style="width:78px" data-answer="reject" data-type="text" placeholder="?"><button class="rb" onclick="revealAnswer('e04i')">reveal</button></span></div>
+    <div class="bg">
+      <button class="cb" onclick="subEx('ex04',2,['e04a','e04b','e04c','e04d','e04e','e04f','e04g','e04h','e04i'])">Submit</button>
+      <button class="rab" onclick="revAll('ex04',2,['e04a','e04b','e04c','e04d','e04e','e04f','e04g','e04h','e04i'])">Reveal All</button>
+    </div>
+    <div class="res" id="ex04r"></div>
+    <div class="pa" id="ex04a">
+      <div class="od vs"><div class="ol">&#128270; Bayesian Diagnosis</div>Posterior P(re-id) &#8776; <strong>35.7%</strong> &#8212; far above the 9% Expert Determination threshold. The combined LR of 333 multiplied a tiny prior (0.00167) into substantial posterior odds (0.555). The breakdown of evidence contribution:<br>&nbsp;&#8226; Sex contributes very little (LR &#8776; 1.9) because half the dataset is female.<br>&nbsp;&#8226; Age band contributes moderate evidence (LR = 9.5).<br>&nbsp;&#8226; ZIP-3 contributes the most (LR = 18.4) &#8212; geographic specificity is the workhorse field.<br><br>Remedy: further generalize ZIP (drop the 982 specificity to a combined &#8220;West&#8221; or &#8220;East&#8221; region with much larger u), or aggregate age bands to wider 20-year buckets. Reducing LR_zip3 from 18.4 to 4.0 would cut posterior odds to 0.121 &#8594; P &#8776; 10.8%, still over threshold but much closer to acceptable. This is why expert determination typically requires multiple rounds of QI reduction.</div>
+    </div>
+  </div>
+</section>
+<div class="sta-nav">
+  <button class="nav-btn prev" onclick="goTo(1)">&#8592; Safe Harbor</button>
+  <span class="sta-nav-info">Station 3 of 12 &#8212; 2 Exercises</span>
+  <button class="nav-btn next" onclick="goTo(3)">k-Anonymity &#8594;</button>
+</div>
+</div>
+
+<!-- ═══════ STATION 3 &#8212; k-Anonymity ═══════ -->
+<div class="pri-station" id="sta-3" style="display:none">
+<section class="sta">
+  <div class="shd"><div class="sn">Station 04 &#8212; Intermediate</div><span class="stg tgi">INTERMEDIATE</span></div>
+  <h2>k-Anonymity &#8212; Equivalence Class Sizing &amp; Suppression Strategy</h2>
+  <p><span class="kt">k-Anonymity</span> requires every record to be indistinguishable from at least k&#8722;1 others on all quasi-identifier fields. At the intermediate level we solve the strategic problem: given a target k, which groups must be suppressed (or merged), what is the suppression rate, and what is the resulting min(k)?</p>
+  <div class="fb"><span class="lb">k-Anonymity &#8212; Decision Procedure for Target k*</span>For each equivalence group G with size k_G:<br>&nbsp;&nbsp;If k_G &#8805; k* &#8594; keep all records in G<br>&nbsp;&nbsp;If k_G &lt; k* &#8594; suppress all records in G (or merge with adjacent group)<br>Suppression rate = (suppressed records) / N<br>New min(k) = smallest k_G among retained groups</div>
+  <div class="cn"><span class="cnt">The Suppression Trade-Off</span><p>Higher target k = stronger identity protection but higher suppression. Production releases typically target k=5 for most research datasets and k=12 for highly sensitive (HIV, SUD, mental health) datasets. Reducing QI granularity (e.g., 10-year age bands instead of 5-year) <em>before</em> applying k-anonymity is almost always preferable to suppression &#8212; it preserves more records.</p></div>
+
+  <button class="dt" onclick="toggleDemo('d04')"><span class="di">&#128218;</span><span class="dl">Focused Tutorial</span><span class="tt">Computing Suppression Rate for Target k=5 on a 100-Record Dataset</span><span class="da">&#9658;</span></button>
+  <div class="dc" id="d04">
+    <div class="sc-box"><span class="sc-lbl">&#128204; Scenario</span><p>A diabetes registry has 100 patients across 18 distinct QI combinations. The release target is k=5. The privacy analyst tallies the group sizes and applies the decision procedure.</p></div>
+    <div class="dp"><table class="ct"><thead><tr><th>Group Size (k_G)</th><th>Number of Groups</th><th>Records in those groups</th><th>Keep or Suppress?</th></tr></thead><tbody>
+      <tr><td>1</td><td>4</td><td>4</td><td class="cd">SUPPRESS</td></tr>
+      <tr><td>2</td><td>3</td><td>6</td><td class="cd">SUPPRESS</td></tr>
+      <tr><td>3</td><td>2</td><td>6</td><td class="cd">SUPPRESS</td></tr>
+      <tr><td>4</td><td>1</td><td>4</td><td class="cd">SUPPRESS</td></tr>
+      <tr><td>5</td><td>2</td><td>10</td><td class="ck">KEEP</td></tr>
+      <tr><td>8</td><td>3</td><td>24</td><td class="ck">KEEP</td></tr>
+      <tr><td>15</td><td>2</td><td>30</td><td class="ck">KEEP</td></tr>
+      <tr><td>16</td><td>1</td><td>16</td><td class="ck">KEEP</td></tr>
+    </tbody></table></div>
+    <div class="sl slo">OPERATION &#8212; Compute Suppression Rate &amp; New min(k)</div>
+    <div class="dp"><div class="dot">Suppressed records (groups with k_G &lt; 5): 4+6+6+4 = <strong>20 records</strong> across <strong>10 groups</strong><br>Retained records (groups with k_G &#8805; 5): 10+24+30+16 = <strong>80 records</strong> across <strong>8 groups</strong><br>Suppression rate = 20 / 100 = <strong>20%</strong><br>New min(k) among retained = <strong>5</strong> &#8594; target met &#10003;</div></div>
+    <div class="cv-box" style="margin-top:14px;"><span class="cv-lbl">&#128270; Is 20% Suppression Acceptable?</span><p>Most Data Use Agreements (DUAs) tolerate suppression rates of 10&#8211;20%; rates above 25% trigger a recommendation to revisit the QI generalization strategy (use wider bands) rather than suppress more aggressively. In this example, 20% is borderline; revisiting age bands or ZIP granularity might pull a few small groups up to size 5, reducing suppression.</p></div>
+    <div class="dn">&#128161; k-anonymity protects identity, not attributes. A k=5 group whose patients all share the same diagnosis (l=1) still exposes that diagnosis with certainty. See Station 05 (l-diversity) for attribute protection.</div>
+  </div>
+
+  <div class="ex" id="ex05">
+    <div class="ext">Exercise 5 &#8212; k-Anonymity at Target k=3 with Suppression Calculation</div>
+    <div class="exd di-int">&#9679; Difficulty: Intermediate &#8212; Group-by-Group Decision</div>
+    <div class="sc-box"><span class="sc-lbl">&#128204; Scenario</span><p>A 24-patient research dataset has been generalized to 6 equivalence groups. The release target is k=3. Group sizes are: <strong>&#123;M,40s,981&#125;=4, &#123;M,50s,981&#125;=3, &#123;F,40s,981&#125;=1, &#123;F,50s,981&#125;=5, &#123;M,30s,980&#125;=2, &#123;F,30s,980&#125;=9</strong>. Determine which groups to suppress, the total records suppressed, and the new min(k).</p></div>
+    <button class="hb" onclick="toggleHint('h05')">&#128161; Show Hint</button>
+    <div class="hbx" id="h05">For k*=3: any group with k_G &lt; 3 must be suppressed. &#123;F,40s,981&#125;=1 &#8594; suppress (1 record). &#123;M,30s,980&#125;=2 &#8594; suppress (2 records). All others (k_G &#8805; 3) are kept. Total suppressed = 3. N=24. New min(k) = smallest among retained = 3 (the &#123;M,50s,981&#125; group).</div>
+    <div class="fl">Fill in each blank:</div>
+    <div class="fi"><span class="ts">Total records N =</span><span class="bw"><input class="bi" id="e05a" style="width:58px" data-answer="24" placeholder="?"><button class="rb" onclick="revealAnswer('e05a')">reveal</button></span></div>
+    <div class="fi"><span class="ts">Group &#123;F,40s,981&#125; size = 1 &#8594; meets k&#8805;3?</span><span class="bw"><input class="bi" id="e05b" style="width:58px" data-answer="no" data-type="text" placeholder="?"><button class="rb" onclick="revealAnswer('e05b')">reveal</button></span></div>
+    <div class="fi"><span class="ts">Group &#123;M,30s,980&#125; size = 2 &#8594; meets k&#8805;3?</span><span class="bw"><input class="bi" id="e05c" style="width:58px" data-answer="no" data-type="text" placeholder="?"><button class="rb" onclick="revealAnswer('e05c')">reveal</button></span></div>
+    <div class="fi"><span class="ts">Total records to suppress = 1 + 2 =</span><span class="bw"><input class="bi" id="e05d" style="width:58px" data-answer="3" placeholder="?"><button class="rb" onclick="revealAnswer('e05d')">reveal</button></span></div>
+    <div class="fi"><span class="ts">Suppression rate = 3 / 24 &#8776;</span><span class="bw"><input class="bi" id="e05e" style="width:68px" data-answer="0.125" data-tolerance="0.005" placeholder="?"><button class="rb" onclick="revealAnswer('e05e')">reveal</button></span><span class="ts">=</span><span class="bw"><input class="bi" id="e05f" style="width:58px" data-answer="12.5" data-tolerance="0.5" placeholder="?"><button class="rb" onclick="revealAnswer('e05f')">reveal</button></span><span class="ts">%</span></div>
+    <div class="fi"><span class="ts">Records retained for release = 24 &#8722; 3 =</span><span class="bw"><input class="bi" id="e05g" style="width:58px" data-answer="21" placeholder="?"><button class="rb" onclick="revealAnswer('e05g')">reveal</button></span></div>
+    <div class="fi"><span class="ts">New min(k) among retained groups =</span><span class="bw"><input class="bi" id="e05h" style="width:58px" data-answer="3" placeholder="?"><button class="rb" onclick="revealAnswer('e05h')">reveal</button></span><span class="ts">&#8594; meets target?</span><span class="bw"><input class="bi" id="e05i" style="width:58px" data-answer="yes" data-type="text" placeholder="?"><button class="rb" onclick="revealAnswer('e05i')">reveal</button></span></div>
+    <div class="bg">
+      <button class="cb" onclick="subEx('ex05',3,['e05a','e05b','e05c','e05d','e05e','e05f','e05g','e05h','e05i'])">Submit</button>
+      <button class="rab" onclick="revAll('ex05',3,['e05a','e05b','e05c','e05d','e05e','e05f','e05g','e05h','e05i'])">Reveal All</button>
+    </div>
+    <div class="res" id="ex05r"></div>
+    <div class="pa" id="ex05a">
+      <div class="od vs"><div class="ol">&#128270; Result</div>12.5% suppression rate to reach k=3. The retained dataset of 21 records has 4 equivalence groups with sizes 4, 3, 5, 9 &#8212; min(k)=3 confirmed. The released dataset satisfies k=3 anonymity. Note that this dataset would NOT satisfy k=5 without additional generalization (the size-3 and size-4 groups would also need suppression or merging), pushing suppression to 8/24 = 33% &#8212; above typical DUA tolerance. The strategic answer is to widen the age bands (e.g., 40s+50s &#8594; &#8220;middle-aged&#8221;) to merge small groups into larger ones.</div>
+    </div>
+  </div>
+</section>
+<div class="sta-nav">
+  <button class="nav-btn prev" onclick="goTo(2)">&#8592; Re-ID Risk</button>
+  <span class="sta-nav-info">Station 4 of 12 &#8212; Intermediate</span>
+  <button class="nav-btn next" onclick="goTo(4)">l-Diversity &#8594;</button>
+</div>
+</div>
+
+<!-- ═══════ STATION 4 &#8212; l-Diversity ═══════ -->
+<div class="pri-station" id="sta-4" style="display:none">
+<section class="sta">
+  <div class="shd"><div class="sn">Station 05 &#8212; Intermediate</div><span class="stg tgi">INTERMEDIATE</span></div>
+  <h2>l-Diversity &#8212; Counting Distinct Values &amp; Detecting Skewness</h2>
+  <p>k-Anonymity protects identity; <span class="kt">l-Diversity</span> protects sensitive attributes. Each equivalence class must contain at least <strong>l distinct values</strong> of the sensitive attribute. At intermediate level we go beyond &#8220;does it meet l=2?&#8221; and compute the <em>maximum attacker certainty</em> per class &#8212; the highest fraction held by any single value &#8212; which exposes the <em>skewness attack</em> that simple distinct-value counting misses.</p>
+  <div class="fb"><span class="lb">l-Diversity &amp; Maximum Attacker Certainty</span>l(Q) = | &#123; distinct sensitive values in Q &#125; |<br>P_max(Q) = max(count of any single value) / |Q|<br>Class passes if l(Q) &#8805; l* AND P_max(Q) is acceptable (often P_max &lt; 0.5 in practice)</div>
+  <div class="cn"><span class="cnt">The Skewness Attack &#8212; What l Alone Misses</span><p>A class of size 5 with diagnoses &#123;Diabetes, Diabetes, Diabetes, Diabetes, Bipolar&#125; satisfies l=2 (two distinct values) &#8212; but the attacker can infer &#8220;80% likely Diabetes&#8221; with near-certainty. l-Diversity counts distinct values; t-closeness goes further by requiring distributions to be balanced. Computing P_max gives a practical proxy.</p></div>
+
+  <button class="dt" onclick="toggleDemo('d05')"><span class="di">&#128218;</span><span class="dl">Focused Tutorial</span><span class="tt">Computing l and P_max for Two Equivalence Classes</span><span class="da">&#9658;</span></button>
+  <div class="dc" id="d05">
+    <div class="sc-box"><span class="sc-lbl">&#128204; Scenario</span><p>A hospital privacy officer reviews two equivalence classes from a k-anonymized release. Class Alpha has 4 patients with diagnoses &#123;HTN, HTN, HTN, T2DM&#125;. Class Beta has 5 patients with diagnoses &#123;Bipolar, OUD, T2DM, HIV, Cancer&#125;. She computes l and P_max for each.</p></div>
+    <div class="sl slo">OPERATION &#8212; Count Distinct Values and Find the Max-Frequency Value</div>
+    <div class="dp"><div class="dot">Class Alpha &#123;HTN, HTN, HTN, T2DM&#125;<br>&nbsp;&nbsp;Distinct values = &#123;HTN, T2DM&#125; &#8594; l = <strong>2</strong> &#8594; satisfies l=2 &#10003;<br>&nbsp;&nbsp;Counts: HTN=3, T2DM=1 &#8594; P_max = 3/4 = <strong>0.75</strong> (75%)<br>&nbsp;&nbsp;Attacker certainty: 75% &#8594; skewness flag &#10060;<br><br>Class Beta &#123;Bipolar, OUD, T2DM, HIV, Cancer&#125;<br>&nbsp;&nbsp;Distinct values = 5 &#8594; l = <strong>5</strong><br>&nbsp;&nbsp;Counts: 1 each &#8594; P_max = 1/5 = <strong>0.20</strong> (20%)<br>&nbsp;&nbsp;Attacker certainty: 20% &#8594; well-balanced &#10003;</div></div>
+    <div class="cv-box" style="margin-top:14px;"><span class="cv-lbl">&#128270; Diagnostic Outcome</span><p>Class Alpha passes the formal l=2 criterion but exposes the dominant attribute (HTN) at 75% certainty. Class Beta passes both criteria. Remediations for Alpha: (a) merge with an adjacent class to balance the distribution, (b) suppress one HTN record, dropping counts to &#123;2, 1&#125; with P_max = 2/3 &#8776; 67%, or (c) require l &#8805; 3 in the DUA so the small-cell skew problem is structurally prevented.</p></div>
+    <div class="dn">&#128161; In real datasets the dominant value problem is most acute for common diagnoses (HTN, T2DM) that saturate small classes by base rate. Disease-specific bucketing (e.g., grouping all cardiovascular dx into one bucket) at the dataset level can reduce dominance without losing too much utility.</div>
+  </div>
+
+  <div class="ex" id="ex06">
+    <div class="ext">Exercise 6 &#8212; Three-Class l-Diversity with Skewness Analysis</div>
+    <div class="exd di-int">&#9679; Difficulty: Intermediate &#8212; Distinct Counts and P_max</div>
+    <div class="sc-box"><span class="sc-lbl">&#128204; Scenario</span><p>A behavioral health dataset has been k-anonymized into three classes:</p></div>
+    <div class="pb">
+      <div class="pl plb">CLASSES &#8212; Sensitive Diagnoses</div>
+      <div class="pbx"><table class="ct"><thead><tr><th>Class</th><th>Size</th><th>Diagnoses (multiset)</th></tr></thead><tbody>
+        <tr><td>Class X</td><td>4</td><td class="cs">Diabetes, Diabetes, Diabetes, Hypertension</td></tr>
+        <tr><td>Class Y</td><td>5</td><td class="cs">Bipolar, OUD, Diabetes, Hypertension, Cancer</td></tr>
+        <tr><td>Class Z</td><td>6</td><td class="cs">HIV, HIV, HIV, HIV, HIV, HIV</td></tr>
+      </tbody></table></div>
+    </div>
+    <button class="hb" onclick="toggleHint('h06')">&#128161; Show Hint</button>
+    <div class="hbx" id="h06">l = count of distinct values. P_max = (count of most frequent value) / class size. Class X: distinct &#123;Diabetes, Hypertension&#125;, max count 3 of 4. Class Y: all 5 distinct. Class Z: only HIV present &#8594; l=1, P_max=1.0 (homogeneity attack). The threshold for this DUA: l &#8805; 2 AND P_max &lt; 0.75 (strict less-than).</div>
+    <div class="fl">Fill in each blank:</div>
+    <div class="fi"><span class="ts">Class X: distinct values =</span><span class="bw"><input class="bi" id="e06a" style="width:50px" data-answer="2" placeholder="?"><button class="rb" onclick="revealAnswer('e06a')">reveal</button></span><span class="ts">&#8594; l =</span><span class="bw"><input class="bi" id="e06b" style="width:50px" data-answer="2" placeholder="?"><button class="rb" onclick="revealAnswer('e06b')">reveal</button></span><span class="ts">&#8594; P_max =</span><span class="bw"><input class="bi" id="e06c" style="width:68px" data-answer="0.75" data-tolerance="0.01" placeholder="?"><button class="rb" onclick="revealAnswer('e06c')">reveal</button></span></div>
+    <div class="fi"><span class="ts">Class X passes l&#8805;2 AND P_max&lt;0.75 strict?</span><span class="bw"><input class="bi" id="e06d" style="width:58px" data-answer="no" data-type="text" placeholder="?"><button class="rb" onclick="revealAnswer('e06d')">reveal</button></span><span class="ts">(P_max = 0.75 fails strict &lt;)</span></div>
+    <div class="fi"><span class="ts">Class Y: distinct values =</span><span class="bw"><input class="bi" id="e06e" style="width:50px" data-answer="5" placeholder="?"><button class="rb" onclick="revealAnswer('e06e')">reveal</button></span><span class="ts">&#8594; l =</span><span class="bw"><input class="bi" id="e06f" style="width:50px" data-answer="5" placeholder="?"><button class="rb" onclick="revealAnswer('e06f')">reveal</button></span><span class="ts">&#8594; P_max =</span><span class="bw"><input class="bi" id="e06g" style="width:68px" data-answer="0.20" data-tolerance="0.01" placeholder="?"><button class="rb" onclick="revealAnswer('e06g')">reveal</button></span></div>
+    <div class="fi"><span class="ts">Class Y passes both criteria?</span><span class="bw"><input class="bi" id="e06h" style="width:58px" data-answer="yes" data-type="text" placeholder="?"><button class="rb" onclick="revealAnswer('e06h')">reveal</button></span></div>
+    <div class="fi"><span class="ts">Class Z: distinct values =</span><span class="bw"><input class="bi" id="e06i" style="width:50px" data-answer="1" placeholder="?"><button class="rb" onclick="revealAnswer('e06i')">reveal</button></span><span class="ts">&#8594; l =</span><span class="bw"><input class="bi" id="e06j" style="width:50px" data-answer="1" placeholder="?"><button class="rb" onclick="revealAnswer('e06j')">reveal</button></span><span class="ts">&#8594; P_max =</span><span class="bw"><input class="bi" id="e06k" style="width:68px" data-answer="1.0" data-tolerance="0.01" placeholder="?"><button class="rb" onclick="revealAnswer('e06k')">reveal</button></span></div>
+    <div class="fi"><span class="ts">Class Z type of attack feasible:</span><span class="bw"><input class="bi" id="e06l" style="width:140px" data-answer="homogeneity" data-type="text" placeholder="?"><button class="rb" onclick="revealAnswer('e06l')">reveal</button></span></div>
+    <div class="bg">
+      <button class="cb" onclick="subEx('ex06',4,['e06a','e06b','e06c','e06d','e06e','e06f','e06g','e06h','e06i','e06j','e06k','e06l'])">Submit</button>
+      <button class="rab" onclick="revAll('ex06',4,['e06a','e06b','e06c','e06d','e06e','e06f','e06g','e06h','e06i','e06j','e06k','e06l'])">Reveal All</button>
+    </div>
+    <div class="res" id="ex06r"></div>
+    <div class="pa" id="ex06a">
+      <div class="od vs"><div class="ol">&#128270; Summary</div>Class X technically meets l=2 but exposes Diabetes at 75% certainty &#8212; the skewness attack. Class Y is balanced and safe. Class Z fails outright with l=1 &#8212; the homogeneity attack lets any attacker infer HIV status with 100% certainty for anyone linked to the class. Class Z must either be suppressed or merged with another class introducing at least one non-HIV diagnosis. The l-diversity criterion alone is necessary but insufficient; pairing it with P_max (or full t-closeness) is the modern best practice.</div>
+    </div>
+  </div>
+</section>
+<div class="sta-nav">
+  <button class="nav-btn prev" onclick="goTo(3)">&#8592; k-Anonymity</button>
+  <span class="sta-nav-info">Station 5 of 12 &#8212; Intermediate</span>
+  <button class="nav-btn next" onclick="goTo(5)">Cond. Probability &#8594;</button>
+</div>
+</div>
+
+<!-- ═══════ STATION 5 &#8212; Conditional Probability ═══════ -->
+<div class="pri-station" id="sta-5" style="display:none">
+<section class="sta">
+  <div class="shd"><div class="sn">Station 06 &#8212; Intermediate</div><span class="stg tgi">INTERMEDIATE</span></div>
+  <h2>Conditional Probability &#8212; Stepwise Anonymity Set Narrowing</h2>
+  <p><span class="kt">Conditional probability</span> models how an attacker progressively narrows the anonymity set as each QI field is matched. Starting from a large population, each field acts as a multiplicative filter on remaining candidates: N&#8594;N&#215;p&#8321;&#8594;N&#215;p&#8321;&#215;p&#8322;&#8594;... When the residual count approaches 1, the record is effectively re-identified.</p>
+  <div class="fb"><span class="lb">Stepwise Anonymity Reduction</span>N_remaining = N &#215; P(field&#8321; matches) &#215; P(field&#8322; matches) &#215; &#8230;<br>P(re-id) &#8776; 1 / N_remaining<br>If fields are independent, each one acts as an additional multiplicative reducer.</div>
+  <div class="cn"><span class="cnt">Why Each Field Compresses Geometrically</span><p>If sex is 50/50, age band has 10 values, county has 8 values, and dx category has 12 values, applying all four to a 25,000-record dataset takes us through 25,000 &#8594; 12,500 &#8594; 1,250 &#8594; 156 &#8594; 13. By the fourth field, the original dataset is compressed by a factor of nearly 2,000. This is why Sweeney&#39;s finding (87% U.S. uniquely identified by 3 fields) is so robust: the compression is exponential in the number of fields.</p></div>
+
+  <button class="dt" onclick="toggleDemo('d07')"><span class="di">&#128218;</span><span class="dl">Focused Tutorial</span><span class="tt">Stepwise Narrowing on a 45,000-Record Cancer Registry</span><span class="da">&#9658;</span></button>
+  <div class="dc" id="d07">
+    <div class="sc-box"><span class="sc-lbl">&#128204; Scenario</span><p>A state cancer registry contains 45,000 records. An attacker has obtained the de-identified release and knows their target&#39;s: sex, 5-year age band, county, and cancer type. They progressively apply each field to narrow the anonymity set.</p></div>
+    <div class="dp"><div class="dot">Step 1 &#8212; Sex (Female): 52% &#8594; 45,000 &#215; 0.52 = <strong>23,400 females</strong><br>Step 2 &#8212; Age band 65&#8211;69: 9% &#8594; 23,400 &#215; 0.09 = <strong>2,106</strong><br>Step 3 &#8212; County (mid-size, 4% of records): 2,106 &#215; 0.04 &#8776; <strong>84</strong><br>Step 4 &#8212; Cancer type (pancreatic, 3.5% of cancers): 84 &#215; 0.035 &#8776; <strong>2.9 &#8776; 3 records</strong><br><br>P(re-id) &#8776; 1/3 &#8776; <strong>33%</strong></div></div>
+    <div class="cv-box" style="margin-top:14px;"><span class="cv-lbl">&#128270; What This Shows</span><p>Four QIs compressed 45,000 records to ~3. The attacker has narrowed the candidate set so dramatically that with one more piece of information &#8212; diagnosis date, treating facility, or even the presence of a comorbidity &#8212; uniqueness is virtually certain. This pattern is the &#8220;4 QIs to identification&#8221; phenomenon documented in re-identification studies.</p></div>
+    <div class="dn">&#128161; Independence is an idealization. In practice fields correlate (county and cancer type via local environmental risk factors). Real anonymity sets shrink slightly more slowly than the simple product would predict &#8212; but only slightly. Treat the simple product as a conservative upper bound on the anonymity set size.</div>
+  </div>
+
+  <div class="ex" id="ex07">
+    <div class="ext">Exercise 7 &#8212; Behavioral Health Anonymity Set Narrowing</div>
+    <div class="exd di-int">&#9679; Difficulty: Intermediate &#8212; Sequential Filter Application</div>
+    <div class="sc-box"><span class="sc-lbl">&#128204; Scenario</span><p>A state publishes <strong>25,000</strong> de-identified behavioral health records. An attacker knows their target&#39;s sex, age bracket, county, and primary diagnosis category. The marginal frequencies are: <strong>Female = 53%</strong>, Age <strong>40&#8211;49 = 16%</strong> of records, target&#39;s <strong>county = 8%</strong> of records, <strong>Anxiety</strong> disorder category = <strong>35%</strong> of records. Compute the anonymity set at each step and the final re-identification probability.</p></div>
+    <button class="hb" onclick="toggleHint('h07')">&#128161; Show Hint</button>
+    <div class="hbx" id="h07">Chain the multiplications: 25,000 &#215; 0.53 &#8594; result &#215; 0.16 &#8594; result &#215; 0.08 &#8594; result &#215; 0.35. The final anonymity set is the last result rounded to a whole number. P(re-id) &#8776; 1 / final size.</div>
+    <div class="fl">Fill in each blank:</div>
+    <div class="fi"><span class="ts">After Sex filter: 25,000 &#215; 0.53 =</span><span class="bw"><input class="bi" id="e07a" style="width:80px" data-answer="13250" data-tolerance="5" placeholder="?"><button class="rb" onclick="revealAnswer('e07a')">reveal</button></span></div>
+    <div class="fi"><span class="ts">After Age filter: 13,250 &#215; 0.16 =</span><span class="bw"><input class="bi" id="e07b" style="width:78px" data-answer="2120" data-tolerance="5" placeholder="?"><button class="rb" onclick="revealAnswer('e07b')">reveal</button></span></div>
+    <div class="fi"><span class="ts">After County filter: 2,120 &#215; 0.08 &#8776;</span><span class="bw"><input class="bi" id="e07c" style="width:78px" data-answer="169.6" data-tolerance="1" placeholder="?"><button class="rb" onclick="revealAnswer('e07c')">reveal</button></span></div>
+    <div class="fi"><span class="ts">After Diagnosis filter: 169.6 &#215; 0.35 &#8776;</span><span class="bw"><input class="bi" id="e07d" style="width:68px" data-answer="59.4" data-tolerance="1" placeholder="?"><button class="rb" onclick="revealAnswer('e07d')">reveal</button></span></div>
+    <div class="fi"><span class="ts">Anonymity set (rounded) &#8776;</span><span class="bw"><input class="bi" id="e07e" style="width:58px" data-answer="59" data-tolerance="1" placeholder="?"><button class="rb" onclick="revealAnswer('e07e')">reveal</button></span></div>
+    <div class="fi"><span class="ts">P(re-id) &#8776; 1 / 59 &#8776;</span><span class="bw"><input class="bi" id="e07f" style="width:78px" data-answer="0.0169" data-tolerance="0.001" placeholder="?"><button class="rb" onclick="revealAnswer('e07f')">reveal</button></span></div>
+    <div class="fi"><span class="ts">Exceeds 0.09 threshold?</span><span class="bw"><input class="bi" id="e07g" style="width:58px" data-answer="no" data-type="text" placeholder="?"><button class="rb" onclick="revealAnswer('e07g')">reveal</button></span></div>
+    <div class="bg">
+      <button class="cb" onclick="subEx('ex07',5,['e07a','e07b','e07c','e07d','e07e','e07f','e07g'])">Submit</button>
+      <button class="rab" onclick="revAll('ex07',5,['e07a','e07b','e07c','e07d','e07e','e07f','e07g'])">Reveal All</button>
+    </div>
+    <div class="res" id="ex07r"></div>
+    <div class="pa" id="ex07a">
+      <div class="od vs"><div class="ol">&#128270; Diagnosis</div>Anonymity set &#8776; <strong>59 records</strong>. P(re-id) &#8776; <strong>1.7%</strong> &#8212; well below the 9% threshold. However, behavioral health records carry heightened sensitivity (especially when stigma-laden disorders like substance use are involved), so even 1.7% risk may be unacceptable under a strict DUA. Adding a 5th field like admission month (12 values, ~8% each) would reduce the set to ~5 records, P(re-id) &#8776; 20% &#8212; well above threshold. This is the classic "4 vs 5 QIs" inflection point in healthcare data.</div>
+    </div>
+  </div>
+</section>
+<div class="sta-nav">
+  <button class="nav-btn prev" onclick="goTo(4)">&#8592; l-Diversity</button>
+  <span class="sta-nav-info">Station 6 of 12 &#8212; Intermediate</span>
+  <button class="nav-btn next" onclick="goTo(6)">Unicity &#8594;</button>
+</div>
+</div>
+
+<!-- ═══════ STATION 6 &#8212; Unicity ═══════ -->
+<div class="pri-station" id="sta-6" style="display:none">
+<section class="sta">
+  <div class="shd"><div class="sn">Station 07 &#8212; Intermediate</div><span class="stg tgi">INTERMEDIATE</span></div>
+  <h2>Unicity &#8212; Multi-Field Cell Occupancy Analysis</h2>
+  <p><span class="kt">Unicity</span> measures average records per quasi-identifier combination cell across the dataset. At intermediate level we extend it: <em>how does the addition of a 4th or 5th QI field collapse unicity?</em> Because each new field multiplies the total cell count, average occupancy falls geometrically &#8212; and when occupancy drops below 1, most records become unique fingerprints.</p>
+  <div class="fb"><span class="lb">Unicity &amp; k-Anonymity Inference</span>Total cells = &#8719;&#7522; S&#7522;  (product of distinct values per field)<br>Avg occupancy u = N / Total cells<br>If u &lt; 1 &#8594; most occupied cells are singletons (high unicity, high re-id risk)<br>If u &#8805; 5 &#8594; most cells have &#8805; 2 records (lower risk, but rare combinations may still be unique)</div>
+  <div class="cn"><span class="cnt">From u &#8805; 5 to u &lt; 1 &#8212; Two Fields Can Tip the Balance</span><p>Going from 3 QIs to 4 QIs (e.g., adding diagnosis chapter with 15 values) multiplies cells by 15. Going from 4 to 5 (e.g., adding admission month with 12 values) multiplies by another 12. In just two added fields, total cells grow by 180&#215; &#8212; if N stays fixed, occupancy collapses by the same factor. This is why generalization (reducing S&#7522;) is the most important countermeasure.</p></div>
+
+  <button class="dt" onclick="toggleDemo('d08')"><span class="di">&#128218;</span><span class="dl">Focused Tutorial</span><span class="tt">Field-by-Field Unicity Collapse on an 8,000-Record Hospital Discharge Set</span><span class="da">&#9658;</span></button>
+  <div class="dc" id="d08">
+    <div class="sc-box"><span class="sc-lbl">&#128204; Scenario</span><p>A hospital has 8,000 discharge records and is evaluating different QI sets to find the best privacy/utility balance. The analyst starts with 3 QIs (Sex, Age decade, Payer) and adds two more (DRG group, Discharge month) one at a time to see when unicity collapses.</p></div>
+    <div class="dp"><table class="ct"><thead><tr><th>QI Configuration</th><th>Distinct Values (S&#7522;)</th><th>Total Cells</th><th>Avg Occupancy</th><th>Risk Level</th></tr></thead><tbody>
+      <tr><td>3 QIs</td><td>2 &#215; 8 &#215; 5</td><td>80</td><td class="cg">8,000/80 = 100</td><td class="ck">SAFE (very low)</td></tr>
+      <tr><td>+ DRG (4 QIs)</td><td>&#215; 25</td><td>2,000</td><td class="cg">8,000/2,000 = 4.0</td><td>MODERATE</td></tr>
+      <tr><td>+ Month (5 QIs)</td><td>&#215; 12</td><td>24,000</td><td class="cd">8,000/24,000 = 0.33</td><td class="cd">HIGH (most unique)</td></tr>
+    </tbody></table></div>
+    <div class="sl slo">OPERATION &#8212; Geometric Collapse in 2 Steps</div>
+    <div class="dp"><div class="dot">3 &#8594; 4 QIs: cells &#215; 25 &#8594; occupancy / 25 (100 &#8594; 4)<br>4 &#8594; 5 QIs: cells &#215; 12 &#8594; occupancy / 12 (4 &#8594; 0.33)<br><br>Net change: total cells grew 300&#215; while N stayed at 8,000.<br>Mitigation: collapse months &#8594; quarters (S = 4 instead of 12) brings occupancy to 8,000/(2&#215;8&#215;5&#215;25&#215;4) = 8,000/8,000 = 1.0 &#8212; right at the critical boundary.</div></div>
+    <div class="cv-box" style="margin-top:14px;"><span class="cv-lbl">&#128270; Practical Generalization Strategy</span><p>When unicity falls below 1.0, the analyst has two levers: (a) drop a low-information field entirely (often the 5th field with low diagnostic value), or (b) coarsen one or more fields to reduce S&#7522;. The math favors (b) when the field is needed for analysis: a single 3&#215; reduction in S&#7522; for one field is equivalent to dropping a 3-value field altogether.</p></div>
+    <div class="dn">&#128161; Each QI field is a multiplier on total cells. The way to think about unicity strategy is multiplicatively: which field, when its S is divided in half (or by 4), gives the best occupancy improvement? Pick the field where you can lose granularity with the least loss of analytical value.</div>
+  </div>
+
+  <div class="ex" id="ex08">
+    <div class="ext">Exercise 8 &#8212; Multi-Field Unicity for a Health Plan Claims Dataset</div>
+    <div class="exd di-int">&#9679; Difficulty: Intermediate &#8212; Add a 5th Field, Watch Occupancy Collapse</div>
+    <div class="sc-box"><span class="sc-lbl">&#128204; Scenario</span><p>A health plan publishes a claims summary for <strong>20,000</strong> members. The release includes 4 QI fields: <strong>Sex</strong> (2 values), <strong>Age decade</strong> (8 values), <strong>County</strong> (10 counties), and <strong>Primary diagnosis chapter</strong> (15 ICD-10 chapters observed). Part A: compute total cells and average occupancy. Part B: now add a 5th field &#8212; <strong>Service month</strong> (12 values). Recompute and classify the new risk level.</p></div>
+    <button class="hb" onclick="toggleHint('h08')">&#128161; Show Hint</button>
+    <div class="hbx" id="h08">Part A: Total cells = 2 &#215; 8 &#215; 10 &#215; 15. Avg = 20,000 / total cells. Part B: multiply total cells by 12. If average occupancy falls below 1, most cells are singletons &#8594; high unicity. Categorize: u &#8805; 5 = LOW, 1 &#8804; u &lt; 5 = MODERATE, u &lt; 1 = HIGH.</div>
+    <div class="fl">Part A &#8212; Four fields:</div>
+    <div class="fi"><span class="ts">Total cells = 2 &#215; 8 &#215; 10 &#215; 15 =</span><span class="bw"><input class="bi" id="e08a" style="width:78px" data-answer="2400" placeholder="?"><button class="rb" onclick="revealAnswer('e08a')">reveal</button></span></div>
+    <div class="fi"><span class="ts">Avg occupancy = 20,000 /</span><span class="bw"><input class="bi" id="e08b" style="width:78px" data-answer="2400" placeholder="?"><button class="rb" onclick="revealAnswer('e08b')">reveal</button></span><span class="ts">&#8776;</span><span class="bw"><input class="bi" id="e08c" style="width:68px" data-answer="8.33" data-tolerance="0.1" placeholder="?"><button class="rb" onclick="revealAnswer('e08c')">reveal</button></span></div>
+    <div class="fi"><span class="ts">Risk level with 4 QIs:</span><span class="bw"><input class="bi" id="e08d" style="width:88px" data-answer="low" data-type="text" placeholder="?"><button class="rb" onclick="revealAnswer('e08d')">reveal</button></span></div>
+    <div class="fl">Part B &#8212; Add Service month (12 values):</div>
+    <div class="fi"><span class="ts">New total cells = 2,400 &#215; 12 =</span><span class="bw"><input class="bi" id="e08e" style="width:88px" data-answer="28800" placeholder="?"><button class="rb" onclick="revealAnswer('e08e')">reveal</button></span></div>
+    <div class="fi"><span class="ts">New avg occupancy = 20,000 /</span><span class="bw"><input class="bi" id="e08f" style="width:88px" data-answer="28800" placeholder="?"><button class="rb" onclick="revealAnswer('e08f')">reveal</button></span><span class="ts">&#8776;</span><span class="bw"><input class="bi" id="e08g" style="width:78px" data-answer="0.694" data-tolerance="0.02" placeholder="?"><button class="rb" onclick="revealAnswer('e08g')">reveal</button></span></div>
+    <div class="fi"><span class="ts">Risk level with 5 QIs:</span><span class="bw"><input class="bi" id="e08h" style="width:88px" data-answer="high" data-type="text" placeholder="?"><button class="rb" onclick="revealAnswer('e08h')">reveal</button></span></div>
+    <div class="fi"><span class="ts">Mitigation: collapse months &#8594; quarters (S=4). New cells = 2,400 &#215; 4 =</span><span class="bw"><input class="bi" id="e08i" style="width:78px" data-answer="9600" placeholder="?"><button class="rb" onclick="revealAnswer('e08i')">reveal</button></span><span class="ts">&#8594; new u =</span><span class="bw"><input class="bi" id="e08j" style="width:68px" data-answer="2.08" data-tolerance="0.05" placeholder="?"><button class="rb" onclick="revealAnswer('e08j')">reveal</button></span></div>
+    <div class="bg">
+      <button class="cb" onclick="subEx('ex08',6,['e08a','e08b','e08c','e08d','e08e','e08f','e08g','e08h','e08i','e08j'])">Submit</button>
+      <button class="rab" onclick="revAll('ex08',6,['e08a','e08b','e08c','e08d','e08e','e08f','e08g','e08h','e08i','e08j'])">Reveal All</button>
+    </div>
+    <div class="res" id="ex08r"></div>
+    <div class="pa" id="ex08a">
+      <div class="od vs"><div class="ol">&#128270; Geometric Collapse</div>Part A: u &#8776; <strong>8.33</strong> &#8212; safe; most cells average 8 records each.<br>Part B: u &#8776; <strong>0.69</strong> &#8212; collapsed below 1.0. Most cells are now singletons. Adding service month creates 28,800 cells for only 20,000 members &#8212; more cells than members.<br>Mitigation: collapsing service month to quarter brings u back to ~2.08, MODERATE risk &#8212; safe enough for many releases. The takeaway: a single 3&#215; reduction in any field&#39;s cardinality can rescue a collapsed unicity. Identify the lowest-utility field with high cardinality and coarsen it first.</div>
+    </div>
+  </div>
+</section>
+<div class="sta-nav">
+  <button class="nav-btn prev" onclick="goTo(5)">&#8592; Cond. Probability</button>
+  <span class="sta-nav-info">Station 7 of 12 &#8212; Intermediate</span>
+  <button class="nav-btn next" onclick="goTo(7)">Bayes&#39; Theorem &#8594;</button>
+</div>
+</div>
+
+<!-- ═══════ STATION 7 &#8212; Bayes' Theorem (Sequential) ═══════ -->
+<div class="pri-station" id="sta-7" style="display:none">
+<section class="sta">
+  <div class="shd"><div class="sn">Station 08 &#8212; Intermediate</div><span class="stg tgi">INTERMEDIATE</span></div>
+  <h2>Bayes&#39; Theorem &#8212; Sequential Updates via Odds Form</h2>
+  <p>The classical Bayes formula P(H|E) = P(E|H)&#215;P(H) / P(E) requires recomputing the full denominator after each new piece of evidence. The <span class="kt">odds form</span> &#8212; <strong>posterior odds = prior odds &#215; likelihood ratio</strong> &#8212; makes sequential evidence chains effortless: multiply each LR in turn, then convert back to probability at the end. This is the workhorse of two-stage clinical screening and the mathematical heart of attacker re-identification.</p>
+  <div class="fb"><span class="lb">Bayes&#39; Theorem &#8212; Odds Form</span>Prior odds = P(H) / P(&#172;H)<br>For each independent evidence E&#7522;:  LR&#7522; = P(E&#7522;|H) / P(E&#7522;|&#172;H)<br>Posterior odds (after k pieces of evidence) = Prior odds &#215; LR&#8321; &#215; LR&#8322; &#215; &#8230; &#215; LR&#8342;<br>Convert: P(H | all evidence) = posterior odds / (1 + posterior odds)</div>
+  <div class="cn"><span class="cnt">Why Odds Form is Powerful</span><p>Each LR captures the diagnostic value of one test as a single number: LR&gt;1 supports H, LR&lt;1 contradicts H, LR=1 is uninformative. Two independent tests with LR&#8321;=8 and LR&#8322;=20 combine to LR_total = 160. The prior is updated once at the end. This is much cleaner than running the full Bayes equation twice. It also matches how clinicians actually reason: &#8220;a positive antibody (LR=10) and a positive PCR (LR=30) together give 300&#215; the evidence of a single test&#8221;.</p></div>
+
+  <button class="dt" onclick="toggleDemo('d09')"><span class="di">&#128218;</span><span class="dl">Focused Tutorial</span><span class="tt">TB Screening &#8212; Two Concordant Positives Update a 3% Prior to ~89%</span><span class="da">&#9658;</span></button>
+  <div class="dc" id="d09">
+    <div class="sc-box"><span class="sc-lbl">&#128204; Scenario</span><p>A hospital screens for active TB. Local prevalence = 3%. A patient receives two independent tests: Test 1 (skin) has sensitivity 0.85, FPR 0.10; Test 2 (blood assay) has sensitivity 0.92, FPR 0.03. Both come back positive. Compute the posterior probability of TB using the odds-form method.</p></div>
+    <div class="cv-box"><span class="cv-lbl">&#9881; Method</span><ul>
+      <li>Prior odds = prevalence / (1 &#8722; prevalence)</li>
+      <li>LR per test = sensitivity / FPR</li>
+      <li>Multiply prior odds by every LR (one per test)</li>
+      <li>Convert: P = odds / (1 + odds)</li>
+    </ul></div>
+    <div class="sl slo">OPERATION &#8212; Apply the Odds Form</div>
+    <div class="dp"><div class="dot">Step 1 &#8212; Prior odds = 0.03 / 0.97 &#8776; <strong>0.03093</strong><br>Step 2 &#8212; LRs:<br>&nbsp;&nbsp;LR&#8321; = 0.85 / 0.10 = <strong>8.5</strong><br>&nbsp;&nbsp;LR&#8322; = 0.92 / 0.03 &#8776; <strong>30.67</strong><br>Step 3 &#8212; Posterior odds = 0.03093 &#215; 8.5 &#215; 30.67 &#8776; <strong>8.063</strong><br>Step 4 &#8212; P(TB | both +) = 8.063 / 9.063 &#8776; <strong>0.890 (&#8776;89.0%)</strong></div></div>
+    <div class="cv-box" style="margin-top:14px;"><span class="cv-lbl">&#128270; Why the Posterior Is So High</span><p>Two near-independent tests with high LRs combine multiplicatively, overwhelming a low base rate. Combined LR = 261 &#8212; even with only a 3% prior, the posterior reaches 89%. Without the second test, a single positive skin test would give posterior &#8776; 21% (just enough for clinical concern but not certainty). This is why two-stage screening protocols are standard: the multiplicative combination of LRs is more powerful than any single test.</p></div>
+    <div class="dn">&#128161; Parallel to re-identification: an attacker observes one matching field (LR &#8776; 10), then another (LR &#8776; 20), then a third (LR &#8776; 100) &#8212; combined LR = 20,000 &#215; prior odds = posterior odds. Each independent matching field is a separate Bayesian update. Re-id risk grows multiplicatively with QI count.</div>
+  </div>
+
+  <div class="ex" id="ex09">
+    <div class="ext">Exercise 9 &#8212; Diabetes Sequential Screening: HbA1c &#8594; OGTT</div>
+    <div class="exd di-int">&#9679; Difficulty: Intermediate &#8212; Sequential Bayes via Odds Form</div>
+    <div class="sc-box"><span class="sc-lbl">&#128204; Scenario</span><p>A community clinic screens for Type 2 Diabetes in adults aged 45+. Local prevalence in this group is <strong>8%</strong>. A patient receives two independent tests: <strong>Test 1 (HbA1c)</strong> has sensitivity 0.85 and FPR 0.10. <strong>Test 2 (OGTT confirmatory)</strong> has sensitivity 0.95 and FPR 0.05. Both come back positive. Compute the posterior probability that the patient has T2DM using the odds-form method.</p></div>
+    <button class="hb" onclick="toggleHint('h09')">&#128161; Show Hint</button>
+    <div class="hbx" id="h09">Prior odds = 0.08 / 0.92. LR&#8321; = 0.85 / 0.10. LR&#8322; = 0.95 / 0.05. Multiply all three: prior odds &#215; LR&#8321; &#215; LR&#8322; = posterior odds. Convert: P = posterior odds / (1 + posterior odds).</div>
+    <div class="fl">Fill in each blank:</div>
+    <div class="fi"><span class="ts">Prior odds = 0.08 / 0.92 &#8776;</span><span class="bw"><input class="bi" id="e09a" style="width:78px" data-answer="0.0870" data-tolerance="0.002" placeholder="?"><button class="rb" onclick="revealAnswer('e09a')">reveal</button></span></div>
+    <div class="fi"><span class="ts">LR&#8321; = 0.85 / 0.10 =</span><span class="bw"><input class="bi" id="e09b" style="width:68px" data-answer="8.5" data-tolerance="0.05" placeholder="?"><button class="rb" onclick="revealAnswer('e09b')">reveal</button></span></div>
+    <div class="fi"><span class="ts">LR&#8322; = 0.95 / 0.05 =</span><span class="bw"><input class="bi" id="e09c" style="width:68px" data-answer="19" placeholder="?"><button class="rb" onclick="revealAnswer('e09c')">reveal</button></span></div>
+    <div class="fi"><span class="ts">Combined LR = 8.5 &#215; 19 =</span><span class="bw"><input class="bi" id="e09d" style="width:78px" data-answer="161.5" data-tolerance="0.5" placeholder="?"><button class="rb" onclick="revealAnswer('e09d')">reveal</button></span></div>
+    <div class="fi"><span class="ts">Posterior odds = 0.0870 &#215; 161.5 &#8776;</span><span class="bw"><input class="bi" id="e09e" style="width:78px" data-answer="14.05" data-tolerance="0.3" placeholder="?"><button class="rb" onclick="revealAnswer('e09e')">reveal</button></span></div>
+    <div class="fi"><span class="ts">P(T2DM | both +) = 14.05 / (1 + 14.05) &#8776;</span><span class="bw"><input class="bi" id="e09f" style="width:78px" data-answer="0.934" data-tolerance="0.01" placeholder="?"><button class="rb" onclick="revealAnswer('e09f')">reveal</button></span><span class="ts">(&#8776;</span><span class="bw"><input class="bi" id="e09g" style="width:68px" data-answer="93.4" data-tolerance="1" placeholder="?"><button class="rb" onclick="revealAnswer('e09g')">reveal</button></span><span class="ts">%)</span></div>
+    <div class="bg">
+      <button class="cb" onclick="subEx('ex09',7,['e09a','e09b','e09c','e09d','e09e','e09f','e09g'])">Submit</button>
+      <button class="rab" onclick="revAll('ex09',7,['e09a','e09b','e09c','e09d','e09e','e09f','e09g'])">Reveal All</button>
+    </div>
+    <div class="res" id="ex09r"></div>
+    <div class="pa" id="ex09a">
+      <div class="od vs"><div class="ol">&#128270; Clinical Interpretation</div>Posterior P(T2DM | both +) &#8776; <strong>93.4%</strong>. Despite an 8% prior, two concordant positives drive certainty above 93%. A single HbA1c positive would yield only ~42% &#8212; not enough for a confident diagnosis. The OGTT confirmatory test multiplies the evidence by 19&#215;, which is why two-tier diabetes screening is the standard of care.<br><br><strong>Re-identification parallel:</strong> an attacker observing one matching QI (LR=8.5) gets posterior 42%. Observing a second matching QI (LR=19) drives posterior to 93%. The same mathematical machinery underlies clinical confirmatory testing and adversarial re-identification.</div>
+    </div>
+  </div>
+</section>
+<div class="sta-nav">
+  <button class="nav-btn prev" onclick="goTo(6)">&#8592; Unicity</button>
+  <span class="sta-nav-info">Station 8 of 12 &#8212; Intermediate</span>
+  <button class="nav-btn next" onclick="goTo(8)">Fellegi&#8211;Sunter &#8594;</button>
+</div>
+</div>
+
+<!-- ═══════ STATION 8 &#8212; Fellegi-Sunter (Two Exercises) ═══════ -->
+<div class="pri-station" id="sta-8" style="display:none">
+<section class="sta">
+  <div class="shd"><div class="sn">Station 09 &#8212; Intermediate + Advanced Intermediate</div><span class="stg tgi">2 EXERCISES</span></div>
+  <h2>Fellegi&#8211;Sunter Linkage &#8212; Mixed Agreement &amp; Bayesian Posterior</h2>
+  <p><span class="kt">Fellegi&#8211;Sunter (F&#8211;S)</span> is the clinical-informatics standard for probabilistic record linkage when datasets lack a shared identifier. The intermediate exercise handles <em>mixed agreement</em> (some fields agree, some disagree) by giving disagreeing fields a negative weight. The advanced-intermediate exercise reframes the whole problem in <em>Bayesian terms</em>: prior odds derived from population overlap, multiplied by per-field likelihood ratios, give a true match probability &#8212; revealing that even a large F&#8211;S score may translate to only a moderate posterior when the prior is small.</p>
+  <div class="fb"><span class="lb">F&#8211;S Weight Per Field (Mixed Agreement)</span>If field i agrees: w&#7522; = log&#8322;(m&#7522; / u&#7522;)  &#8594; positive weight<br>If field i disagrees: w&#7522; = log&#8322;((1 &#8722; m&#7522;) / (1 &#8722; u&#7522;))  &#8594; negative weight<br>Total score W = &#931; w&#7522;<br>Decision: W &#8805; 10 &#8594; link; 0 &#8804; W &lt; 10 &#8594; review; W &lt; 0 &#8594; reject</div>
+
+  <!-- Focused Tutorial A: Standard Mixed Agreement -->
+  <button class="dt" onclick="toggleDemo('d10a')"><span class="di">&#128218;</span><span class="dl">Focused Tutorial A</span><span class="tt">Mixed Agreement &#8212; 3 Fields Agree, 1 Disagrees</span><span class="da">&#9658;</span></button>
+  <div class="dc" id="d10a">
+    <div class="sc-box"><span class="sc-lbl">&#128204; Scenario</span><p>A clinic links its records to insurance claims for a single patient pair. Last Name agrees, DOB agrees, ZIP disagrees (the patient moved). Per-field m and u values come from prior matching studies. Compute each weight and the total.</p></div>
+    <div class="dp"><table class="ct"><thead><tr><th>Field</th><th>m&#7522;</th><th>u&#7522;</th><th>Agrees?</th><th>w&#7522;</th></tr></thead><tbody>
+      <tr><td>Last Name</td><td>0.92</td><td>0.005</td><td class="ck">&#10003;</td><td class="cg">log&#8322;(184) &#8776; +7.52</td></tr>
+      <tr><td>DOB</td><td>0.95</td><td>0.01</td><td class="ck">&#10003;</td><td class="cg">log&#8322;(95) &#8776; +6.57</td></tr>
+      <tr><td>ZIP</td><td>0.85</td><td>0.04</td><td style="color:var(--red);">&#10007;</td><td style="color:var(--red);">log&#8322;(0.156) &#8776; &#8722;2.68</td></tr>
+    </tbody></table></div>
+    <div class="sl slo">OPERATION</div>
+    <div class="dp"><div class="dot">W = 7.52 + 6.57 + (&#8722;2.68) = <strong>11.41</strong> &#8594; W &#8805; 10 &#8594; <strong>LINK</strong> &#10003;<br><br>The ZIP disagreement costs ~2.68 bits, but the combined evidence from name + DOB (14.09 bits) more than compensates. People move &#8212; (1 &#8722; m_ZIP) = 0.15 isn&#39;t tiny, so the penalty is moderate.</div></div>
+    <div class="cv-box" style="margin-top:14px;"><span class="cv-lbl">&#128270; Why Disagreement Penalties Are Asymmetric</span><p>A disagreeing field&#39;s weight depends on how unusual the disagreement is for a true match. ZIP disagrees in 15% of true matches (people move) but in 96% of non-matches (random pairs almost never share a ZIP) &#8212; ratio 0.156, log&#8322; &#8776; &#8722;2.68. A disagreeing SSN, where (1 &#8722; m) &#8776; 0.001 (true matches almost never have different SSNs), would carry a much larger penalty: log&#8322;(0.001) &#8776; &#8722;10. The asymmetry encodes domain knowledge about which fields are stable and which fluctuate.</p></div>
+    <div class="dn">&#128161; In practice, m and u values are estimated from a labeled training set of known matches and non-matches. The Expectation-Maximization (EM) algorithm can refine them iteratively when no labeled data is available.</div>
+  </div>
+
+  <div class="ex" id="ex10">
+    <div class="ext">Exercise 10 &#8212; Four-Field HIE Linkage with One Disagreement</div>
+    <div class="exd di-int">&#9679; Difficulty: Intermediate &#8212; Mixed Agreement F&#8211;S Score</div>
+    <div class="sc-box"><span class="sc-lbl">&#128204; Scenario</span><p>A Health Information Exchange (HIE) links hospital records to pharmacy data on four fields: <strong>Last Name</strong>, <strong>DOB</strong>, <strong>Sex</strong>, and <strong>Phone</strong>. For a specific candidate pair, name, DOB, and sex agree but phone disagrees (the patient changed their number). Per-field parameters: m_name=0.91, u_name=0.005; m_dob=0.94, u_dob=0.008; m_sex=0.99, u_sex=0.50; m_phone=0.85, u_phone=0.0002. Compute each weight and the total, then make a linkage decision.</p></div>
+    <button class="hb" onclick="toggleHint('h10')">&#128161; Show Hint</button>
+    <div class="hbx" id="h10">For agreeing fields: w&#7522; = log&#8322;(m&#7522;/u&#7522;). For disagreeing phone: w_phone = log&#8322;((1&#8722;0.85)/(1&#8722;0.0002)) = log&#8322;(0.15/0.9998) &#8776; log&#8322;(0.1500). Key values: log&#8322;(182)&#8776;7.51, log&#8322;(117.5)&#8776;6.88, log&#8322;(1.98)&#8776;0.99, log&#8322;(0.15)&#8776;&#8722;2.74. Convert: log&#8322;(x) = log(x)/log(2) &#8776; 3.32 &#215; log&#8321;&#8320;(x).</div>
+    <div class="fl">Fill in each blank:</div>
+    <div class="fi"><span class="ts">w_name = log&#8322;(0.91 / 0.005) = log&#8322;(</span><span class="bw"><input class="bi" id="e10a" style="width:68px" data-answer="182" data-tolerance="1" placeholder="?"><button class="rb" onclick="revealAnswer('e10a')">reveal</button></span><span class="ts">) &#8776;</span><span class="bw"><input class="bi" id="e10b" style="width:68px" data-answer="7.51" data-tolerance="0.1" placeholder="?"><button class="rb" onclick="revealAnswer('e10b')">reveal</button></span></div>
+    <div class="fi"><span class="ts">w_dob = log&#8322;(0.94 / 0.008) = log&#8322;(</span><span class="bw"><input class="bi" id="e10c" style="width:78px" data-answer="117.5" data-tolerance="0.5" placeholder="?"><button class="rb" onclick="revealAnswer('e10c')">reveal</button></span><span class="ts">) &#8776;</span><span class="bw"><input class="bi" id="e10d" style="width:68px" data-answer="6.88" data-tolerance="0.1" placeholder="?"><button class="rb" onclick="revealAnswer('e10d')">reveal</button></span></div>
+    <div class="fi"><span class="ts">w_sex = log&#8322;(0.99 / 0.50) = log&#8322;(</span><span class="bw"><input class="bi" id="e10e" style="width:68px" data-answer="1.98" data-tolerance="0.02" placeholder="?"><button class="rb" onclick="revealAnswer('e10e')">reveal</button></span><span class="ts">) &#8776;</span><span class="bw"><input class="bi" id="e10f" style="width:68px" data-answer="0.99" data-tolerance="0.05" placeholder="?"><button class="rb" onclick="revealAnswer('e10f')">reveal</button></span></div>
+    <div class="fi"><span class="ts">w_phone (disagree) = log&#8322;((1 &#8722; 0.85) / (1 &#8722; 0.0002)) &#8776; log&#8322;(</span><span class="bw"><input class="bi" id="e10g" style="width:68px" data-answer="0.150" data-tolerance="0.005" placeholder="?"><button class="rb" onclick="revealAnswer('e10g')">reveal</button></span><span class="ts">) &#8776;</span><span class="bw"><input class="bi" id="e10h" style="width:68px" data-answer="-2.74" data-tolerance="0.1" placeholder="?"><button class="rb" onclick="revealAnswer('e10h')">reveal</button></span></div>
+    <div class="fi"><span class="ts">Total W = 7.51 + 6.88 + 0.99 + (&#8722;2.74) &#8776;</span><span class="bw"><input class="bi" id="e10i" style="width:78px" data-answer="12.64" data-tolerance="0.3" placeholder="?"><button class="rb" onclick="revealAnswer('e10i')">reveal</button></span></div>
+    <div class="fi"><span class="ts">Decision (W &#8805; 10 &#8594; link, 0 &#8804; W &lt; 10 &#8594; review, W &lt; 0 &#8594; reject):</span><span class="bw"><input class="bi" id="e10j" style="width:78px" data-answer="link" data-type="text" placeholder="?"><button class="rb" onclick="revealAnswer('e10j')">reveal</button></span></div>
+    <div class="bg">
+      <button class="cb" onclick="subEx('ex10',8,['e10a','e10b','e10c','e10d','e10e','e10f','e10g','e10h','e10i','e10j'])">Submit</button>
+      <button class="rab" onclick="revAll('ex10',8,['e10a','e10b','e10c','e10d','e10e','e10f','e10g','e10h','e10i','e10j'])">Reveal All</button>
+    </div>
+    <div class="res" id="ex10r"></div>
+    <div class="pa" id="ex10a">
+      <div class="od vs"><div class="ol">&#128270; Linkage Decision</div>W &#8776; <strong>12.64 &#8805; 10 &#8594; LINK</strong>. The phone disagreement costs ~2.74 bits, but DOB (6.88) and last name (7.51) together provide ~14.4 bits of evidence &#8212; more than enough to overcome the penalty. Sex contributes only ~1 bit because u_sex = 0.50 means random pairs match by coincidence 50% of the time. The phone penalty is moderate because m_phone = 0.85 means 15% of true matches do have phone disagreements (people change phones). DOB and last name are the load-bearing evidence in nearly every probabilistic linkage system.</div>
+    </div>
+  </div>
+
+  <!-- Focused Tutorial B: Advanced — Full Bayesian Linkage -->
+  <button class="dt adv" onclick="toggleDemo('d10b')"><span class="di">&#127942;</span><span class="dl">Focused Tutorial B &#8212; Advanced</span><span class="tt">Full Bayesian Linkage &#8212; Population Prior &#215; Per-Field LR &#8594; Posterior Match Probability</span><span class="da">&#9658;</span></button>
+  <div class="dc adv" id="d10b">
+    <div class="sc-box"><span class="sc-lbl">&#128204; Why a Bayesian View Adds Value</span><p>The classical F&#8211;S score W is a log-odds measure but doesn&#39;t tell you the actual <em>probability</em> that a candidate pair is a match. Two candidate pairs with the same W can have very different posterior match probabilities if their priors differ. The Bayesian formulation makes this explicit by combining (a) a <em>population-level prior</em> (how many true matches exist among all possible pairs) with (b) per-field LRs (the same evidence used in F&#8211;S). The result &#8212; a posterior probability &#8212; tells the analyst whether the link is genuinely confident, ambiguous, or weak.</p></div>
+    <div class="cv-box"><span class="cv-lbl">&#9881; The Model</span><ul>
+      <li><strong>Total possible pairs</strong> = |A| &#215; |B|, where A and B are the two datasets being linked.</li>
+      <li><strong>Estimated true matches</strong> = M_true (often estimated from a pilot linkage or domain knowledge of overlap, e.g., %patients seen at both sites).</li>
+      <li><strong>Prior probability of match</strong> P(H) = M_true / (|A| &#215; |B|). For large datasets this is very small.</li>
+      <li><strong>Prior odds</strong> P(H)/P(&#172;H) &#8776; P(H) when P(H) is small.</li>
+      <li><strong>Likelihood ratio per agreeing field</strong> LR&#7522; = m&#7522; / u&#7522;.</li>
+      <li><strong>Posterior odds</strong> = prior odds &#215; &#8719; LR&#7522;.</li>
+      <li><strong>P(match | data)</strong> = posterior odds / (1 + posterior odds).</li>
+    </ul></div>
+    <div class="fb"><span class="lb">Bayesian Linkage &#8212; Closed Form</span>Prior odds &#8776; M_true / (|A| &#215; |B|)<br>For each agreeing field i:  LR&#7522; = m&#7522; / u&#7522;<br>Posterior odds = Prior odds &#215; &#8719; LR&#7522;<br>P(match) = posterior odds / (1 + posterior odds)<br>Decision zones (typical): P &#8805; 0.95 &#8594; link, 0.50 &#8804; P &lt; 0.95 &#8594; review, P &lt; 0.50 &#8594; reject</div>
+    <div class="sl slo">WORKED EXAMPLE &#8212; Hospital A &#8596; Hospital B Linkage</div>
+    <div class="dp"><div class="dot">Hospital A: 2,000 records. Hospital B: 8,000 records. Estimated 600 patients seen at both.<br>Total pairs = 2,000 &#215; 8,000 = <strong>16,000,000</strong><br>Prior P(match) = 600 / 16,000,000 = <strong>0.0000375</strong> (1 in 26,667)<br>Prior odds &#8776; 0.0000375<br><br>For one pair, Last Name and DOB both agree:<br>&nbsp;&nbsp;m_name = 0.92, u_name = 0.003 &#8594; LR_name = 0.92/0.003 &#8776; <strong>306.67</strong><br>&nbsp;&nbsp;m_dob = 0.95, u_dob = 0.008 &#8594; LR_dob = 0.95/0.008 &#8776; <strong>118.75</strong><br>&nbsp;&nbsp;Combined LR = 306.67 &#215; 118.75 &#8776; <strong>36,417</strong><br>&nbsp;&nbsp;Posterior odds = 0.0000375 &#215; 36,417 &#8776; <strong>1.366</strong><br>&nbsp;&nbsp;P(match | data) = 1.366 / 2.366 &#8776; <strong>0.577 (57.7%)</strong> &#8594; REVIEW zone</div></div>
+    <div class="cv-box" style="margin-top:14px;"><span class="cv-lbl">&#128270; The Critical Insight</span><p>Even with a combined LR over 36,000 &#8212; which sounds overwhelming &#8212; the posterior is only ~58%. A small prior (1 in 26,667) demands proportionally strong evidence. The F&#8211;S log-score W = log&#8322;(36,417) &#8776; 15.2 would suggest a confident link, but the Bayesian posterior reveals genuine uncertainty. The remedy: gather one more piece of evidence (matching address, phone, or ZIP). Adding a field with LR&#8776;100 would drive posterior odds to ~137 and P(match)&#776;99.3% &#8212; a confident link.</p></div>
+    <div class="dn">&#128161; This is why production linkage systems explicitly track the prior. Identical F&#8211;S scores can mean very different things when applied to small-overlap vs. large-overlap dataset pairs.</div>
+  </div>
+
+  <div class="ex adv" id="ex11">
+    <div class="ext">Exercise 11 &#8212; Full Bayesian Linkage: Two Hospital Systems</div>
+    <div class="exd di-adv">&#9679;&#9679; Difficulty: Advanced Intermediate &#8212; Population Prior &#215; Field LRs</div>
+    <div class="sc-box"><span class="sc-lbl">&#128204; Scenario</span><p>Hospital A has <strong>5,000</strong> records. Hospital B has <strong>15,000</strong> records. From a pilot study, an estimated <strong>800</strong> patients appear in both systems (cross-site shared care). For one candidate pair, three fields all agree: Last Name, DOB, and Sex. Per-field parameters: m_name=0.90, u_name=0.005; m_dob=0.95, u_dob=0.007; m_sex=0.99, u_sex=0.50. Compute the prior odds, per-field LRs, posterior odds, and posterior P(match). Decide whether to link.</p></div>
+    <button class="hb" onclick="toggleHint('h11')">&#128161; Show Hint</button>
+    <div class="hbx" id="h11">Total pairs = 5,000 &#215; 15,000 = 75,000,000. Prior &#8776; 800 / 75M &#8776; 0.0000107. LRs: LR_name = 0.90/0.005 = 180; LR_dob = 0.95/0.007 &#8776; 135.7; LR_sex = 0.99/0.50 = 1.98. Multiply prior odds by all three. Convert: P = odds/(1+odds). Decision zones: P &#8805; 0.95 &#8594; link; 0.50 &#8804; P &lt; 0.95 &#8594; review.</div>
+    <div class="fl">Fill in each blank:</div>
+    <div class="fi"><span class="ts">Total pairs = 5,000 &#215; 15,000 =</span><span class="bw"><input class="bi" id="e11a" style="width:120px" data-answer="75000000" placeholder="?"><button class="rb" onclick="revealAnswer('e11a')">reveal</button></span></div>
+    <div class="fi"><span class="ts">Prior odds &#8776; 800 / 75,000,000 &#8776;</span><span class="bw"><input class="bi" id="e11b" style="width:110px" data-answer="0.0000107" data-tolerance="0.0000005" placeholder="?"><button class="rb" onclick="revealAnswer('e11b')">reveal</button></span></div>
+    <div class="fi"><span class="ts">LR_name = 0.90 / 0.005 =</span><span class="bw"><input class="bi" id="e11c" style="width:78px" data-answer="180" placeholder="?"><button class="rb" onclick="revealAnswer('e11c')">reveal</button></span></div>
+    <div class="fi"><span class="ts">LR_dob = 0.95 / 0.007 &#8776;</span><span class="bw"><input class="bi" id="e11d" style="width:78px" data-answer="135.7" data-tolerance="1" placeholder="?"><button class="rb" onclick="revealAnswer('e11d')">reveal</button></span></div>
+    <div class="fi"><span class="ts">LR_sex = 0.99 / 0.50 =</span><span class="bw"><input class="bi" id="e11e" style="width:68px" data-answer="1.98" data-tolerance="0.02" placeholder="?"><button class="rb" onclick="revealAnswer('e11e')">reveal</button></span></div>
+    <div class="fi"><span class="ts">Combined LR = 180 &#215; 135.7 &#215; 1.98 &#8776;</span><span class="bw"><input class="bi" id="e11f" style="width:88px" data-answer="48369" data-tolerance="200" placeholder="?"><button class="rb" onclick="revealAnswer('e11f')">reveal</button></span></div>
+    <div class="fi"><span class="ts">Posterior odds = 0.0000107 &#215; 48,369 &#8776;</span><span class="bw"><input class="bi" id="e11g" style="width:78px" data-answer="0.516" data-tolerance="0.03" placeholder="?"><button class="rb" onclick="revealAnswer('e11g')">reveal</button></span></div>
+    <div class="fi"><span class="ts">P(match | data) = 0.516 / 1.516 &#8776;</span><span class="bw"><input class="bi" id="e11h" style="width:78px" data-answer="0.340" data-tolerance="0.02" placeholder="?"><button class="rb" onclick="revealAnswer('e11h')">reveal</button></span></div>
+    <div class="fi"><span class="ts">Decision zone (link &#8805; 0.95, review 0.50&#8211;0.95, reject &lt; 0.50):</span><span class="bw"><input class="bi" id="e11i" style="width:88px" data-answer="reject" data-type="text" placeholder="?"><button class="rb" onclick="revealAnswer('e11i')">reveal</button></span></div>
+    <div class="bg">
+      <button class="cb" onclick="subEx('ex11',8,['e11a','e11b','e11c','e11d','e11e','e11f','e11g','e11h','e11i'])">Submit</button>
+      <button class="rab" onclick="revAll('ex11',8,['e11a','e11b','e11c','e11d','e11e','e11f','e11g','e11h','e11i'])">Reveal All</button>
+    </div>
+    <div class="res" id="ex11r"></div>
+    <div class="pa" id="ex11a">
+      <div class="od vs"><div class="ol">&#128270; Bayesian Diagnosis</div>Posterior P(match) &#8776; <strong>34.0%</strong> &#8212; falls below the 50% review threshold and would be REJECTED. Yet the combined LR is ~48,000, which in classical F&#8211;S terms (W = log&#8322;(48,369) &#8776; <strong>15.6</strong>) would be a confident LINK. The mismatch is illuminating: the Bayesian view exposes that the small prior (1 in ~94,000) is doing most of the work. Two systems with relatively low overlap need stronger evidence per pair.<br><br>Remedy: gather a 4th agreeing field. If ZIP agrees with LR &#8776; 30, the new posterior odds &#8776; 0.516 &#215; 30 &#8776; 15.5, giving P(match) &#8776; 94% &#8212; right at the link threshold. This is why production linkage systems require 4&#8211;6 agreeing fields when datasets have modest overlap.</div>
+    </div>
+  </div>
+</section>
+<div class="sta-nav">
+  <button class="nav-btn prev" onclick="goTo(7)">&#8592; Bayes&#39; Theorem</button>
+  <span class="sta-nav-info">Station 9 of 12 &#8212; 2 Exercises</span>
+  <button class="nav-btn next" onclick="goTo(9)">Bloom PPRL &#8594;</button>
+</div>
+</div>
+
+<!-- ═══════ STATION 9 &#8212; Bloom Filter PPRL ═══════ -->
+<div class="pri-station" id="sta-9" style="display:none">
+<section class="sta">
+  <div class="shd"><div class="sn">Station 10 &#8212; Intermediate</div><span class="stg tgi">INTERMEDIATE</span></div>
+  <h2>Bloom Filter PPRL &#8212; Multi-Candidate Similarity with Dice &amp; Jaccard</h2>
+  <p>In <span class="kt">Privacy-Preserving Record Linkage (PPRL)</span> via Bloom filters, each name is hashed to a bit array that can be compared without revealing the underlying value. At intermediate level we move beyond a single Dice score and compare <em>multiple candidates</em> against one source, using both Dice and Jaccard similarity to triangulate the best match.</p>
+  <div class="fb"><span class="lb">Dice and Jaccard for Bloom Filter Bit Arrays</span>Dice = 2 &#215; |A &#8745; B| / (|A| + |B|)<br>Jaccard = |A &#8745; B| / |A &#8746; B|, where |A &#8746; B| = |A| + |B| &#8722; |A &#8745; B|<br>Relationship: Jaccard = Dice / (2 &#8722; Dice)<br>Decision: Dice &#8805; 0.90 &#8594; match; 0.70 &#8804; Dice &lt; 0.90 &#8594; review; Dice &lt; 0.70 &#8594; non-match</div>
+  <div class="cn"><span class="cnt">Why Compute Both Dice and Jaccard?</span><p>Dice and Jaccard rank candidates the same way but spread their values differently. Dice is more forgiving of small differences (it&#39;s the harmonic mean&#8217;s cousin), while Jaccard penalizes union mismatches more sharply. When |A| and |B| differ substantially, Jaccard is often more diagnostic. Most production systems use one or the other; computing both provides a sanity check.</p></div>
+
+  <button class="dt" onclick="toggleDemo('d12')"><span class="di">&#128218;</span><span class="dl">Focused Tutorial</span><span class="tt">Comparing 3 Candidate Matches Against Source &#8220;THOMPSON&#8221;</span><span class="da">&#9658;</span></button>
+  <div class="dc" id="d12">
+    <div class="sc-box"><span class="sc-lbl">&#128204; Scenario</span><p>Hospital A has a patient name &#8220;THOMPSON&#8221; encoded as a Bloom filter with 9 bits set. Three candidates from Hospital B have differing bit counts and bit overlaps with the source. Compute Dice and Jaccard for each, then classify as match, possible match, or non-match.</p></div>
+    <div class="dp"><table class="ct"><thead><tr><th>Candidate</th><th>|B| bits set</th><th>|A &#8745; B|</th><th>Dice</th><th>|A &#8746; B|</th><th>Jaccard</th></tr></thead><tbody>
+      <tr><td>C1 (&#8220;THOMPSON&#8221;)</td><td>9</td><td>9</td><td class="cg">2&#215;9/18 = 1.000</td><td>9</td><td class="cg">9/9 = 1.000</td></tr>
+      <tr><td>C2 (&#8220;THOMASON&#8221;)</td><td>8</td><td>6</td><td>2&#215;6/17 &#8776; 0.706</td><td>11</td><td>6/11 &#8776; 0.545</td></tr>
+      <tr><td>C3 (&#8220;JOHNSON&#8221;)</td><td>8</td><td>3</td><td class="cd">2&#215;3/17 &#8776; 0.353</td><td>14</td><td class="cd">3/14 &#8776; 0.214</td></tr>
+    </tbody></table></div>
+    <div class="sl slo">DECISION</div>
+    <div class="dp"><div class="dot">C1: Dice 1.000 &#8594; <strong>MATCH</strong> &#10003; (identical encoding)<br>C2: Dice 0.706 &#8594; <strong>REVIEW</strong> (likely spelling variant)<br>C3: Dice 0.353 &#8594; <strong>NON-MATCH</strong> &#10060; (different name, shared common substrings)</div></div>
+    <div class="cv-box" style="margin-top:14px;"><span class="cv-lbl">&#128270; Why Jaccard Is Lower Than Dice</span><p>Jaccard is always &#8804; Dice for the same pair. The relationship is Jaccard = Dice / (2 &#8722; Dice), so a Dice of 0.706 yields Jaccard &#8776; 0.545. Either measure ranks the candidates the same way, but Jaccard&#39;s lower spread makes the review zone narrower and non-matches stand out more sharply. Production systems pick one and stick to it for consistency.</p></div>
+    <div class="dn">&#128161; The bit set sizes (|A| and |B|) reflect name length. Longer names produce more bigrams &#8594; more bits set. A 16-bit filter is for illustration only; real PPRL uses 1,000&#8211;2,000 bit arrays with k=3&#8211;5 hash functions per bigram to control false positive rates.</div>
+  </div>
+
+  <div class="ex" id="ex12">
+    <div class="ext">Exercise 12 &#8212; Multi-Candidate Bloom Filter Comparison</div>
+    <div class="exd di-int">&#9679; Difficulty: Intermediate &#8212; Compare Three Candidates with Dice &amp; Jaccard</div>
+    <div class="sc-box"><span class="sc-lbl">&#128204; Scenario</span><p>A public health registry encodes the name &#8220;PRIYA&#8221; into a Bloom filter with <strong>12 bits set</strong>. Three candidates from a partner agency need to be evaluated:</p>
+    <table class="ct" style="margin-top:8px;"><thead><tr><th>Candidate</th><th>Name</th><th>|B| bits set</th><th>|A &#8745; B|</th></tr></thead><tbody>
+      <tr><td>C1</td><td>PRIYA</td><td>12</td><td>12</td></tr>
+      <tr><td>C2</td><td>PRIYAH</td><td>14</td><td>10</td></tr>
+      <tr><td>C3</td><td>MARIA</td><td>11</td><td>4</td></tr>
+    </tbody></table>
+    </div>
+    <button class="hb" onclick="toggleHint('h12')">&#128161; Show Hint</button>
+    <div class="hbx" id="h12">Dice = 2 &#215; |A&#8745;B| / (|A| + |B|). Jaccard = |A&#8745;B| / |A&#8746;B|, where |A&#8746;B| = |A| + |B| &#8722; |A&#8745;B|. Alternatively, Jaccard = Dice / (2 &#8722; Dice). Source |A| = 12 throughout.</div>
+    <div class="fl">Candidate C1 (PRIYA):</div>
+    <div class="fi"><span class="ts">Dice_1 = 2 &#215; 12 / (12 + 12) =</span><span class="bw"><input class="bi" id="e12a" style="width:68px" data-answer="1.0" data-tolerance="0.01" placeholder="?"><button class="rb" onclick="revealAnswer('e12a')">reveal</button></span><span class="ts">|A&#8746;B| =</span><span class="bw"><input class="bi" id="e12b" style="width:58px" data-answer="12" placeholder="?"><button class="rb" onclick="revealAnswer('e12b')">reveal</button></span><span class="ts">Jaccard_1 =</span><span class="bw"><input class="bi" id="e12c" style="width:68px" data-answer="1.0" data-tolerance="0.01" placeholder="?"><button class="rb" onclick="revealAnswer('e12c')">reveal</button></span></div>
+    <div class="fl">Candidate C2 (PRIYAH):</div>
+    <div class="fi"><span class="ts">Dice_2 = 2 &#215; 10 / (12 + 14) =</span><span class="bw"><input class="bi" id="e12d" style="width:68px" data-answer="0.769" data-tolerance="0.005" placeholder="?"><button class="rb" onclick="revealAnswer('e12d')">reveal</button></span><span class="ts">|A&#8746;B| = 12 + 14 &#8722; 10 =</span><span class="bw"><input class="bi" id="e12e" style="width:58px" data-answer="16" placeholder="?"><button class="rb" onclick="revealAnswer('e12e')">reveal</button></span><span class="ts">Jaccard_2 = 10 / 16 =</span><span class="bw"><input class="bi" id="e12f" style="width:68px" data-answer="0.625" data-tolerance="0.005" placeholder="?"><button class="rb" onclick="revealAnswer('e12f')">reveal</button></span></div>
+    <div class="fi"><span class="ts">Classification for C2:</span><span class="bw"><input class="bi" id="e12g" style="width:88px" data-answer="review" data-type="text" placeholder="?"><button class="rb" onclick="revealAnswer('e12g')">reveal</button></span></div>
+    <div class="fl">Candidate C3 (MARIA):</div>
+    <div class="fi"><span class="ts">Dice_3 = 2 &#215; 4 / (12 + 11) =</span><span class="bw"><input class="bi" id="e12h" style="width:68px" data-answer="0.348" data-tolerance="0.005" placeholder="?"><button class="rb" onclick="revealAnswer('e12h')">reveal</button></span><span class="ts">|A&#8746;B| =</span><span class="bw"><input class="bi" id="e12i" style="width:58px" data-answer="19" placeholder="?"><button class="rb" onclick="revealAnswer('e12i')">reveal</button></span><span class="ts">Jaccard_3 = 4 / 19 &#8776;</span><span class="bw"><input class="bi" id="e12j" style="width:68px" data-answer="0.211" data-tolerance="0.005" placeholder="?"><button class="rb" onclick="revealAnswer('e12j')">reveal</button></span></div>
+    <div class="fi"><span class="ts">Classification for C3:</span><span class="bw"><input class="bi" id="e12k" style="width:108px" data-answer="non-match" data-type="text" placeholder="?"><button class="rb" onclick="revealAnswer('e12k')">reveal</button></span></div>
+    <div class="bg">
+      <button class="cb" onclick="subEx('ex12',9,['e12a','e12b','e12c','e12d','e12e','e12f','e12g','e12h','e12i','e12j','e12k'])">Submit</button>
+      <button class="rab" onclick="revAll('ex12',9,['e12a','e12b','e12c','e12d','e12e','e12f','e12g','e12h','e12i','e12j','e12k'])">Reveal All</button>
+    </div>
+    <div class="res" id="ex12r"></div>
+    <div class="pa" id="ex12a">
+      <div class="od vs"><div class="ol">&#128270; Multi-Candidate Result</div>C1 (PRIYA): Dice 1.000, Jaccard 1.000 &#8594; <strong>MATCH</strong>. Identical bit pattern, almost certainly same name.<br>C2 (PRIYAH): Dice 0.769, Jaccard 0.625 &#8594; <strong>REVIEW</strong>. Likely a spelling variant (one extra character). Production system would queue for human verification or pair with a secondary field comparison.<br>C3 (MARIA): Dice 0.348, Jaccard 0.211 &#8594; <strong>NON-MATCH</strong>. Despite some shared bigrams (the letter A appears in both names), the union is much larger than the intersection &#8212; the Jaccard&#39;s harsher penalty makes this very clear.<br><br>Note Jaccard (0.625 for C2) is substantially lower than Dice (0.769) and gives a different feel for confidence; Jaccard correctly flags C2 as borderline rather than confidently a match.</div>
+    </div>
+  </div>
+</section>
+<div class="sta-nav">
+  <button class="nav-btn prev" onclick="goTo(8)">&#8592; Fellegi&#8211;Sunter</button>
+  <span class="sta-nav-info">Station 10 of 12 &#8212; Intermediate</span>
+  <button class="nav-btn next" onclick="goTo(10)">Differential Privacy &#8594;</button>
+</div>
+</div>
+
+<!-- ═══════ STATION 10 &#8212; Differential Privacy (Two Exercises) ═══════ -->
+<div class="pri-station" id="sta-10" style="display:none">
+<section class="sta">
+  <div class="shd"><div class="sn">Station 11 &#8212; Intermediate + Advanced Intermediate</div><span class="stg tgi">2 EXERCISES</span></div>
+  <h2>Differential Privacy &#8212; Single Queries &amp; Sequential Composition</h2>
+  <p><span class="kt">Differential Privacy (DP)</span> adds calibrated Laplace noise to query results so no single individual&#39;s data meaningfully affects the output. The intermediate exercise computes the per-query noise scale across multiple isolated queries with different epsilons. The advanced-intermediate exercise applies the <em>sequential composition theorem</em> to allocate a fixed total budget across many queries &#8212; revealing the trade-off between query count and per-query utility.</p>
+  <div class="fb"><span class="lb">Laplace Mechanism &amp; Composition</span>M(D) = f(D) + Laplace(0, &#916;f/&#949;)<br>Noise scale b = &#916;f / &#949;  (&#916;f = 1 for count queries)<br>Noise std dev = &#8730;2 &#215; b<br>Sequential composition: &#949;_total = &#949;&#8321; + &#949;&#8322; + &#8230; + &#949;&#8342;</div>
+  <div class="cn"><span class="cnt">Why Composition Matters</span><p>Each DP query consumes from the total privacy budget. Answering 10 queries at &#949;=1 each gives total &#949;=10 &#8212; weak privacy. The analyst must decide: many queries at lower &#949; per query (more noise, more questions answered) or fewer queries at higher &#949; (less noise, fewer questions). Small counts suffer disproportionately because relative noise = (noise std dev) / true count grows as true count shrinks.</p></div>
+
+  <!-- Focused Tutorial A: Single-Query Mechanism -->
+  <button class="dt" onclick="toggleDemo('d13a')"><span class="di">&#128218;</span><span class="dl">Focused Tutorial A</span><span class="tt">Per-Query Laplace Mechanism &#8212; Different &#949; for Different Sensitivities</span><span class="da">&#9658;</span></button>
+  <div class="dc" id="d13a">
+    <div class="sc-box"><span class="sc-lbl">&#128204; Scenario</span><p>A health department publishes three counts from an HCV registry, each with its own privacy budget reflecting the sensitivity of the underlying count. Larger counts can tolerate weaker privacy (higher &#949;); smaller counts of stigmatized co-diagnoses need stronger privacy (smaller &#949;).</p></div>
+    <div class="dp"><table class="ct"><thead><tr><th>Query</th><th>True Count</th><th>&#949;</th><th>b = 1/&#949;</th><th>Relative noise (b/count)</th></tr></thead><tbody>
+      <tr><td>A: total HCV diagnoses</td><td>2,150</td><td>1.0</td><td class="cg">1.0</td><td class="cg">0.05%</td></tr>
+      <tr><td>B: new HCV this quarter</td><td>18</td><td>0.5</td><td>2.0</td><td>11.1%</td></tr>
+      <tr><td>C: HCV+HIV co-diagnosis</td><td>4</td><td>0.1</td><td class="cd">10.0</td><td class="cd">250%</td></tr>
+    </tbody></table></div>
+    <div class="sl slo">OBSERVATION</div>
+    <div class="dp"><div class="dot">Query A (count=2,150): noise &#177;1, completely negligible.<br>Query B (count=18): noise &#177;2, ~11% relative &#8212; reported value could range 16&#8211;20.<br>Query C (count=4): noise &#177;10, 250% relative &#8212; reported value could be NEGATIVE.<br><br>Lesson: strong DP on rare events requires either aggregation (combining rare categories) or post-processing (clamping to non-negative integers).</div></div>
+    <div class="cv-box" style="margin-top:14px;"><span class="cv-lbl">&#128270; Why Co-Diagnosis Counts Are Hard</span><p>Co-diagnosis counts (HCV+HIV, OUD+pregnancy, etc.) often have high social stigma and small true values &#8212; both push toward smaller &#949;. But the same parameters that protect privacy destroy utility. Real-world solutions: combine multiple rare categories into a single &#8220;other&#8221; bucket, or use a Gaussian mechanism with smarter composition (RDP) that requires less noise for the same privacy.</p></div>
+    <div class="dn">&#128161; The sensitivity &#916;f = 1 for any count query because adding/removing one person changes the count by exactly 1. For sum queries on unbounded values, &#916;f equals the value range, often requiring much larger b and dramatically more noise.</div>
+  </div>
+
+  <div class="ex" id="ex13">
+    <div class="ext">Exercise 13 &#8212; Per-Query Laplace Mechanism on a Three-Query Dashboard</div>
+    <div class="exd di-int">&#9679; Difficulty: Intermediate &#8212; Apply Different &#949; to Different Counts</div>
+    <div class="sc-box"><span class="sc-lbl">&#128204; Scenario</span><p>A county health department publishes three opioid surveillance counts: <strong>A: total OUD diagnoses = 1,847 (&#949;=1.0)</strong>, <strong>B: new OUD cases Q1 = 23 (&#949;=0.5)</strong>, <strong>C: OUD+HIV co-diagnosis = 5 (&#949;=0.1)</strong>. For each query, compute the Laplace scale b, the noise std dev, and the relative noise (std dev / true count) as a percentage. All queries have sensitivity &#916;f = 1.</p></div>
+    <button class="hb" onclick="toggleHint('h13')">&#128161; Show Hint</button>
+    <div class="hbx" id="h13">Scale b = 1/&#949;. Noise std dev = &#8730;2 &#215; b &#8776; 1.414 &#215; b. Relative noise = (std dev / true count) &#215; 100. For &#949;=1.0: b=1, std dev &#8776; 1.41. For &#949;=0.5: b=2, std dev &#8776; 2.83. For &#949;=0.1: b=10, std dev &#8776; 14.14.</div>
+    <div class="fl">Query A &#8212; &#949;=1.0, true count 1,847:</div>
+    <div class="fi"><span class="ts">b =</span><span class="bw"><input class="bi" id="e13a" style="width:68px" data-answer="1.0" data-tolerance="0.05" placeholder="?"><button class="rb" onclick="revealAnswer('e13a')">reveal</button></span><span class="ts">std dev &#8776; &#8730;2 &#215; 1 &#8776;</span><span class="bw"><input class="bi" id="e13b" style="width:68px" data-answer="1.41" data-tolerance="0.05" placeholder="?"><button class="rb" onclick="revealAnswer('e13b')">reveal</button></span><span class="ts">relative noise &#8776;</span><span class="bw"><input class="bi" id="e13c" style="width:78px" data-answer="0.076" data-tolerance="0.01" placeholder="?"><button class="rb" onclick="revealAnswer('e13c')">reveal</button></span><span class="ts">%</span></div>
+    <div class="fl">Query B &#8212; &#949;=0.5, true count 23:</div>
+    <div class="fi"><span class="ts">b =</span><span class="bw"><input class="bi" id="e13d" style="width:68px" data-answer="2.0" data-tolerance="0.05" placeholder="?"><button class="rb" onclick="revealAnswer('e13d')">reveal</button></span><span class="ts">std dev &#8776;</span><span class="bw"><input class="bi" id="e13e" style="width:68px" data-answer="2.83" data-tolerance="0.05" placeholder="?"><button class="rb" onclick="revealAnswer('e13e')">reveal</button></span><span class="ts">relative noise &#8776;</span><span class="bw"><input class="bi" id="e13f" style="width:78px" data-answer="12.3" data-tolerance="0.5" placeholder="?"><button class="rb" onclick="revealAnswer('e13f')">reveal</button></span><span class="ts">%</span></div>
+    <div class="fl">Query C &#8212; &#949;=0.1, true count 5:</div>
+    <div class="fi"><span class="ts">b =</span><span class="bw"><input class="bi" id="e13g" style="width:68px" data-answer="10" data-tolerance="0.1" placeholder="?"><button class="rb" onclick="revealAnswer('e13g')">reveal</button></span><span class="ts">std dev &#8776;</span><span class="bw"><input class="bi" id="e13h" style="width:78px" data-answer="14.14" data-tolerance="0.2" placeholder="?"><button class="rb" onclick="revealAnswer('e13h')">reveal</button></span><span class="ts">relative noise &#8776;</span><span class="bw"><input class="bi" id="e13i" style="width:78px" data-answer="283" data-tolerance="5" placeholder="?"><button class="rb" onclick="revealAnswer('e13i')">reveal</button></span><span class="ts">%</span></div>
+    <div class="bg">
+      <button class="cb" onclick="subEx('ex13',10,['e13a','e13b','e13c','e13d','e13e','e13f','e13g','e13h','e13i'])">Submit</button>
+      <button class="rab" onclick="revAll('ex13',10,['e13a','e13b','e13c','e13d','e13e','e13f','e13g','e13h','e13i'])">Reveal All</button>
+    </div>
+    <div class="res" id="ex13r"></div>
+    <div class="pa" id="ex13a">
+      <div class="od vs"><div class="ol">&#128270; Utility Diagnosis</div>Query A (count 1,847): ~0.08% relative noise &#8212; negligible. The published value is highly accurate.<br>Query B (count 23): ~12.3% relative noise &#8212; noticeable but acceptable; the value could range from ~20 to ~26.<br>Query C (count 5): ~283% relative noise &#8212; the noise dwarfs the signal. Published values could easily be negative; post-processing must clamp to 0+. For practical use, this co-diagnosis count cannot be reported at &#949;=0.1 &#8212; the data must be aggregated (combine multiple rare co-diagnoses), the &#949; raised, or the count suppressed entirely below a small-cell threshold.</div>
+    </div>
+  </div>
+
+  <!-- Focused Tutorial B: Advanced — Sequential Composition -->
+  <button class="dt adv" onclick="toggleDemo('d13b')"><span class="di">&#127942;</span><span class="dl">Focused Tutorial B &#8212; Advanced</span><span class="tt">Sequential Composition &amp; Budget Allocation &#8212; Trading Query Count for Noise</span><span class="da">&#9658;</span></button>
+  <div class="dc adv" id="d13b">
+    <div class="sc-box"><span class="sc-lbl">&#128204; The Composition Problem</span><p>Real-world analysts rarely ask one DP query &#8212; they ask many. The <em>sequential composition theorem</em> states that answering k queries with budgets &#949;&#8321;, &#949;&#8322;, &#8230;, &#949;&#8342; on the same dataset consumes total budget &#949;_total = &#949;&#8321; + &#949;&#8322; + &#8230; + &#949;&#8342;. Given a fixed total budget (often set by institutional policy at 1&#8211;3), the analyst must allocate it across queries. More queries = less &#949; per query = more noise. Small counts suffer disproportionately because relative noise grows as true count shrinks.</p></div>
+    <div class="cv-box"><span class="cv-lbl">&#9881; Allocation Strategies</span><ul>
+      <li><strong>Uniform:</strong> &#949;_i = &#949;_total / k for every query. Simple, fair, but equally noisy.</li>
+      <li><strong>Non-uniform:</strong> larger &#949; for queries with small true counts (where noise hurts most), smaller &#949; for large counts.</li>
+      <li><strong>Aggregation:</strong> combine multiple small categories into one larger category before querying.</li>
+      <li><strong>Small-cell suppression:</strong> refuse to publish counts below a threshold (e.g., &lt; 10) and reallocate the budget.</li>
+    </ul></div>
+    <div class="fb"><span class="lb">Sequential Composition Recipe</span>Given total budget &#949;_total and k queries:<br>1. Decide allocation (uniform or non-uniform)<br>2. For each query: b&#7522; = &#916;f / &#949;&#7522;, std dev &#7522; = &#8730;2 &#215; b&#7522;<br>3. Compute relative noise per query: std dev &#7522; / true count &#7522;<br>4. Flag queries where relative noise &gt; 25% &#8212; consider aggregation or suppression</div>
+    <div class="sl slo">WORKED EXAMPLE &#8212; County Health Dashboard, &#949;_total = 3.0, 3 Queries (Uniform)</div>
+    <div class="dp"><div class="dot">Per-query &#949; = 3.0 / 3 = <strong>1.0</strong><br>b = 1 / 1.0 = <strong>1.0</strong>, std dev = &#8730;2 &#215; 1 &#8776; <strong>1.41</strong><br><br>Diabetes (count = 340): relative noise = 1.41/340 &#8776; <strong>0.41%</strong> (negligible)<br>Heart Failure (count = 125): relative noise = 1.41/125 &#8776; <strong>1.13%</strong> (small)<br>COPD (count = 89): relative noise = 1.41/89 &#8776; <strong>1.58%</strong> (small)</div></div>
+    <div class="cv-box" style="margin-top:14px;"><span class="cv-lbl">&#128270; Now Same Budget Across 6 Queries</span><p>If 6 queries instead, &#949;_per = 0.5, b = 2.0, std dev &#8776; 2.83. For a count of 5: relative noise = 2.83/5 = 57%. The budget split alone destroys utility for rare counts. The fix is either non-uniform allocation (give the rare-count queries more &#949;) or aggregation (combine rare categories until each true count is at least 30&#8211;50).</p></div>
+    <div class="dn">&#128161; Advanced composition theorems (e.g., R&#233;nyi DP) tighten the bound: for many queries, total budget grows more slowly than the naive sum. Production systems often use RDP because it allows ~2&#215; more queries for the same effective privacy.</div>
+  </div>
+
+  <div class="ex adv" id="ex14">
+    <div class="ext">Exercise 14 &#8212; Composition: 5 Queries on Opioid Surveillance, &#949;_total = 2.5</div>
+    <div class="exd di-adv">&#9679;&#9679; Difficulty: Advanced Intermediate &#8212; Budget Allocation + Utility Analysis</div>
+    <div class="sc-box"><span class="sc-lbl">&#128204; Scenario</span><p>A state health department publishes <strong>5 opioid surveillance statistics</strong>. Total privacy budget <strong>&#949;_total = 2.5</strong>, allocated uniformly. True counts: Prescriptions = 850, Overdoses = 65, Naloxone administrations = 30, ED visits = 110, Deaths = 8. Compute the per-query &#949;, scale b, noise std dev, and relative noise for each. Identify which queries have unacceptable utility.</p></div>
+    <button class="hb" onclick="toggleHint('h14')">&#128161; Show Hint</button>
+    <div class="hbx" id="h14">Per-query &#949; = &#949;_total / k = 2.5 / 5 = 0.5. Scale b = 1/0.5 = 2.0. Std dev = &#8730;2 &#215; 2 &#8776; 2.83. Relative noise per count = 2.83 / count, expressed as a percentage. A query is unacceptable if relative noise &gt; ~25% (rule of thumb).</div>
+    <div class="fl">Budget allocation:</div>
+    <div class="fi"><span class="ts">Per-query &#949; = 2.5 / 5 =</span><span class="bw"><input class="bi" id="e14a" style="width:58px" data-answer="0.5" data-tolerance="0.01" placeholder="?"><button class="rb" onclick="revealAnswer('e14a')">reveal</button></span></div>
+    <div class="fi"><span class="ts">Scale b = 1 / 0.5 =</span><span class="bw"><input class="bi" id="e14b" style="width:58px" data-answer="2.0" data-tolerance="0.01" placeholder="?"><button class="rb" onclick="revealAnswer('e14b')">reveal</button></span></div>
+    <div class="fi"><span class="ts">Noise std dev = &#8730;2 &#215; 2 &#8776;</span><span class="bw"><input class="bi" id="e14c" style="width:68px" data-answer="2.83" data-tolerance="0.05" placeholder="?"><button class="rb" onclick="revealAnswer('e14c')">reveal</button></span></div>
+    <div class="fl">Relative noise per query (= 2.83 / count &#215; 100%):</div>
+    <div class="fi"><span class="ts">Prescriptions (850) &#8776;</span><span class="bw"><input class="bi" id="e14d" style="width:68px" data-answer="0.33" data-tolerance="0.05" placeholder="?"><button class="rb" onclick="revealAnswer('e14d')">reveal</button></span><span class="ts">%</span></div>
+    <div class="fi"><span class="ts">Overdoses (65) &#8776;</span><span class="bw"><input class="bi" id="e14e" style="width:68px" data-answer="4.35" data-tolerance="0.2" placeholder="?"><button class="rb" onclick="revealAnswer('e14e')">reveal</button></span><span class="ts">%</span></div>
+    <div class="fi"><span class="ts">Naloxone (30) &#8776;</span><span class="bw"><input class="bi" id="e14f" style="width:68px" data-answer="9.43" data-tolerance="0.3" placeholder="?"><button class="rb" onclick="revealAnswer('e14f')">reveal</button></span><span class="ts">%</span></div>
+    <div class="fi"><span class="ts">ED visits (110) &#8776;</span><span class="bw"><input class="bi" id="e14g" style="width:68px" data-answer="2.57" data-tolerance="0.1" placeholder="?"><button class="rb" onclick="revealAnswer('e14g')">reveal</button></span><span class="ts">%</span></div>
+    <div class="fi"><span class="ts">Deaths (8) &#8776;</span><span class="bw"><input class="bi" id="e14h" style="width:68px" data-answer="35.4" data-tolerance="1" placeholder="?"><button class="rb" onclick="revealAnswer('e14h')">reveal</button></span><span class="ts">%</span></div>
+    <div class="fi"><span class="ts">Number of queries with unacceptable utility (&gt; 25% relative noise):</span><span class="bw"><input class="bi" id="e14i" style="width:58px" data-answer="1" placeholder="?"><button class="rb" onclick="revealAnswer('e14i')">reveal</button></span></div>
+    <div class="bg">
+      <button class="cb" onclick="subEx('ex14',10,['e14a','e14b','e14c','e14d','e14e','e14f','e14g','e14h','e14i'])">Submit</button>
+      <button class="rab" onclick="revAll('ex14',10,['e14a','e14b','e14c','e14d','e14e','e14f','e14g','e14h','e14i'])">Reveal All</button>
+    </div>
+    <div class="res" id="ex14r"></div>
+    <div class="pa" id="ex14a">
+      <div class="od vs"><div class="ol">&#128270; Composition Diagnosis</div>Per-query &#949; = 0.5, b = 2.0, std dev &#8776; <strong>2.83</strong>. Four of five queries have acceptable relative noise (&lt;10%). Only <strong>Deaths (true count = 8)</strong> hits 35.4% relative noise &#8212; unacceptable.<br><br>Three remedies:<br>(a) <strong>Non-uniform allocation</strong>: give Deaths &#949;=1.0 and split the remaining 1.5 across the other four queries (&#949;=0.375 each). New std dev for Deaths = 1.41 &#8594; relative noise = 17.6% (closer to acceptable).<br>(b) <strong>Aggregation</strong>: combine Deaths with another rare outcome (e.g., &#8220;serious adverse events&#8221;) until the true count is &gt;30.<br>(c) <strong>Small-cell suppression</strong>: don&#39;t publish Deaths individually; reallocate that budget to the remaining four queries.<br><br>Production systems often combine all three. The takeaway: budget split alone doesn&#39;t make data unusable for moderate counts (65, 110), but rare counts (&lt; 20) almost always need special handling.</div>
+    </div>
+  </div>
+</section>
+<div class="sta-nav">
+  <button class="nav-btn prev" onclick="goTo(9)">&#8592; Bloom PPRL</button>
+  <span class="sta-nav-info">Station 11 of 12 &#8212; 2 Exercises</span>
+  <button class="nav-btn next" onclick="goTo(11)">&#9733; Journey Summary &#8594;</button>
+</div>
+</div>
+
+<!-- ═══════ STATION 11 &#8212; Summary ═══════ -->
+<div class="pri-station" id="sta-11" style="display:none">
+<section class="sta">
+  <div class="shd"><div class="sn">Journey Summary &#8212; Intermediate Tutorial</div><span class="stg tga">COMPLETE</span></div>
+  <h2>Privacy Engineering &#8212; Intermediate-Level Synthesis</h2>
+  <p>You have completed the intermediate tutorial &#8212; 14 exercises across 11 content stations, including three advanced-intermediate exercises with their own richer focused tutorials (Bayesian Re-Identification, Full Bayesian Linkage, and DP Sequential Composition). The intermediate level moves past static rule-checking into multi-step numerical reasoning, recognizing that real privacy engineering is calibration of trade-offs.</p>
+  <div class="cn"><span class="cnt">What Changed from Beginner to Intermediate</span><p>
+    <strong>Beginner-level questions</strong> were largely structural: classify this field, count those records, identify this group. <strong>Intermediate-level questions</strong> are quantitative: compute the rate, the score, the posterior, the utility loss. The mathematical machinery is the same family (Bayes&#39; theorem, log-odds, multiplicative narrowing), but applied with realistic numbers and explicit thresholds. <strong>Advanced-intermediate</strong> adds the unifying frame: Bayesian inference, where every attacker scenario, every linkage decision, and every DP composition is expressible as a prior multiplied by likelihood ratios.
+  </p></div>
+  <h3>The 11 Stations as a Defense-in-Depth Stack</h3>
+  <table class="nt"><thead><tr><th>Station</th><th>Method</th><th>Intermediate Skill Acquired</th></tr></thead><tbody>
+    <tr><td>01</td><td>De-Identification</td><td>Quantify transformation burden as information-loss rate</td></tr>
+    <tr><td>02</td><td>Safe Harbor</td><td>Count rule triggers across mixed geographies + ages</td></tr>
+    <tr><td>03</td><td>Re-ID Risk</td><td>Compute all 3 attacker metrics; <strong>+ Bayesian attacker model</strong></td></tr>
+    <tr><td>04</td><td>k-Anonymity</td><td>Compute suppression rate and new min(k) for a target k*</td></tr>
+    <tr><td>05</td><td>l-Diversity</td><td>Compute P_max to detect skewness attacks</td></tr>
+    <tr><td>06</td><td>Cond. Probability</td><td>Stepwise anonymity-set narrowing via multiplicative filters</td></tr>
+    <tr><td>07</td><td>Unicity</td><td>Geometric collapse from adding QI fields</td></tr>
+    <tr><td>08</td><td>Bayes&#39; Theorem</td><td>Sequential updates via odds form</td></tr>
+    <tr><td>09</td><td>Fellegi&#8211;Sunter</td><td>Mixed agreement scoring; <strong>+ Full Bayesian linkage</strong></td></tr>
+    <tr><td>10</td><td>Bloom PPRL</td><td>Multi-candidate Dice + Jaccard comparison</td></tr>
+    <tr><td>11</td><td>Differential Privacy</td><td>Per-query mechanism; <strong>+ Sequential composition</strong></td></tr>
+  </tbody></table>
+
+  <h3>Defense-in-Depth: Which Method Blocks Which Attack</h3>
+  <div class="cn"><span class="cnt">Layered Protection Map</span><p>
+    <strong>Safe Harbor + Suppression</strong> &#8594; Eliminates direct identifiers. Blocks trivial lookup attacks.<br>
+    <strong>k-Anonymity</strong> &#8594; Prevents singling-out within equivalence classes.<br>
+    <strong>l-Diversity + P_max</strong> &#8594; Prevents homogeneity and skewness attacks on sensitive attributes.<br>
+    <strong>Re-ID Risk Models</strong> &#8594; Quantifies residual risk against 3 attacker profiles + Bayesian.<br>
+    <strong>Conditional Probability + Unicity</strong> &#8594; Diagnoses QI configuration for sensitive datasets.<br>
+    <strong>Bayes&#39; Theorem (Odds Form)</strong> &#8594; Models how matched evidence multiplies certainty.<br>
+    <strong>Fellegi&#8211;Sunter (Mixed) + Bayesian Posterior</strong> &#8594; Cross-dataset linkage with bounded prior.<br>
+    <strong>Bloom Filter PPRL</strong> &#8594; Enables linkage without sharing raw PII.<br>
+    <strong>Differential Privacy + Composition</strong> &#8594; Bounds membership inference under multi-query workflow.
+  </p></div>
+
+  <h3>Quick Reference &#8212; Intermediate-Level Formulas &amp; Thresholds</h3>
+  <table class="nt"><thead><tr><th>Method</th><th>Key Formula</th><th>Pass Threshold (typical)</th></tr></thead><tbody>
+    <tr><td>Information-loss rate</td><td>(suppressed + generalized) / total cells</td><td>Context-dependent; 60&#8211;80% typical</td></tr>
+    <tr><td>Prosecutor Risk</td><td>1 / min(k)</td><td>&#8804; 0.09 (requires min k &#8805; 12)</td></tr>
+    <tr><td>Marketer Risk</td><td>(# groups) / N</td><td>&#8804; 0.09</td></tr>
+    <tr><td>Bayesian Re-ID</td><td>P = (prior odds &#215; &#8719; LR&#7522;) / (1 + same)</td><td>&#8804; 0.09</td></tr>
+    <tr><td>k-Anonymity suppression rate</td><td>(# suppressed) / N</td><td>&#8804; 20% typical DUA</td></tr>
+    <tr><td>l-Diversity (P_max)</td><td>max(value count) / class size</td><td>&lt; 0.75 (strict)</td></tr>
+    <tr><td>Anonymity Set Size</td><td>N &#215; &#8719; P(field&#7522; matches)</td><td>P(re-id) &#8804; 0.09</td></tr>
+    <tr><td>Unicity occupancy</td><td>u = N / &#8719; S&#7522;</td><td>u &#8805; 5 ideal; 1 &#8804; u &lt; 5 acceptable; u &lt; 1 dangerous</td></tr>
+    <tr><td>Sequential Bayes (Odds Form)</td><td>Posterior odds = Prior odds &#215; &#8719; LR&#7522;</td><td>Context-dependent</td></tr>
+    <tr><td>F&#8211;S Mixed (per field)</td><td>w&#7522; = log&#8322;(m/u) or log&#8322;((1&#8722;m)/(1&#8722;u))</td><td>W &#8805; 10 link; 0&#8211;10 review; &lt; 0 reject</td></tr>
+    <tr><td>Bayesian Linkage</td><td>Posterior odds = prior odds &#215; &#8719; LR&#7522;; P = odds/(1+odds)</td><td>P &#8805; 0.95 link; 0.50&#8211;0.95 review</td></tr>
+    <tr><td>Bloom Dice / Jaccard</td><td>Dice = 2|A&#8745;B|/(|A|+|B|); Jaccard = Dice/(2&#8722;Dice)</td><td>Dice &#8805; 0.90 match; 0.70&#8211;0.90 review</td></tr>
+    <tr><td>Laplace Mechanism</td><td>b = &#916;f/&#949;; std dev = &#8730;2 &#215; b</td><td>Relative noise &lt; 25% for usable</td></tr>
+    <tr><td>DP Sequential Composition</td><td>&#949;_total = &#931; &#949;&#7522;</td><td>&#949;_total &#8804; 1&#8211;3 for sensitive data</td></tr>
+  </tbody></table>
+
+  <h3>The Bayesian Through-Line</h3>
+  <p>Three stations &#8212; Re-ID (Station 03), Linkage (Station 09), and DP (Station 11) &#8212; each have an advanced-intermediate exercise that uses the same Bayesian skeleton: <strong>prior &#215; likelihood ratios &#8594; posterior</strong>. In re-identification, the prior is 1/N and the LRs come from QI-field match rates. In record linkage, the prior is the overlap fraction and the LRs come from F&#8211;S m/u ratios. In DP, the bound on posterior shift is e<sup>&#949;</sup> per query, and composition forces the analyst to budget that shift across queries. Recognizing the Bayesian skeleton across all three is the central intermediate-level insight.</p>
+
+  <div class="dn">&#128161; The next level (advanced) introduces R&#233;nyi DP composition, formal t-closeness, the Expectation-Maximization estimation of m and u for unsupervised linkage, and adversarial machine-learning attacks &#8212; topics where the multi-step calculations of this tutorial transition into formal proofs and adversarial robustness analysis.</div>
+</section>
+<div class="sta-nav">
+  <button class="nav-btn prev" onclick="goTo(10)">&#8592; Differential Privacy</button>
+  <span class="sta-nav-info">Tutorial Complete &#8212; 14 Exercises Across 11 Stations</span>
+  <button class="nav-btn next" onclick="goTo(0)" style="background:#1f6843;border-color:#1f6843;">&#8635; Restart Tutorial</button>
+</div>
+</div>
+
+</main><!-- /main -->
+
+<!-- COHORT MODAL -->
+<div class="modal-ov" id="cohortModal">
+  <div class="modal">
+    <div class="mhdr"><h3>&#9824; Meridian Cohort &#8212; Reference Patients</h3><button class="mclose" onclick="document.getElementById('cohortModal').classList.remove('open')">&#10005;</button></div>
+    <div class="mbody">
+      <p>The Meridian Cohort is a synthetic 6-patient dataset used as a reference across the integrated tutorial and the intermediate exercises in this tutorial. All names, SSNs, dates, and identifiers are fictional. Intermediate-level exercises generally use larger synthetic populations (24&#8211;25,000 patients) to make the multiplicative effects of QIs visible.</p>
+      <table class="rt"><thead><tr><th>#</th><th>Name</th><th>Sex</th><th>DOB</th><th>SSN</th><th>ZIP</th><th>Primary Dx</th></tr></thead><tbody>
+        <tr><td>P1</td><td>Margaret Chen</td><td>F</td><td>03/14/1952</td><td>524-43-9821</td><td>98032</td><td class="cs">Z21 &#8212; HIV/AIDS</td></tr>
+        <tr><td>P2</td><td>David Okafor</td><td>M</td><td>03/14/1978</td><td>310-78-4492</td><td>98102</td><td class="cs">F11.20 &#8212; OUD</td></tr>
+        <tr><td>P3</td><td>Yolanda Ferreira</td><td>F</td><td>08/22/1965</td><td>487-55-1230</td><td>98032</td><td class="cs">E11.9 &#8212; T2DM</td></tr>
+        <tr><td>P4</td><td>Thomas Nakamura</td><td>M</td><td>02/28/1981</td><td>453-67-8821</td><td>98102</td><td class="cs">I10 &#8212; HTN</td></tr>
+        <tr><td>P5</td><td>Priya Subramanian</td><td>F</td><td>11/09/1972</td><td>602-34-7710</td><td>98032</td><td class="cs">F31.9 &#8212; Bipolar</td></tr>
+        <tr><td>P6</td><td>James Whitfield</td><td>M</td><td>06/17/1989</td><td>781-22-5543</td><td>98032</td><td class="cs">I25.10 &#8212; CAD</td></tr>
+      </tbody></table>
+    </div>
+  </div>
+</div>
+
+<!-- GLOSSARY MODAL -->
+<div class="modal-ov" id="glossaryModal">
+  <div class="modal">
+    <div class="mhdr"><h3>&#128218; Intermediate Privacy Glossary</h3><button class="mclose" onclick="document.getElementById('glossaryModal').classList.remove('open')">&#10005;</button></div>
+    <div class="mbody" id="glossaryBody"></div>
+  </div>
+</div>
+
+<script>
+// === Tutorial state and constants ===
+var priTutState = JSON.parse(localStorage.getItem('priTutInterState') || '{"cur":0,"done":[],"reveals":0}');
+var totalEx = 14;
+// Maps exercise index (0-based, ex01=0..ex14=13) to station index (0-based, stations 0..10 are content)
+var exToStation = [0, 1, 2, 2, 3, 4, 5, 6, 7, 8, 8, 9, 10, 10];
+
+function goTo(idx){
+  document.querySelectorAll('.pri-station').forEach(function(s,i){s.style.display=i===idx?'block':'none';});
+  document.querySelectorAll('.stn-pill').forEach(function(p){
+    var i=parseInt(p.getAttribute('data-idx'));
+    p.classList.toggle('active',i===idx);
+  });
+  priTutState.cur=idx;
+  document.getElementById('scStn').textContent=idx<11?('0'+(idx+1)).slice(-2):'\u2605';
+  var w=Math.round((idx+1)/12*100);
+  document.getElementById('pgb').style.width=w+'%';
+  saveSt();
+  window.scrollTo(0,0);
+}
+
+function saveSt(){
+  // Track completion based on exercise result boxes having class "ok"
+  var doneEx=[];
+  for(var i=0;i<totalEx;i++){
+    var el=document.getElementById('ex'+(i<9?'0':'')+(i+1)+'r');
+    if(el&&el.classList.contains('ok'))doneEx.push(i);
+  }
+  priTutState.done=doneEx;
+  document.getElementById('scDone').textContent=doneEx.length+' / '+totalEx;
+
+  // For each station, mark "done" iff all its exercises are completed
+  var stationCounts={};
+  var stationDone={};
+  for(var j=0;j<totalEx;j++){
+    var s=exToStation[j];
+    stationCounts[s]=(stationCounts[s]||0)+1;
+    if(doneEx.indexOf(j)>-1) stationDone[s]=(stationDone[s]||0)+1;
+  }
+  document.querySelectorAll('.stn-pill').forEach(function(p){
+    var idx=parseInt(p.getAttribute('data-idx'));
+    if(idx>=11)return;
+    if(stationDone[idx]===stationCounts[idx]) p.classList.add('done');
+    else p.classList.remove('done');
+  });
+  localStorage.setItem('priTutInterState',JSON.stringify(priTutState));
+}
+
+function subEx(exId,stIdx,ids){
+  var all=true,any=false;
+  ids.forEach(function(id){
+    var el=document.getElementById(id);
+    if(!el)return;
+    var ans=el.getAttribute('data-answer');
+    var typ=el.getAttribute('data-type')||'number';
+    var tol=parseFloat(el.getAttribute('data-tolerance')||'0');
+    var val=el.value.trim();
+    var ok=false;
+    if(typ==='text'){ok=val.toLowerCase()===ans.toLowerCase();}
+    else{var n=parseFloat(val);ok=!isNaN(n)&&Math.abs(n-parseFloat(ans))<=tol;}
+    el.classList.toggle('ok',ok);el.classList.toggle('no',!ok);
+    if(!ok)all=false; else any=true;
+  });
+  var r=document.getElementById(exId+'r');
+  var pa=document.getElementById(exId+'a');
+  r.className='res vs '+(all?'ok':'no');
+  r.innerHTML=all?'\u2713 All correct &#8212; well done!':'\u274C Some answers need review. Check highlighted blanks.';
+  if(all&&pa){pa.classList.add('vs');}
+  saveSt();
+}
+
+function revAll(exId,stIdx,ids){
+  priTutState.reveals=(priTutState.reveals||0)+ids.length;
+  document.getElementById('scReveals').textContent=priTutState.reveals;
+  ids.forEach(function(id){revealAnswer(id,true);});
+  var pa=document.getElementById(exId+'a');
+  if(pa)pa.classList.add('vs');
+  var r=document.getElementById(exId+'r');
+  r.className='res vs sl';r.innerHTML='&#128218; Answers revealed &#8212; review the explanations below.';
+  localStorage.setItem('priTutInterState',JSON.stringify(priTutState));
+}
+
+function revealAnswer(id,silent){
+  var el=document.getElementById(id);if(!el)return;
+  el.value=el.getAttribute('data-answer');
+  el.classList.remove('no');el.classList.add('ok');
+  if(!silent){priTutState.reveals=(priTutState.reveals||0)+1;document.getElementById('scReveals').textContent=priTutState.reveals;localStorage.setItem('priTutInterState',JSON.stringify(priTutState));}
+}
+
+function toggleDemo(id){
+  var dc=document.getElementById(id);
+  var dt=dc.previousElementSibling;
+  var wasOpen=dc.classList.contains('op');
+  dc.classList.toggle('op',!wasOpen);
+  dt.classList.toggle('op',!wasOpen);
+}
+
+function toggleHint(id){
+  var hbx=document.getElementById(id);
+  hbx.classList.toggle('vs');
+}
+
+function openCohort(){document.getElementById('cohortModal').classList.add('open');}
+
+function openGlossary(){
+  var terms=[
+    ['Advanced Intermediate','A difficulty level in this tutorial: multi-step calculations applied within a Bayesian inference framework (re-id, linkage, DP composition).'],
+    ['Anonymity Set','Population of real individuals who share all QI values of a specific record. P(re-id) &#8776; 1 / |anonymity set|.'],
+    ['Bayes\' Theorem (Odds Form)','Posterior odds = Prior odds &#215; LR. The product-form is ideal for sequential evidence: each LR is multiplied in turn.'],
+    ['Bayesian Re-Identification','Reframing re-id as Bayesian inference. Prior P(H) = 1/N, LR&#7522; per matching QI field. Posterior P(re-id) compared to 0.09 threshold.'],
+    ['Bayesian Linkage','Linkage posterior P(match | data) = posterior odds / (1+posterior odds), where prior odds &#8776; (true overlap) / (|A|&#215;|B|).'],
+    ['Bloom Filter','A space-efficient probabilistic bit array used in PPRL. Names are hashed via bigrams; bit overlap measures similarity.'],
+    ['Composition (DP)','Sequential answering of multiple DP queries: &#949;_total = &#931; &#949;&#7522;. Allocation strategy affects per-query noise.'],
+    ['Conditional Probability','P(A|B) = P(A&#8745;B)/P(B). Used in stepwise anonymity-set narrowing.'],
+    ['Dice Coefficient','2&#215;|A&#8745;B| / (|A|+|B|). Bloom filter similarity. Always &#8805; Jaccard.'],
+    ['Differential Privacy','Adds Laplace noise calibrated by &#916;f/&#949; so output is statistically indistinguishable whether or not any single person is in the dataset.'],
+    ['Direct Identifier','A field that alone identifies an individual: names, SSNs, MRNs, phone, email, full addresses, biometrics.'],
+    ['Epsilon (&#949;)','DP privacy budget. Smaller &#949; = stronger privacy + more noise. Each query consumes from total budget.'],
+    ['Equivalence Class','A group of records sharing identical QI values. Every member is indistinguishable from others on QI fields.'],
+    ['Expert Determination','HIPAA pathway: qualified statistician certifies re-id risk is "very small" (&#8804; 0.09 in practice).'],
+    ['Fellegi&#8211;Sunter (Mixed)','Per-field weights: agreeing fields contribute log&#8322;(m/u); disagreeing fields contribute log&#8322;((1-m)/(1-u)). Total W decides match/review/reject.'],
+    ['Generalization','Replacing precise QI values with broader categories: exact DOB &#8594; year; 5-digit ZIP &#8594; 3-digit prefix.'],
+    ['HIPAA','U.S. federal law (1996); the Privacy Rule defines two de-identification pathways: Safe Harbor and Expert Determination.'],
+    ['Homogeneity Attack','When all records in a k-anonymous class share the same sensitive value. l=1 &#8594; attacker certainty 100%.'],
+    ['Information-Loss Rate','(suppressed + generalized cells) / total cells. Quantifies the cost of de-identification on utility.'],
+    ['Intermediate','A difficulty level in this tutorial: multi-step numerical calculations with explicit thresholds.'],
+    ['Jaccard Index','|A&#8745;B| / |A&#8746;B|. Alternative to Dice. Relationship: Jaccard = Dice/(2-Dice). Always &#8804; Dice.'],
+    ['Journalist Risk','(# k=1 records) / N. Pass threshold: &#8804; 0.09.'],
+    ['k-Anonymity','Privacy guarantee: every record is indistinguishable from at least k&#8722;1 others on QI fields.'],
+    ['Laplace Mechanism','Adds noise from Laplace(0, &#916;f/&#949;). Noise std dev = &#8730;2 &#215; (&#916;f/&#949;).'],
+    ['l-Diversity','Each equivalence class must contain &#8805; l distinct sensitive values. Pair with P_max to detect skewness.'],
+    ['Likelihood Ratio (LR)','LR = P(E|H) / P(E|&#172;H). Posterior odds = prior odds &#215; LR.'],
+    ['Marketer Risk','(1/N) &#215; &#931;(1/k&#7522;) = (# groups) / N for properly formed equivalence classes.'],
+    ['Membership Inference','Attack determining whether a specific person\'s data was in a dataset. DP is the primary defense.'],
+    ['m&#7522; (match rate)','In F&#8211;S, P(field i agrees | records are a true match). High m = stable field.'],
+    ['Odds &amp; Probability','odds = P / (1-P). P = odds / (1+odds). Used to convert between odds form and probability.'],
+    ['P_max','In l-diversity skewness analysis: max frequency / class size. Captures attacker certainty for the dominant value.'],
+    ['Posterior Odds','Prior odds multiplied by the product of LRs. Convert to probability via odds/(1+odds).'],
+    ['Prior Odds','For re-id: 1/(N-1). For linkage: overlap / total pairs. Sets the starting point of the Bayesian update.'],
+    ['Prosecutor Risk','1 / min(k). Pass threshold: &#8804; 0.09 (requires min k &#8805; 12).'],
+    ['Quasi-Identifier (QI)','Not directly identifying alone but combines with others: DOB, ZIP, sex, age, race.'],
+    ['Re-Identification','Linking a de-identified record to a named individual. Bayesian view: P(record = target | matching QIs).'],
+    ['Safe Harbor','HIPAA mechanical pathway: remove 18 identifier categories. Three numerical rules require arithmetic per record.'],
+    ['Sensitive Attribute','Clinical data an attacker may want to infer: diagnoses, labs, medications.'],
+    ['Sensitivity (&#916;f)','In DP, max change in query output when one person is added/removed. &#916;f = 1 for count queries.'],
+    ['Sequential Composition','Total budget = sum of per-query budgets. Forces allocation strategy across multiple queries.'],
+    ['Skewness Attack','l-diversity passes but one value dominates the class. P_max captures this risk.'],
+    ['Suppression','Completely removing a field value or entire record. Applied to direct identifiers and outlier records.'],
+    ['Suppression Rate','(suppressed records) / N. Typical DUA tolerance: &#8804; 20%.'],
+    ['t-Closeness','Stronger than l-diversity: requires the sensitive attribute distribution in each class to match the overall distribution.'],
+    ['Unicity','u = N / &#8719; S&#7522;. Average occupancy per QI cell. u &#8805; 5 ideal; u &lt; 1 dangerous.'],
+    ['u&#7522; (unmatch rate)','In F&#8211;S, P(field i agrees | records are NOT a match). Low u = highly diagnostic field.'],
+    ['Weight w&#7522; (F&#8211;S)','log&#8322;(m/u) for agreeing fields; log&#8322;((1-m)/(1-u)) for disagreeing fields. Sum to total score W.']
+  ];
+  var html='';
+  terms.forEach(function(t){
+    html+='<div style="margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--border);"><strong style="color:var(--blu);">'+t[0]+'</strong><br><span style="font-size:13.5px;">'+t[1]+'</span></div>';
+  });
+  document.getElementById('glossaryBody').innerHTML=html;
+  document.getElementById('glossaryModal').classList.add('open');
+}
+
+function resetAll(){
+  if(!confirm('Reset all tutorial progress?'))return;
+  localStorage.removeItem('priTutInterState');
+  location.reload();
+}
+
+document.addEventListener('keydown',function(e){
+  if(e.target.tagName==='INPUT')return;
+  if(e.key==='ArrowRight'&&priTutState.cur<11)goTo(priTutState.cur+1);
+  if(e.key==='ArrowLeft'&&priTutState.cur>0)goTo(priTutState.cur-1);
+  if(e.key==='Escape'){
+    document.getElementById('cohortModal').classList.remove('open');
+    document.getElementById('glossaryModal').classList.remove('open');
+  }
+});
+
+document.querySelectorAll('.modal-ov').forEach(function(ov){
+  ov.addEventListener('click',function(e){if(e.target===ov)ov.classList.remove('open');});
+});
+
+// Restore state on load
+(function(){
+  var s=priTutState;
+  goTo(s.cur||0);
+  document.getElementById('scReveals').textContent=s.reveals||0;
+})();
+</script>
+</body>
+</html>

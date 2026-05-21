@@ -1,0 +1,1770 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>XML &amp; XSD — Integrated Tutorial</title>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  --bg-page:    #0e1320;
+  --bg-surface: #141b2c;
+  --bg-card:    #19233a;
+  --bg-raised:  #1e2c48;
+  --bg-code:    #0c1020;
+  --bg-input:   #121a2e;
+
+  --border-dim: #1e2c4c;
+  --border-mid: #283870;
+  --border-hi:  #334688;
+
+  --text-1:    #dde8f8;
+  --text-2:    #90a5c8;
+  --text-3:    #607690;
+  --text-code: #b8d0f0;
+
+  --xml-accent:     #1a9688;
+  --xml-accent-h:   #22b09e;
+  --xml-accent-dim: #106460;
+
+  --xsd-accent:     #c88c28;
+  --xsd-accent-h:   #e8a030;
+  --xsd-accent-dim: #7a5010;
+
+  --ok:  #1a6840; --ok-t:  #44d47a;
+  --err: #681c1c; --err-t: #f07878;
+
+  --before-bg: #160f20; --before-b: #44243a;
+  --after-bg:  #0c1a14; --after-b:  #205844;
+
+  /* XML tag colors — cool family */
+  --tag-markup-bg:      #0a3228; --tag-markup-t:     #36d0a8;
+  --tag-syntax-bg:      #0a2246; --tag-syntax-t:     #50a0f0;
+  --tag-entities-bg:    #200c4c; --tag-entities-t:   #b070e8;
+  --tag-validation-bg:  #361e06; --tag-validation-t: #dc9840;
+  --tag-data-bg:        #0a3018; --tag-data-t:       #50cc68;
+  --tag-concepts-bg:    #1c2036; --tag-concepts-t:   #90a0c8;
+  --tag-history-bg:     #301608; --tag-history-t:    #c87850;
+
+  /* XSD tag colors — warm amber/gold family */
+  --tag-schema-bg:      #2e1e06; --tag-schema-t:     #e89c30;
+  --tag-types-bg:       #281604; --tag-types-t:      #d47a36;
+  --tag-structure-bg:   #241c06; --tag-structure-t:  #d4a828;
+  --tag-attributes-bg:  #221808; --tag-attributes-t: #c8a030;
+  --tag-constraints-bg: #2a1a04; --tag-constraints-t:#d48030;
+  --tag-xsd-val-bg:     #301c06; --tag-xsd-val-t:    #e08838;
+
+  --radius:    8px;
+  --radius-lg: 12px;
+
+  --ff-display: 'Lora', Georgia, serif;
+  --ff-body:    'DM Sans', system-ui, sans-serif;
+  --ff-mono:    'JetBrains Mono', 'Courier New', monospace;
+}
+
+html{scroll-behavior:smooth}
+body{
+  font-family:var(--ff-body);
+  background:var(--bg-page);
+  color:var(--text-1);
+  display:flex;
+  min-height:100vh;
+  font-size:15px;
+  line-height:1.72;
+}
+
+/* ── SIDEBAR ─────────────────────────────── */
+#sidebar{
+  width:256px;min-height:100vh;
+  position:sticky;top:0;height:100vh;
+  overflow-y:auto;background:var(--bg-surface);
+  border-right:1px solid var(--border-dim);
+  flex-shrink:0;display:flex;flex-direction:column;
+}
+.sb-brand{
+  padding:24px 20px 18px;
+  border-bottom:1px solid var(--border-dim);
+}
+.sb-brand h1{
+  font-family:var(--ff-display);font-size:14.5px;
+  font-weight:600;color:var(--text-1);
+  letter-spacing:-0.01em;line-height:1.35;
+}
+.sb-brand p{
+  font-size:10px;color:var(--text-3);
+  margin-top:4px;text-transform:uppercase;letter-spacing:0.07em;
+}
+.sb-nav{padding:10px 0;flex:1}
+.sb-group-label{
+  display:flex;align-items:center;gap:8px;
+  font-size:9.5px;text-transform:uppercase;
+  letter-spacing:0.08em;padding:12px 20px 6px;
+  font-weight:500;
+}
+.sb-group-label.xml-group{color:var(--xml-accent)}
+.sb-group-label.xsd-group{color:var(--xsd-accent)}
+.sb-group-label .gl-line{
+  flex:1;height:1px;background:currentColor;opacity:0.2;
+}
+.sb-divider{
+  height:1px;background:var(--border-dim);margin:8px 20px;
+}
+.nav-item{
+  display:flex;align-items:flex-start;
+  gap:10px;padding:8px 20px;cursor:pointer;
+  text-decoration:none;color:var(--text-2);
+  font-size:12px;border-left:2px solid transparent;
+  transition:all 0.14s;line-height:1.45;
+}
+.nav-item:hover{color:var(--text-1);background:var(--bg-card)}
+.nav-item.active-xml{
+  color:var(--xml-accent-h);
+  border-left-color:var(--xml-accent);
+  background:rgba(26,150,136,0.07);
+}
+.nav-item.active-xsd{
+  color:var(--xsd-accent-h);
+  border-left-color:var(--xsd-accent);
+  background:rgba(200,140,40,0.07);
+}
+.nav-num{
+  font-size:10px;font-family:var(--ff-mono);
+  color:var(--text-3);margin-top:2px;
+  flex-shrink:0;width:18px;
+}
+.active-xml .nav-num{color:var(--xml-accent-dim)}
+.active-xsd .nav-num{color:var(--xsd-accent-dim)}
+.sb-footer{
+  padding:14px 20px;border-top:1px solid var(--border-dim);
+  font-size:10.5px;color:var(--text-3);line-height:1.6;
+}
+.sb-footer strong{color:var(--text-2);font-weight:500}
+
+/* ── MAIN ────────────────────────────────── */
+#content{
+  flex:1;max-width:1230px;
+  padding:0 52px 100px;margin:0 auto;
+}
+
+/* ── HERO ────────────────────────────────── */
+.hero{
+  padding:56px 0 42px;
+  border-bottom:1px solid var(--border-dim);
+  margin-bottom:52px;
+}
+.hero-eyebrow{
+  font-size:10.5px;text-transform:uppercase;
+  letter-spacing:0.1em;margin-bottom:16px;font-weight:500;
+  display:flex;align-items:center;gap:10px;
+}
+.eye-xml{color:var(--xml-accent)}
+.eye-sep{color:var(--text-3)}
+.eye-xsd{color:var(--xsd-accent)}
+.hero-title{
+  font-family:var(--ff-display);font-size:38px;
+  font-weight:600;color:var(--text-1);
+  letter-spacing:-0.022em;line-height:1.18;margin-bottom:16px;
+}
+.hero-title em{font-style:normal;color:var(--xsd-accent)}
+.hero-subtitle{
+  font-size:15px;color:var(--text-2);
+  max-width:600px;line-height:1.75;margin-bottom:24px;
+}
+.hero-meta{
+  display:flex;flex-wrap:wrap;gap:16px;
+  font-size:11.5px;color:var(--text-3);
+}
+.hero-meta span{display:flex;align-items:center;gap:5px}
+.hero-meta strong{color:var(--text-2);font-weight:500}
+.hero-pills{
+  display:flex;gap:8px;margin-top:18px;flex-wrap:wrap;
+}
+.pill{
+  font-size:11px;font-weight:500;padding:4px 12px;
+  border-radius:20px;border:1px solid;
+}
+.pill-xml{
+  background:rgba(26,150,136,0.1);
+  border-color:rgba(26,150,136,0.3);color:var(--xml-accent-h);
+}
+.pill-xsd{
+  background:rgba(200,140,40,0.1);
+  border-color:rgba(200,140,40,0.3);color:var(--xsd-accent-h);
+}
+.hero-credit{margin-top:20px;font-size:11.5px;color:var(--text-3);font-style:italic}
+
+/* ── MODULE SECTIONS ─────────────────────── */
+.mod-section{margin-bottom:68px;scroll-margin-top:28px}
+.mod-header{
+  display:flex;align-items:flex-start;gap:16px;
+  margin-bottom:22px;padding-bottom:20px;
+  border-bottom:1px solid var(--border-dim);
+}
+.mod-num{
+  font-family:var(--ff-mono);font-size:10.5px;font-weight:500;
+  border-radius:4px;padding:3px 8px;
+  margin-top:5px;flex-shrink:0;
+}
+.mod-num.xml{
+  color:var(--xml-accent-dim);
+  background:rgba(26,150,136,0.09);
+  border:1px solid rgba(26,150,136,0.25);
+}
+.mod-num.xsd{
+  color:var(--xsd-accent-dim);
+  background:rgba(200,140,40,0.09);
+  border:1px solid rgba(200,140,40,0.25);
+}
+.mod-header-r{flex:1}
+.mod-title{
+  font-family:var(--ff-display);font-size:22px;
+  font-weight:600;color:var(--text-1);
+  letter-spacing:-0.01em;margin-bottom:10px;
+}
+.mod-tags{display:flex;flex-wrap:wrap;gap:6px}
+.tag{
+  font-size:10px;font-weight:500;
+  letter-spacing:0.055em;text-transform:uppercase;
+  padding:3px 8px;border-radius:3px;
+}
+/* XML tags */
+.tag-markup     {background:var(--tag-markup-bg);    color:var(--tag-markup-t)}
+.tag-syntax     {background:var(--tag-syntax-bg);    color:var(--tag-syntax-t)}
+.tag-entities   {background:var(--tag-entities-bg);  color:var(--tag-entities-t)}
+.tag-validation {background:var(--tag-validation-bg);color:var(--tag-validation-t)}
+.tag-data       {background:var(--tag-data-bg);      color:var(--tag-data-t)}
+.tag-concepts   {background:var(--tag-concepts-bg);  color:var(--tag-concepts-t)}
+.tag-history    {background:var(--tag-history-bg);   color:var(--tag-history-t)}
+/* XSD tags */
+.tag-schema     {background:var(--tag-schema-bg);    color:var(--tag-schema-t)}
+.tag-types      {background:var(--tag-types-bg);     color:var(--tag-types-t)}
+.tag-structure  {background:var(--tag-structure-bg); color:var(--tag-structure-t)}
+.tag-attributes {background:var(--tag-attributes-bg);color:var(--tag-attributes-t)}
+.tag-constraints{background:var(--tag-constraints-bg);color:var(--tag-constraints-t)}
+.tag-xsd-val    {background:var(--tag-xsd-val-bg);   color:var(--tag-xsd-val-t)}
+
+.mod-intro{
+  font-size:14.5px;color:var(--text-2);
+  line-height:1.78;margin-bottom:30px;
+}
+.mod-intro p{margin-bottom:13px}
+.mod-intro p:last-child{margin-bottom:0}
+code,.mod-intro code{
+  font-family:var(--ff-mono);font-size:12px;
+  color:var(--text-code);
+  background:var(--bg-raised);padding:2px 6px;border-radius:3px;
+}
+
+/* ── TRANSITION CARD ─────────────────────── */
+.transition-card{
+  margin:56px 0;padding:28px 28px 28px 24px;
+  border-radius:var(--radius-lg);
+  background:linear-gradient(135deg,rgba(14,100,96,0.08) 0%,rgba(200,140,40,0.08) 100%);
+  border:1px solid var(--border-dim);
+  display:flex;gap:20px;align-items:flex-start;
+}
+.tc-icon{
+  width:36px;height:36px;border-radius:8px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:16px;margin-top:2px;
+  background:linear-gradient(135deg,rgba(26,150,136,0.2),rgba(200,140,40,0.2));
+  border:1px solid var(--border-mid);
+}
+.tc-body h3{
+  font-family:var(--ff-display);font-size:16px;
+  font-weight:600;color:var(--text-1);margin-bottom:8px;
+}
+.tc-body p{
+  font-size:13.5px;color:var(--text-2);line-height:1.72;
+}
+.tc-arrow{
+  display:flex;align-items:center;gap:6px;
+  margin-top:10px;font-size:12px;font-weight:500;
+}
+.tc-xml{color:var(--xml-accent)}
+.tc-sep{color:var(--text-3)}
+.tc-xsd{color:var(--xsd-accent)}
+
+/* ── COMPARISON TABLE ────────────────────── */
+.compare-table{
+  width:100%;border-collapse:collapse;font-size:13px;
+  margin:16px 0 20px;
+  border:1px solid var(--border-dim);border-radius:var(--radius);overflow:hidden;
+}
+.compare-table th{
+  background:var(--bg-raised);color:var(--text-2);font-weight:500;
+  font-size:11px;text-transform:uppercase;letter-spacing:0.05em;
+  padding:9px 14px;text-align:left;border-bottom:1px solid var(--border-dim);
+}
+.compare-table td{
+  padding:9px 14px;color:var(--text-2);
+  border-bottom:1px solid var(--border-dim);
+  vertical-align:top;line-height:1.6;
+}
+.compare-table tr:last-child td{border-bottom:none}
+.compare-table td:first-child{color:var(--text-3);width:26%}
+.compare-table code{font-size:11.5px}
+
+/* ── BLOCKS ──────────────────────────────── */
+.block{
+  background:var(--bg-card);border:1px solid var(--border-dim);
+  border-radius:var(--radius-lg);margin-bottom:22px;overflow:hidden;
+}
+.block-hd{
+  padding:14px 20px;border-bottom:1px solid var(--border-dim);
+  display:flex;align-items:center;gap:12px;
+}
+.block-icon{
+  width:30px;height:30px;border-radius:6px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:14px;flex-shrink:0;
+}
+.icon-demo-xml    {background:rgba(26,150,136,0.13); color:var(--xml-accent-h)}
+.icon-demo-xsd    {background:rgba(200,140,40,0.13);  color:var(--xsd-accent-h)}
+.icon-practice-xml{background:rgba(64,144,224,0.13);  color:#50a0f0}
+.icon-practice-xsd{background:rgba(200,140,40,0.13);  color:var(--xsd-accent-h)}
+.icon-ask         {background:rgba(160,96,216,0.13);  color:#a060d8}
+.block-title{font-size:13.5px;font-weight:500;color:var(--text-1)}
+.block-sub  {font-size:11.5px;color:var(--text-3);margin-top:2px}
+.block-body {padding:20px}
+
+/* ── BEFORE / AFTER ──────────────────────── */
+.ba-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px}
+.ba-panel{border-radius:var(--radius);overflow:hidden;border:1px solid}
+.ba-panel.bef{border-color:var(--before-b);background:var(--before-bg)}
+.ba-panel.aft{border-color:var(--after-b); background:var(--after-bg)}
+.ba-label{
+  font-size:10px;text-transform:uppercase;
+  letter-spacing:0.07em;font-weight:500;
+  padding:7px 14px;border-bottom:1px solid;
+}
+.bef .ba-label{color:#e06060;border-color:var(--before-b);background:rgba(68,36,58,0.45)}
+.aft .ba-label{color:#44d47a;border-color:var(--after-b); background:rgba(32,88,68,0.45)}
+.ba-code{
+  font-family:var(--ff-mono);font-size:11.5px;line-height:1.75;
+  padding:14px;color:var(--text-code);white-space:pre;overflow-x:auto;
+}
+.c-err{color:#e87070}
+.c-ok {color:#44d47a}
+.c-hi {color:#e89c30}
+
+.demo-note{
+  font-size:13.5px;color:var(--text-2);line-height:1.78;
+  background:var(--bg-raised);border-radius:var(--radius);padding:14px 16px;
+}
+.demo-note.xml{border-left:3px solid var(--xml-accent-dim)}
+.demo-note.xsd{border-left:3px solid var(--xsd-accent-dim)}
+.demo-note p{margin-bottom:10px}
+.demo-note p:last-child{margin-bottom:0}
+
+/* ── PRACTICE ────────────────────────────── */
+.prac-desc{font-size:13.5px;color:var(--text-2);line-height:1.75;margin-bottom:14px}
+.starter{
+  font-family:var(--ff-mono);font-size:11.5px;color:var(--text-3);
+  background:var(--bg-code);border:1px solid var(--border-dim);
+  border-radius:var(--radius);padding:12px 14px;
+  margin-bottom:14px;white-space:pre;overflow-x:auto;
+}
+textarea.xml-ed{
+  width:100%;min-height:170px;
+  font-family:var(--ff-mono);font-size:11.5px;line-height:1.72;
+  background:var(--bg-code);border:1px solid var(--border-mid);
+  border-radius:var(--radius);color:var(--text-code);
+  padding:13px;resize:vertical;outline:none;transition:border-color 0.14s;
+}
+textarea.xml-ed.focus-xml:focus{border-color:var(--xml-accent-dim)}
+textarea.xml-ed.focus-xsd:focus{border-color:rgba(200,140,40,0.4)}
+textarea.xml-ed::placeholder{color:var(--text-3)}
+
+.ctrl-row{display:flex;gap:8px;margin-top:11px;flex-wrap:wrap}
+.btn{
+  font-family:var(--ff-body);font-size:12px;font-weight:500;
+  padding:7px 14px;border-radius:6px;border:1px solid;
+  cursor:pointer;transition:all 0.14s;
+}
+.btn-val-xml{background:var(--xml-accent-dim);border-color:var(--xml-accent);color:#c8f0e8}
+.btn-val-xml:hover{background:var(--xml-accent)}
+.btn-val-xsd{background:rgba(46,30,6,0.7);border-color:var(--xsd-accent);color:#f0c068}
+.btn-val-xsd:hover{background:rgba(200,140,40,0.2)}
+.btn-hint{background:transparent;border-color:var(--border-mid);color:var(--text-2)}
+.btn-hint:hover{background:var(--bg-raised);border-color:var(--border-hi)}
+.btn-reveal{background:transparent;border-color:var(--border-dim);color:var(--text-3)}
+.btn-reveal:hover{color:var(--text-2);background:var(--bg-raised)}
+.btn-ask{background:rgba(160,96,216,0.12);border-color:rgba(160,96,216,0.32);color:#a060d8}
+.btn-ask:hover{background:rgba(160,96,216,0.22)}
+
+.feedback{
+  margin-top:12px;padding:11px 14px;border-radius:var(--radius);
+  font-size:12.5px;font-family:var(--ff-mono);
+  line-height:1.65;white-space:pre-wrap;display:none;
+}
+.feedback.ok {background:rgba(26,104,64,0.22);border:1px solid var(--ok);color:var(--ok-t)}
+.feedback.err{background:rgba(104,28,28,0.22);border:1px solid var(--err);color:var(--err-t)}
+
+.hints-box{
+  margin-top:12px;padding:14px;border-radius:var(--radius);display:none;
+}
+.hints-box.xml{background:rgba(26,150,136,0.05);border:1px solid var(--xml-accent-dim)}
+.hints-box.xsd{background:rgba(200,140,40,0.04);border:1px solid rgba(200,140,40,0.22)}
+.hint-row{
+  font-size:13px;color:var(--text-2);padding:6px 0;
+  border-bottom:1px solid var(--border-dim);
+  display:flex;gap:10px;align-items:flex-start;
+}
+.hint-row:last-child{border-bottom:none;padding-bottom:0}
+.hint-n{
+  font-family:var(--ff-mono);font-size:10px;margin-top:2px;flex-shrink:0;
+}
+.xml .hint-n{color:var(--xml-accent)}
+.xsd .hint-n{color:var(--xsd-accent)}
+
+.answer-box{
+  margin-top:12px;border-radius:var(--radius);
+  overflow:hidden;border:1px solid var(--after-b);display:none;
+}
+.answer-label{
+  font-size:10px;text-transform:uppercase;letter-spacing:0.07em;
+  color:#44d47a;padding:7px 14px;
+  background:rgba(32,88,68,0.45);border-bottom:1px solid var(--after-b);
+}
+.answer-code{
+  font-family:var(--ff-mono);font-size:11.5px;line-height:1.75;
+  padding:14px;color:var(--text-code);white-space:pre;overflow-x:auto;
+  background:var(--after-bg);
+}
+
+/* ── LLM ─────────────────────────────────── */
+textarea.llm-in{
+  width:100%;min-height:76px;
+  font-family:var(--ff-body);font-size:13.5px;line-height:1.6;
+  background:var(--bg-input);border:1px solid var(--border-mid);
+  border-radius:var(--radius);color:var(--text-1);
+  padding:12px 14px;resize:vertical;outline:none;transition:border-color 0.14s;
+}
+textarea.llm-in:focus{border-color:rgba(160,96,216,0.42)}
+textarea.llm-in::placeholder{color:var(--text-3)}
+.llm-resp{margin-top:14px;display:none}
+.llm-resp.show{display:block}
+.llm-inner{
+  background:var(--bg-raised);border-radius:var(--radius);
+  padding:16px;border-left:3px solid rgba(160,96,216,0.38);
+  font-size:13.5px;color:var(--text-2);line-height:1.78;white-space:pre-wrap;
+}
+.thinking{color:var(--text-3);font-style:italic;font-size:13px}
+
+.mod-divider{border:none;border-top:1px solid var(--border-dim);margin:60px 0}
+
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border-mid);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--border-hi)}
+</style>
+</head>
+<body>
+
+<!-- ════════════════ SIDEBAR ════════════════ -->
+<aside id="sidebar">
+  <div class="sb-brand">
+    <h1>XML &amp; XSD — Integrated</h1>
+    <p>Healthcare Data Engineering Series</p>
+  </div>
+  <nav class="sb-nav">
+    <div class="sb-group-label xml-group">XML Fundamentals<span class="gl-line"></span></div>
+    <a class="nav-item" href="#mod-1"><span class="nav-num">01</span><span>What XML Is and Why It Exists</span></a>
+    <a class="nav-item" href="#mod-2"><span class="nav-num">02</span><span>Architecture &amp; Document Structure</span></a>
+    <a class="nav-item" href="#mod-3"><span class="nav-num">03</span><span>Character Data and the Infoset</span></a>
+    <a class="nav-item" href="#mod-4"><span class="nav-num">04</span><span>General Entities</span></a>
+    <a class="nav-item" href="#mod-5"><span class="nav-num">05</span><span>DTDs &mdash; Historical Context</span></a>
+    <div class="sb-divider"></div>
+    <div class="sb-group-label xsd-group">XML Schema (XSD)<span class="gl-line"></span></div>
+    <a class="nav-item" href="#mod-6"><span class="nav-num">06</span><span>XSD vs. DTD &mdash; Foundations</span></a>
+    <a class="nav-item" href="#mod-7"><span class="nav-num">07</span><span>Simple Types and Facets</span></a>
+    <a class="nav-item" href="#mod-8"><span class="nav-num">08</span><span>Complex Types and Compositors</span></a>
+    <a class="nav-item" href="#mod-9"><span class="nav-num">09</span><span>Attribute Declarations</span></a>
+    <a class="nav-item" href="#mod-10"><span class="nav-num">10</span><span>Complete Schema Design</span></a>
+  </nav>
+  <div class="sb-footer">
+    <strong>Developed by: Joe Williams</strong><br />
+    XML &amp; XSD Integrated &nbsp;&middot;&nbsp; v1
+  </div>
+</aside>
+
+<!-- ════════════════ MAIN ════════════════ -->
+<main id="content">
+
+  <!-- HERO -->
+  <header class="hero">
+    <div class="hero-eyebrow">
+      <span class="eye-xml">XML Fundamentals</span>
+      <span class="eye-sep">&rarr;</span>
+      <span class="eye-xsd">XML Schema Definition</span>
+    </div>
+    <h1 class="hero-title">XML &amp; <em>XSD</em> — Integrated Tutorial</h1>
+    <p class="hero-subtitle">A progressive, end-to-end exploration of XML markup and schema validation — from document structure and character data through the XSD type system, compositors, and complete schema design for healthcare data.</p>
+    <div class="hero-meta">
+      <span><strong>10</strong>&nbsp;modules</span>
+      <span><strong>10</strong>&nbsp;worked demos</span>
+      <span><strong>10</strong>&nbsp;practice exercises</span>
+      <span>Live DOMParser validation</span>
+      <span>Pattern-based XSD checking</span>
+      <span>Claude AI Q&amp;A per module</span>
+    </div>
+    <div class="hero-pills">
+      <span class="pill pill-xml">Modules 01–05 &nbsp;·&nbsp; XML</span>
+      <span class="pill pill-xsd">Modules 06–10 &nbsp;·&nbsp; XSD</span>
+    </div>
+    <div class="hero-credit">Developed by: Joe Williams</div>
+  </header>
+
+
+  <!-- ══════ MODULE 1 ══════ -->
+  <section class="mod-section" id="mod-1">
+    <div class="mod-header">
+      <span class="mod-num xml">01</span>
+      <div class="mod-header-r">
+        <h2 class="mod-title">What XML Is and Why It Exists</h2>
+        <div class="mod-tags">
+          <span class="tag tag-markup">Markup</span>
+          <span class="tag tag-concepts">Concepts</span>
+        </div>
+      </div>
+    </div>
+    <div class="mod-intro">
+      <p>XML — Extensible Markup Language — is a text-based format for storing, transporting, and structuring data so both humans and machines can read it. The W3C standardized XML in 1998 as a simplified subset of SGML, the older ancestor of both XML and HTML.</p>
+      <p>The core idea of a <em>markup language</em> is annotating data with descriptive labels — <strong>tags</strong> — that explain what the data represents. Unlike HTML, which has a fixed tag set for page display, XML lets you invent your own tags to describe any data. A tag like <code>&lt;patientId&gt;</code> or <code>&lt;dosageUnit&gt;</code> is self-explanatory to any XML-aware system without documentation.</p>
+      <p>This self-describing quality is foundational to healthcare data exchange. C-CDA, HL7 v2.x XML, and early FHIR representations are all XML-based. The five XML modules in this tutorial build the foundation; modules 6–10 apply XSD schema validation on top of it.</p>
+    </div>
+    <div class="block">
+      <div class="block-hd">
+        <div class="block-icon icon-demo-xml">&#9654;</div>
+        <div><div class="block-title">Worked Demo &mdash; Employee Record: Plain Text vs. XML</div><div class="block-sub">Same data, two representations</div></div>
+      </div>
+      <div class="block-body">
+        <div class="ba-grid">
+          <div class="ba-panel bef">
+            <div class="ba-label">Before &mdash; Unstructured Plain Text</div>
+            <div class="ba-code">Name: Sarah Chen
+Title: Data Engineer
+Department: Analytics
+Hire Date: 2021-03-15
+Salary: 95000</div>
+          </div>
+          <div class="ba-panel aft">
+            <div class="ba-label">After &mdash; Self-Describing XML</div>
+            <div class="ba-code">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;employee&gt;
+  &lt;name&gt;Sarah Chen&lt;/name&gt;
+  &lt;title&gt;Data Engineer&lt;/title&gt;
+  &lt;department&gt;Analytics&lt;/department&gt;
+  &lt;hireDate&gt;2021-03-15&lt;/hireDate&gt;
+  &lt;salary currency="USD"&gt;95000&lt;/salary&gt;
+&lt;/employee&gt;</div>
+          </div>
+        </div>
+        <div class="demo-note xml">
+          <p>The plain-text version requires a parser to know field order, delimiters, and date format in advance. Any deviation breaks it. The XML version is <strong>self-describing</strong>: <code>&lt;name&gt;</code> tells any XML-aware system exactly what follows. The <code>currency="USD"</code> attribute adds metadata without altering structure. The XML declaration identifies the document's XML version and encoding before a single element is read.</p>
+        </div>
+      </div>
+    </div>
+    <div class="block">
+      <div class="block-hd">
+        <div class="block-icon icon-practice-xml">&#9998;</div>
+        <div><div class="block-title">Practice &mdash; Mark Up a Book Record</div><div class="block-sub">Convert raw data into a well-formed XML document</div></div>
+      </div>
+      <div class="block-body">
+        <p class="prac-desc">The raw data below describes a programming book. Write a well-formed XML document wrapping each field in descriptive element tags. Include the XML declaration, a root element, and four child elements. Click <strong>Validate XML</strong> to check your work.</p>
+        <div class="starter">Raw data:
+  Title:   Clean Code
+  Author:  Robert C. Martin
+  Year:    2008
+  ISBN:    978-0132350884</div>
+        <textarea class="xml-ed focus-xml" id="ed-1" placeholder="Write your XML document here..."></textarea>
+        <div class="ctrl-row">
+          <button class="btn btn-val-xml" onclick="validate(1)">Validate XML</button>
+          <button class="btn btn-hint"    onclick="showHint(1)">Show Hint</button>
+          <button class="btn btn-reveal"  onclick="toggleAnswer(1)">Reveal Answer</button>
+        </div>
+        <div class="feedback" id="fb-1"></div>
+        <div class="hints-box xml" id="hints-1"></div>
+        <div class="answer-box" id="ans-1"><div class="answer-label">Answer</div>
+          <div class="answer-code">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;book&gt;
+  &lt;title&gt;Clean Code&lt;/title&gt;
+  &lt;author&gt;Robert C. Martin&lt;/author&gt;
+  &lt;year&gt;2008&lt;/year&gt;
+  &lt;isbn&gt;978-0132350884&lt;/isbn&gt;
+&lt;/book&gt;</div>
+        </div>
+      </div>
+    </div>
+    <div class="block">
+      <div class="block-hd"><div class="block-icon icon-ask">?</div><div><div class="block-title">Ask Claude &mdash; Module 1</div><div class="block-sub">Questions about XML basics, markup languages, or the XML declaration</div></div></div>
+      <div class="block-body">
+        <textarea class="llm-in" id="llm-in-1" placeholder="e.g.  What is the difference between XML and HTML?  Why does the XML declaration matter?  What does self-describing mean in practice?"></textarea>
+        <div class="ctrl-row"><button class="btn btn-ask" onclick="askClaude(1)">Ask Claude</button></div>
+        <div class="llm-resp" id="llm-resp-1"><div class="llm-inner" id="llm-inner-1"></div></div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="mod-divider" />
+
+  <!-- ══════ MODULE 2 ══════ -->
+  <section class="mod-section" id="mod-2">
+    <div class="mod-header">
+      <span class="mod-num xml">02</span>
+      <div class="mod-header-r">
+        <h2 class="mod-title">XML Architecture and Document Structure</h2>
+        <div class="mod-tags"><span class="tag tag-syntax">Syntax</span><span class="tag tag-markup">Markup</span></div>
+      </div>
+    </div>
+    <div class="mod-intro">
+      <p>Every XML document has a strict physical structure. Understanding it — and the rules that make a document <em>well-formed</em> — is the foundation for everything that follows, including validation, transformation, and parsing.</p>
+      <p>An XML document has four structural layers: an optional <strong>XML declaration</strong>, an optional Document Type Declaration (Module 5), exactly one <strong>root element</strong> containing everything, and nested <strong>content</strong> — child elements, attributes, text, and comments.</p>
+      <p><strong>Well-formedness rules</strong> every parser enforces: one root element only; every opening tag has a matching closing tag in the same case; elements must be properly nested (never interleaved); attribute values must be quoted; tag names are case-sensitive. Violating any rule means immediate rejection — no partial parsing.</p>
+    </div>
+    <div class="block">
+      <div class="block-hd"><div class="block-icon icon-demo-xml">&#9654;</div><div><div class="block-title">Worked Demo &mdash; Patient Record: Malformed vs. Well-Formed</div><div class="block-sub">Three structural errors identified and corrected</div></div></div>
+      <div class="block-body">
+        <div class="ba-grid">
+          <div class="ba-panel bef"><div class="ba-label">Before &mdash; Malformed XML (3 Errors)</div>
+            <div class="ba-code">&lt;patient&gt;
+  &lt;id&gt;PAT-0042&lt;/id&gt;
+  &lt;name&gt;
+    &lt;first&gt;Maria&lt;/first&gt;
+    &lt;last&gt;Reyes&lt;<span class="c-err">/Last</span>&gt;  &lt;!-- wrong case --&gt;
+  &lt;/name&gt;
+  &lt;dob&gt;1985-07-22
+  &lt;status <span class="c-err">active=true</span> /&gt;  &lt;!-- unquoted --&gt;
+  &lt;/dob&gt;  &lt;!-- bad nesting --&gt;
+&lt;/patient&gt;</div>
+          </div>
+          <div class="ba-panel aft"><div class="ba-label">After &mdash; Well-Formed XML</div>
+            <div class="ba-code">&lt;patient&gt;
+  &lt;id&gt;PAT-0042&lt;/id&gt;
+  &lt;name&gt;
+    &lt;first&gt;Maria&lt;/first&gt;
+    &lt;last&gt;Reyes&lt;<span class="c-ok">/last</span>&gt;   &lt;!-- case matches --&gt;
+  &lt;/name&gt;
+  &lt;dob&gt;1985-07-22&lt;<span class="c-ok">/dob</span>&gt; &lt;!-- closed first --&gt;
+  &lt;status <span class="c-ok">active="true"</span> /&gt;  &lt;!-- quoted --&gt;
+&lt;/patient&gt;</div>
+          </div>
+        </div>
+        <div class="demo-note xml">
+          <p><strong>Error 1</strong> — <code>&lt;last&gt;</code> closed as <code>&lt;/Last&gt;</code>: XML tag names are case-sensitive; opening and closing must be identical. <strong>Error 2</strong> — <code>&lt;/dob&gt;</code> appeared after <code>&lt;status&gt;</code>: elements must close in reverse-open order. <strong>Error 3</strong> — <code>active=true</code>: all attribute values require quotes.</p>
+        </div>
+      </div>
+    </div>
+    <div class="block">
+      <div class="block-hd"><div class="block-icon icon-practice-xml">&#9998;</div><div><div class="block-title">Practice &mdash; Fix the Malformed Medication Record</div><div class="block-sub">Find and correct two well-formedness errors</div></div></div>
+      <div class="block-body">
+        <p class="prac-desc">The XML below has <strong>two well-formedness errors</strong>. Copy it into the editor, locate and fix both, then validate.</p>
+        <div class="starter">&lt;medication&gt;
+  &lt;name&gt;Metformin&lt;/name&gt;
+  &lt;Dose&gt;500mg&lt;/dose&gt;
+  &lt;frequency times=2&gt;daily&lt;/frequency&gt;
+&lt;/medication&gt;</div>
+        <textarea class="xml-ed focus-xml" id="ed-2" placeholder="Paste the XML above, fix the two errors, and validate..."></textarea>
+        <div class="ctrl-row">
+          <button class="btn btn-val-xml" onclick="validate(2)">Validate XML</button>
+          <button class="btn btn-hint"    onclick="showHint(2)">Show Hint</button>
+          <button class="btn btn-reveal"  onclick="toggleAnswer(2)">Reveal Answer</button>
+        </div>
+        <div class="feedback" id="fb-2"></div>
+        <div class="hints-box xml" id="hints-2"></div>
+        <div class="answer-box" id="ans-2"><div class="answer-label">Answer</div>
+          <div class="answer-code">&lt;medication&gt;
+  &lt;name&gt;Metformin&lt;/name&gt;
+  &lt;dose&gt;500mg&lt;/dose&gt;
+  &lt;frequency times="2"&gt;daily&lt;/frequency&gt;
+&lt;/medication&gt;</div>
+        </div>
+      </div>
+    </div>
+    <div class="block">
+      <div class="block-hd"><div class="block-icon icon-ask">?</div><div><div class="block-title">Ask Claude &mdash; Module 2</div><div class="block-sub">Questions about XML structure, nesting, attributes, or well-formedness</div></div></div>
+      <div class="block-body">
+        <textarea class="llm-in" id="llm-in-2" placeholder="e.g.  What is the difference between a well-formed and a valid XML document?  Can an element have two attributes with the same name?  What is a self-closing tag?"></textarea>
+        <div class="ctrl-row"><button class="btn btn-ask" onclick="askClaude(2)">Ask Claude</button></div>
+        <div class="llm-resp" id="llm-resp-2"><div class="llm-inner" id="llm-inner-2"></div></div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="mod-divider" />
+
+  <!-- ══════ MODULE 3 ══════ -->
+  <section class="mod-section" id="mod-3">
+    <div class="mod-header">
+      <span class="mod-num xml">03</span>
+      <div class="mod-header-r">
+        <h2 class="mod-title">Character Data and the Infoset</h2>
+        <div class="mod-tags"><span class="tag tag-data">Data</span><span class="tag tag-syntax">Syntax</span></div>
+      </div>
+    </div>
+    <div class="mod-intro">
+      <p>The text between XML tags is <strong>character data</strong>. XML divides it into two modes: <strong>PCDATA</strong> (Parsed Character Data, the default) and <strong>CDATA sections</strong>. In PCDATA mode the parser scans for markup — five characters must be escaped: <code>&amp;lt;</code> for <code>&lt;</code>, <code>&amp;gt;</code> for <code>&gt;</code>, <code>&amp;amp;</code> for <code>&amp;</code>, <code>&amp;apos;</code> for <code>'</code>, <code>&amp;quot;</code> for <code>"</code>. Omitting any causes an immediate parse error.</p>
+      <p><strong>CDATA sections</strong> wrap blocks of literal text the parser skips entirely. They open with <code>&lt;![CDATA[</code> and close with <code>]]&gt;</code>. The only forbidden sequence inside is <code>]]&gt;</code> itself. Use CDATA when content contains many special characters — embedded code, SQL, or clinical free text.</p>
+    </div>
+    <div class="block">
+      <div class="block-hd"><div class="block-icon icon-demo-xml">&#9654;</div><div><div class="block-title">Worked Demo &mdash; Clinical Notes: Escaping Special Characters</div><div class="block-sub">Unescaped content vs. predefined entities and a CDATA section</div></div></div>
+      <div class="block-body">
+        <div class="ba-grid">
+          <div class="ba-panel bef"><div class="ba-label">Before &mdash; Unescaped Content (Parse Error)</div>
+            <div class="ba-code">&lt;note&gt;
+  &lt;summary&gt;
+    BP: 120/80 <span class="c-err">&amp;</span> pulse <span class="c-err">&lt;</span> 100
+    Patient said <span class="c-err">"</span>feeling better<span class="c-err">"</span>
+    O<span class="c-err">'</span>Brien scale: 4
+  &lt;/summary&gt;
+&lt;/note&gt;</div>
+          </div>
+          <div class="ba-panel aft"><div class="ba-label">After &mdash; Escaped PCDATA + CDATA Section</div>
+            <div class="ba-code">&lt;note&gt;
+  &lt;summary&gt;
+    BP: 120/80 <span class="c-ok">&amp;amp;</span> pulse <span class="c-ok">&amp;lt;</span> 100
+    Patient said <span class="c-ok">&amp;quot;</span>feeling better<span class="c-ok">&amp;quot;</span>
+    O<span class="c-ok">&amp;apos;</span>Brien scale: 4
+  &lt;/summary&gt;
+  &lt;rawText&gt;&lt;![CDATA[
+    BP: 120/80 &amp; pulse &lt; 100
+    Patient said "feeling better"
+    O'Brien scale: 4
+  ]]&gt;&lt;/rawText&gt;
+&lt;/note&gt;</div>
+          </div>
+        </div>
+        <div class="demo-note xml">
+          <p><code>&lt;summary&gt;</code> uses predefined entity escapes. <code>&lt;rawText&gt;</code> wraps the same content in a CDATA section — no escaping needed inside it. The parser treats everything between <code>&lt;![CDATA[</code> and <code>]]&gt;</code> as literal characters, making it ideal for clinical text, embedded queries, or code snippets.</p>
+        </div>
+      </div>
+    </div>
+    <div class="block">
+      <div class="block-hd"><div class="block-icon icon-practice-xml">&#9998;</div><div><div class="block-title">Practice &mdash; Escape the Lab Result Notes</div><div class="block-sub">Fix three unescaped special characters</div></div></div>
+      <div class="block-body">
+        <p class="prac-desc">The XML below contains <strong>three unescaped characters</strong> that cause parse errors. Fix each with the correct predefined entity, then validate.</p>
+        <div class="starter">&lt;labResult&gt;
+  &lt;observation&gt;Glucose &lt; 100 mg/dL &amp; HbA1c = 5.4%&lt;/observation&gt;
+  &lt;physician&gt;Dr. O'Sullivan&lt;/physician&gt;
+&lt;/labResult&gt;</div>
+        <textarea class="xml-ed focus-xml" id="ed-3" placeholder="Paste and fix the XML above..."></textarea>
+        <div class="ctrl-row">
+          <button class="btn btn-val-xml" onclick="validate(3)">Validate XML</button>
+          <button class="btn btn-hint"    onclick="showHint(3)">Show Hint</button>
+          <button class="btn btn-reveal"  onclick="toggleAnswer(3)">Reveal Answer</button>
+        </div>
+        <div class="feedback" id="fb-3"></div>
+        <div class="hints-box xml" id="hints-3"></div>
+        <div class="answer-box" id="ans-3"><div class="answer-label">Answer</div>
+          <div class="answer-code">&lt;labResult&gt;
+  &lt;observation&gt;Glucose &amp;lt; 100 mg/dL &amp;amp; HbA1c = 5.4%&lt;/observation&gt;
+  &lt;physician&gt;Dr. O&amp;apos;Sullivan&lt;/physician&gt;
+&lt;/labResult&gt;</div>
+        </div>
+      </div>
+    </div>
+    <div class="block">
+      <div class="block-hd"><div class="block-icon icon-ask">?</div><div><div class="block-title">Ask Claude &mdash; Module 3</div><div class="block-sub">Questions about PCDATA, CDATA sections, or character escaping</div></div></div>
+      <div class="block-body">
+        <textarea class="llm-in" id="llm-in-3" placeholder="e.g.  When should I prefer CDATA over entity escaping?  What characters are always safe in XML content?  What is the XML infoset?"></textarea>
+        <div class="ctrl-row"><button class="btn btn-ask" onclick="askClaude(3)">Ask Claude</button></div>
+        <div class="llm-resp" id="llm-resp-3"><div class="llm-inner" id="llm-inner-3"></div></div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="mod-divider" />
+
+  <!-- ══════ MODULE 4 ══════ -->
+  <section class="mod-section" id="mod-4">
+    <div class="mod-header">
+      <span class="mod-num xml">04</span>
+      <div class="mod-header-r">
+        <h2 class="mod-title">General Entities</h2>
+        <div class="mod-tags"><span class="tag tag-entities">Entities</span></div>
+      </div>
+    </div>
+    <div class="mod-intro">
+      <p>An <strong>entity</strong> in XML is a named storage unit — a shorthand label that expands to content at parse time. <strong>Internal general entities</strong> are defined in a DOCTYPE subset with <code>&lt;!ENTITY name "value"&gt;</code> and referenced with <code>&amp;name;</code> anywhere in document content. They create a single maintenance point for repeated text.</p>
+      <p><strong>External general entities</strong> reference content in a separate file using <code>SYSTEM "filename.xml"</code>. They were used to modularize large documents but are uncommon today — many parsers disable external entity resolution by default for security reasons.</p>
+      <p>The five predefined entities from Module 3 (<code>&amp;lt;</code>, <code>&amp;gt;</code>, <code>&amp;amp;</code>, <code>&amp;apos;</code>, <code>&amp;quot;</code>) are built-in general entities — every conforming parser knows them without any declaration. Parameter entities (referenced with <code>%name;</code>) live inside DTDs and are covered in Module 5.</p>
+    </div>
+    <div class="block">
+      <div class="block-hd"><div class="block-icon icon-demo-xml">&#9654;</div><div><div class="block-title">Worked Demo &mdash; Prescriptions: Repeated Text vs. Entity References</div><div class="block-sub">Defining and using an internal general entity</div></div></div>
+      <div class="block-body">
+        <div class="ba-grid">
+          <div class="ba-panel bef"><div class="ba-label">Before &mdash; Repeated Organization Name</div>
+            <div class="ba-code">&lt;prescriptions&gt;
+  &lt;rx&gt;&lt;issuer&gt;Metro Regional Hospital&lt;/issuer&gt;
+      &lt;drug&gt;Lisinopril 10mg&lt;/drug&gt;&lt;/rx&gt;
+  &lt;rx&gt;&lt;issuer&gt;Metro Regional Hospital&lt;/issuer&gt;
+      &lt;drug&gt;Atorvastatin 20mg&lt;/drug&gt;&lt;/rx&gt;
+  &lt;rx&gt;&lt;issuer&gt;Metro Regional Hospital&lt;/issuer&gt;
+      &lt;drug&gt;Metoprolol 25mg&lt;/drug&gt;&lt;/rx&gt;
+&lt;/prescriptions&gt;</div>
+          </div>
+          <div class="ba-panel aft"><div class="ba-label">After &mdash; Entity Declared and Referenced</div>
+            <div class="ba-code">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;!DOCTYPE prescriptions [
+  &lt;!ENTITY mrh "Metro Regional Hospital"&gt;
+]&gt;
+&lt;prescriptions&gt;
+  &lt;rx&gt;&lt;issuer&gt;<span class="c-ok">&amp;mrh;</span>&lt;/issuer&gt;
+      &lt;drug&gt;Lisinopril 10mg&lt;/drug&gt;&lt;/rx&gt;
+  &lt;rx&gt;&lt;issuer&gt;<span class="c-ok">&amp;mrh;</span>&lt;/issuer&gt;
+      &lt;drug&gt;Atorvastatin 20mg&lt;/drug&gt;&lt;/rx&gt;
+  &lt;rx&gt;&lt;issuer&gt;<span class="c-ok">&amp;mrh;</span>&lt;/issuer&gt;
+      &lt;drug&gt;Metoprolol 25mg&lt;/drug&gt;&lt;/rx&gt;
+&lt;/prescriptions&gt;</div>
+          </div>
+        </div>
+        <div class="demo-note xml">
+          <p>The internal DTD subset defines entity <code>mrh</code>. Every <code>&amp;mrh;</code> in document content expands to <code>"Metro Regional Hospital"</code> at parse time. If the name changes, only the one declaration needs updating — not every occurrence in the document.</p>
+        </div>
+      </div>
+    </div>
+    <div class="block">
+      <div class="block-hd"><div class="block-icon icon-practice-xml">&#9998;</div><div><div class="block-title">Practice &mdash; Define a Facility Entity</div><div class="block-sub">Add an entity declaration and replace repeated text with references</div></div></div>
+      <div class="block-body">
+        <p class="prac-desc">The XML below repeats <code>"Northview Clinic"</code> three times. Add an internal DTD subset defining entity <code>nvc</code>, then replace each occurrence with <code>&amp;nvc;</code>. Validate when done.</p>
+        <div class="starter">&lt;appointments&gt;
+  &lt;appt&gt;&lt;location&gt;Northview Clinic&lt;/location&gt;&lt;time&gt;09:00&lt;/time&gt;&lt;/appt&gt;
+  &lt;appt&gt;&lt;location&gt;Northview Clinic&lt;/location&gt;&lt;time&gt;11:30&lt;/time&gt;&lt;/appt&gt;
+  &lt;appt&gt;&lt;location&gt;Northview Clinic&lt;/location&gt;&lt;time&gt;14:00&lt;/time&gt;&lt;/appt&gt;
+&lt;/appointments&gt;</div>
+        <textarea class="xml-ed focus-xml" id="ed-4" placeholder="Add the XML declaration, DOCTYPE + entity, then replace the repeated text..."></textarea>
+        <div class="ctrl-row">
+          <button class="btn btn-val-xml" onclick="validate(4)">Validate XML</button>
+          <button class="btn btn-hint"    onclick="showHint(4)">Show Hint</button>
+          <button class="btn btn-reveal"  onclick="toggleAnswer(4)">Reveal Answer</button>
+        </div>
+        <div class="feedback" id="fb-4"></div>
+        <div class="hints-box xml" id="hints-4"></div>
+        <div class="answer-box" id="ans-4"><div class="answer-label">Answer</div>
+          <div class="answer-code">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;!DOCTYPE appointments [
+  &lt;!ENTITY nvc "Northview Clinic"&gt;
+]&gt;
+&lt;appointments&gt;
+  &lt;appt&gt;&lt;location&gt;&amp;nvc;&lt;/location&gt;&lt;time&gt;09:00&lt;/time&gt;&lt;/appt&gt;
+  &lt;appt&gt;&lt;location&gt;&amp;nvc;&lt;/location&gt;&lt;time&gt;11:30&lt;/time&gt;&lt;/appt&gt;
+  &lt;appt&gt;&lt;location&gt;&amp;nvc;&lt;/location&gt;&lt;time&gt;14:00&lt;/time&gt;&lt;/appt&gt;
+&lt;/appointments&gt;</div>
+        </div>
+      </div>
+    </div>
+    <div class="block">
+      <div class="block-hd"><div class="block-icon icon-ask">?</div><div><div class="block-title">Ask Claude &mdash; Module 4</div><div class="block-sub">Questions about general entities, entity declarations, or external entities</div></div></div>
+      <div class="block-body">
+        <textarea class="llm-in" id="llm-in-4" placeholder="e.g.  What is the difference between internal and external general entities?  Can entity values reference other entities?  What are character references like &amp;#160;?"></textarea>
+        <div class="ctrl-row"><button class="btn btn-ask" onclick="askClaude(4)">Ask Claude</button></div>
+        <div class="llm-resp" id="llm-resp-4"><div class="llm-inner" id="llm-inner-4"></div></div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="mod-divider" />
+
+  <!-- ══════ MODULE 5 ══════ -->
+  <section class="mod-section" id="mod-5">
+    <div class="mod-header">
+      <span class="mod-num xml">05</span>
+      <div class="mod-header-r">
+        <h2 class="mod-title">DTDs &mdash; Historical Context</h2>
+        <div class="mod-tags"><span class="tag tag-validation">Validation</span><span class="tag tag-history">History</span><span class="tag tag-entities">Entities</span></div>
+      </div>
+    </div>
+    <div class="mod-intro">
+      <p>A <strong>Document Type Definition (DTD)</strong> is the original XML validation mechanism, inherited from SGML. It defines which elements exist, in what order, with what content models, and which attributes they carry. DTDs predate XSD by several years and are largely superseded — they lack data types, namespace awareness, and fine-grained cardinality. Module 6 picks up exactly where this module ends.</p>
+      <p><code>&lt;!ELEMENT name (content-model)&gt;</code> declares an element. Content models: <code>(child1, child2)</code> sequence; <code>(a | b)</code> choice; <code>#PCDATA</code> text; <code>EMPTY</code>; <code>ANY</code>. Quantifiers: <code>+</code> one-or-more, <code>*</code> zero-or-more, <code>?</code> optional.</p>
+      <p><code>&lt;!ATTLIST element attr type default&gt;</code> declares attributes. Types: <code>CDATA</code>, <code>ID</code>, <code>IDREF</code>, <code>NMTOKEN</code>. Defaults: <code>#REQUIRED</code>, <code>#IMPLIED</code>, or a quoted literal. <strong>Parameter entities</strong> (<code>%name;</code>) live only inside DTDs and allow content-model fragments to be reused across declarations.</p>
+    </div>
+    <div class="block">
+      <div class="block-hd"><div class="block-icon icon-demo-xml">&#9654;</div><div><div class="block-title">Worked Demo &mdash; Lab Order: No DTD vs. Internal DTD</div><div class="block-sub">Adding a validation grammar to a document</div></div></div>
+      <div class="block-body">
+        <div class="ba-grid">
+          <div class="ba-panel bef"><div class="ba-label">Before &mdash; No DTD (Structure Unvalidated)</div>
+            <div class="ba-code">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;labOrder&gt;
+  &lt;orderId&gt;ORD-2024-001&lt;/orderId&gt;
+  &lt;patient id="PAT-042"&gt;
+    &lt;name&gt;James Okafor&lt;/name&gt;
+  &lt;/patient&gt;
+  &lt;test&gt;
+    &lt;code&gt;CBC&lt;/code&gt;
+    &lt;priority&gt;STAT&lt;/priority&gt;
+  &lt;/test&gt;
+&lt;/labOrder&gt;</div>
+          </div>
+          <div class="ba-panel aft"><div class="ba-label">After &mdash; Internal DTD Defines Structure</div>
+            <div class="ba-code">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;!DOCTYPE labOrder [
+  &lt;!ELEMENT labOrder (orderId, patient, test+)&gt;
+  &lt;!ELEMENT orderId  (#PCDATA)&gt;
+  &lt;!ELEMENT patient  (name)&gt;
+  &lt;!ATTLIST patient id CDATA #REQUIRED&gt;
+  &lt;!ELEMENT name     (#PCDATA)&gt;
+  &lt;!ELEMENT test     (code, priority)&gt;
+  &lt;!ELEMENT code     (#PCDATA)&gt;
+  &lt;!ELEMENT priority (#PCDATA)&gt;
+]&gt;
+&lt;labOrder&gt; ... &lt;/labOrder&gt;</div>
+          </div>
+        </div>
+        <div class="demo-note xml">
+          <p>The DTD declares <code>labOrder</code> as a sequence of one <code>orderId</code>, one <code>patient</code>, and one-or-more <code>test</code> elements. The <code>id</code> attribute on <code>patient</code> is <code>#REQUIRED</code>. A DTD-validating parser rejects any instance that omits these or adds undeclared elements. DTD validation is a structural layer on top of well-formedness — not a replacement for it. Module 6 shows why XSD was built to replace this.</p>
+        </div>
+      </div>
+    </div>
+    <div class="block">
+      <div class="block-hd"><div class="block-icon icon-practice-xml">&#9998;</div><div><div class="block-title">Practice &mdash; Fix the Broken DTD</div><div class="block-sub">Correct three DTD declaration syntax errors</div></div></div>
+      <div class="block-body">
+        <p class="prac-desc">The internal DTD below has <strong>three syntax errors</strong>. Fix all three and validate. Note: the validator checks DTD syntax patterns — browser parsers do not enforce DTD rules.</p>
+        <div class="starter">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;!DOCTYPE order [
+  &lt;!ELEMENT order (item, total)&gt;
+  &lt;ELEMENT item (#PCDATA)&gt;
+  &lt;!ELEMENT total PCDATA&gt;
+  &lt;!ATTLIST order
+    status CDATA REQUIRED&gt;
+]&gt;
+&lt;order status="pending"&gt;
+  &lt;item&gt;Blood Panel&lt;/item&gt;
+  &lt;total&gt;245.00&lt;/total&gt;
+&lt;/order&gt;</div>
+        <textarea class="xml-ed focus-xml" id="ed-5" placeholder="Fix the three DTD errors and validate..."></textarea>
+        <div class="ctrl-row">
+          <button class="btn btn-val-xml" onclick="validate(5)">Validate XML</button>
+          <button class="btn btn-hint"    onclick="showHint(5)">Show Hint</button>
+          <button class="btn btn-reveal"  onclick="toggleAnswer(5)">Reveal Answer</button>
+        </div>
+        <div class="feedback" id="fb-5"></div>
+        <div class="hints-box xml" id="hints-5"></div>
+        <div class="answer-box" id="ans-5"><div class="answer-label">Answer</div>
+          <div class="answer-code">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;!DOCTYPE order [
+  &lt;!ELEMENT order (item, total)&gt;
+  &lt;!ELEMENT item (#PCDATA)&gt;
+  &lt;!ELEMENT total (#PCDATA)&gt;
+  &lt;!ATTLIST order
+    status CDATA #REQUIRED&gt;
+]&gt;
+&lt;order status="pending"&gt;
+  &lt;item&gt;Blood Panel&lt;/item&gt;
+  &lt;total&gt;245.00&lt;/total&gt;
+&lt;/order&gt;</div>
+        </div>
+      </div>
+    </div>
+    <div class="block">
+      <div class="block-hd"><div class="block-icon icon-ask">?</div><div><div class="block-title">Ask Claude &mdash; Module 5</div><div class="block-sub">Questions about DTD syntax, element declarations, attribute types, or parameter entities</div></div></div>
+      <div class="block-body">
+        <textarea class="llm-in" id="llm-in-5" placeholder="e.g.  What do +, *, and ? mean in a DTD content model?  What is the difference between CDATA and #PCDATA in a DTD?  How do parameter entities work?  Why was DTD replaced by XSD?"></textarea>
+        <div class="ctrl-row"><button class="btn btn-ask" onclick="askClaude(5)">Ask Claude</button></div>
+        <div class="llm-resp" id="llm-resp-5"><div class="llm-inner" id="llm-inner-5"></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TRANSITION CARD -->
+  <div class="transition-card">
+    <div class="tc-icon">&#x2197;</div>
+    <div class="tc-body">
+      <h3>XML Fundamentals Complete &mdash; Moving to XML Schema (XSD)</h3>
+      <p>Modules 1–5 covered what XML is, how well-formedness works, character data escaping, entity declarations, and the historical DTD validation mechanism. You saw firsthand that DTDs cannot enforce data types — a date field and a free-text field look identical to a DTD. Modules 6–10 build directly on this gap: XSD was created precisely to add a typed, namespace-aware validation layer that DTDs could not provide. The read-and-correct exercises ahead use the same document patterns you've been working with.</p>
+      <div class="tc-arrow">
+        <span class="tc-xml">XML Fundamentals</span>
+        <span class="tc-sep">&nbsp;&rarr;&nbsp;</span>
+        <span class="tc-xsd">XML Schema Definition</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════ MODULE 6 ══════ -->
+  <section class="mod-section" id="mod-6">
+    <div class="mod-header">
+      <span class="mod-num xsd">06</span>
+      <div class="mod-header-r">
+        <h2 class="mod-title">XSD vs. DTD &mdash; Why XSD Exists</h2>
+        <div class="mod-tags"><span class="tag tag-schema">Schema</span><span class="tag tag-history">History</span></div>
+      </div>
+    </div>
+    <div class="mod-intro">
+      <p>XML Schema Definition (XSD) was published by the W3C in 2001 to address the fundamental weaknesses of DTDs. Where a DTD can declare that an element exists and what it may contain, it cannot say anything meaningful about what the content <em>is</em> — all text is <code>#PCDATA</code>, whether it's a date, a decimal, an NPI, or free prose. XSD introduces a rich type system, namespace awareness, and fine-grained cardinality constraints — all written in XML itself.</p>
+      <p>Every XSD document begins with an <code>&lt;xs:schema&gt;</code> root element carrying the W3C namespace declaration: <code>xmlns:xs="http://www.w3.org/2001/XMLSchema"</code>. All XSD element and type names are prefixed with <code>xs:</code>. The prefix is conventional; <code>xsd:</code> works equally. Omitting the namespace declaration is the most common beginner error.</p>
+
+      <table class="compare-table">
+        <thead><tr><th>Capability</th><th>DTD</th><th>XSD</th></tr></thead>
+        <tbody>
+          <tr><td>Data types</td><td>None — all text is #PCDATA</td><td>40+ built-in types</td></tr>
+          <tr><td>Custom constraints</td><td>Not supported</td><td>xs:restriction with facets</td></tr>
+          <tr><td>Namespace awareness</td><td>No</td><td>Native</td></tr>
+          <tr><td>Cardinality</td><td>+, *, ? only</td><td>minOccurs / maxOccurs (any integer)</td></tr>
+          <tr><td>Format</td><td>SGML notation</td><td>XML — parseable with standard tools</td></tr>
+          <tr><td>Healthcare use</td><td>Legacy HL7 v2 DTDs</td><td>C-CDA, HL7 v3, FHIR XSD profiles</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="block">
+      <div class="block-hd"><div class="block-icon icon-demo-xsd">&#9654;</div><div><div class="block-title">Worked Demo &mdash; Medication Record: DTD vs. XSD</div><div class="block-sub">Same structure in both grammar languages</div></div></div>
+      <div class="block-body">
+        <div class="ba-grid">
+          <div class="ba-panel bef"><div class="ba-label">Before &mdash; DTD (No Type System)</div>
+            <div class="ba-code">&lt;!ELEMENT medication (name, dosage, startDate)&gt;
+&lt;!ELEMENT name      (#PCDATA)&gt;
+&lt;!ELEMENT dosage    (#PCDATA)&gt;  <span class="c-err">← all text, no types</span>
+&lt;!ELEMENT startDate (#PCDATA)&gt;  <span class="c-err">← "hello" would pass</span>
+&lt;!ATTLIST medication
+  rxId CDATA #REQUIRED&gt;          <span class="c-err">← no type on attribute</span></div>
+          </div>
+          <div class="ba-panel aft"><div class="ba-label">After &mdash; XSD (Typed Elements)</div>
+            <div class="ba-code"><span class="c-ok">&lt;xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"&gt;</span>
+  &lt;xs:element name="medication"&gt;
+    &lt;xs:complexType&gt;
+      &lt;xs:sequence&gt;
+        &lt;xs:element name="name"
+                    type=<span class="c-ok">"xs:string"</span>/&gt;
+        &lt;xs:element name="dosage"
+                    type=<span class="c-ok">"xs:decimal"</span>/&gt;
+        &lt;xs:element name="startDate"
+                    type=<span class="c-ok">"xs:date"</span>/&gt;
+      &lt;/xs:sequence&gt;
+      &lt;xs:attribute name="rxId"
+                    type="xs:string" use=<span class="c-ok">"required"</span>/&gt;
+    &lt;/xs:complexType&gt;
+  &lt;/xs:element&gt;
+&lt;/xs:schema&gt;</div>
+          </div>
+        </div>
+        <div class="demo-note xsd">
+          <p><code>dosage</code> typed as <code>xs:decimal</code> rejects <code>&lt;dosage&gt;twice daily&lt;/dosage&gt;</code>. <code>startDate</code> typed as <code>xs:date</code> rejects anything not in ISO 8601 YYYY-MM-DD format. The DTD has no such capability — it accepts any string in all three elements. The <code>xs:attribute</code> uses <code>use="required"</code> rather than <code>#REQUIRED</code> and carries an explicit type.</p>
+        </div>
+      </div>
+    </div>
+    <div class="block">
+      <div class="block-hd"><div class="block-icon icon-practice-xsd">&#9998;</div><div><div class="block-title">Practice &mdash; Fix the Prescription Schema</div><div class="block-sub">Three errors: missing namespace, missing type prefix, invalid use value</div></div></div>
+      <div class="block-body">
+        <p class="prac-desc">The XSD below has <strong>three errors</strong>: a missing namespace declaration on <code>xs:schema</code>, a type value missing its <code>xs:</code> prefix, and an invalid <code>use</code> value on an attribute. Fix all three, then validate.</p>
+        <div class="starter">&lt;xs:schema&gt;
+  &lt;xs:element name="prescription"&gt;
+    &lt;xs:complexType&gt;
+      &lt;xs:sequence&gt;
+        &lt;xs:element name="drug"   type="string"/&gt;
+        &lt;xs:element name="refill" type="xs:integer"/&gt;
+      &lt;/xs:sequence&gt;
+      &lt;xs:attribute name="status" type="xs:string" use="true"/&gt;
+    &lt;/xs:complexType&gt;
+  &lt;/xs:element&gt;
+&lt;/xs:schema&gt;</div>
+        <textarea class="xml-ed focus-xsd" id="ed-6" placeholder="Paste the schema above, fix the three errors, and validate..."></textarea>
+        <div class="ctrl-row">
+          <button class="btn btn-val-xsd" onclick="validate(6)">Validate Schema</button>
+          <button class="btn btn-hint"    onclick="showHint(6)">Show Hint</button>
+          <button class="btn btn-reveal"  onclick="toggleAnswer(6)">Reveal Answer</button>
+        </div>
+        <div class="feedback" id="fb-6"></div>
+        <div class="hints-box xsd" id="hints-6"></div>
+        <div class="answer-box" id="ans-6"><div class="answer-label">Answer</div>
+          <div class="answer-code">&lt;xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"&gt;
+  &lt;xs:element name="prescription"&gt;
+    &lt;xs:complexType&gt;
+      &lt;xs:sequence&gt;
+        &lt;xs:element name="drug"   type="xs:string"/&gt;
+        &lt;xs:element name="refill" type="xs:integer"/&gt;
+      &lt;/xs:sequence&gt;
+      &lt;xs:attribute name="status" type="xs:string" use="required"/&gt;
+    &lt;/xs:complexType&gt;
+  &lt;/xs:element&gt;
+&lt;/xs:schema&gt;</div>
+        </div>
+      </div>
+    </div>
+    <div class="block">
+      <div class="block-hd"><div class="block-icon icon-ask">?</div><div><div class="block-title">Ask Claude &mdash; Module 6</div><div class="block-sub">Questions about XSD vs DTD, the xs: namespace, or XSD document structure</div></div></div>
+      <div class="block-body">
+        <textarea class="llm-in" id="llm-in-6" placeholder="e.g.  Why can't DTDs validate that a date element contains a real date?  What does the xmlns:xs declaration actually do?  When would I choose xsd: prefix instead of xs:?"></textarea>
+        <div class="ctrl-row"><button class="btn btn-ask" onclick="askClaude(6)">Ask Claude</button></div>
+        <div class="llm-resp" id="llm-resp-6"><div class="llm-inner" id="llm-inner-6"></div></div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="mod-divider" />
+
+  <!-- ══════ MODULE 7 ══════ -->
+  <section class="mod-section" id="mod-7">
+    <div class="mod-header">
+      <span class="mod-num xsd">07</span>
+      <div class="mod-header-r">
+        <h2 class="mod-title">Simple Types and Facets</h2>
+        <div class="mod-tags"><span class="tag tag-types">Types</span><span class="tag tag-constraints">Constraints</span></div>
+      </div>
+    </div>
+    <div class="mod-intro">
+      <p>XSD's built-in simple types cover the full spectrum of healthcare data. Most commonly used: <code>xs:string</code>, <code>xs:integer</code>, <code>xs:decimal</code>, <code>xs:boolean</code>, <code>xs:date</code>, and <code>xs:dateTime</code>. Two pitfalls appear constantly: <strong>xs:number does not exist</strong> (use <code>xs:decimal</code> or <code>xs:integer</code>), and <strong>xs:dateTime has a capital T</strong> — <code>xs:datetime</code> is silently wrong or errors in validators.</p>
+      <p>When a built-in type is too permissive, narrow it with <code>xs:simpleType</code> and <code>xs:restriction</code>. The <code>base</code> attribute names the type being constrained — it must carry the <code>xs:</code> prefix: <code>base="xs:string"</code>, never <code>base="string"</code>. Inside the restriction, <strong>facets</strong> set boundaries: numeric (<code>xs:minInclusive</code>, <code>xs:maxInclusive</code>), string (<code>xs:minLength</code>, <code>xs:maxLength</code>, <code>xs:length</code>, <code>xs:pattern</code>), and enumeration (<code>xs:enumeration</code>).</p>
+    </div>
+    <div class="block">
+      <div class="block-hd"><div class="block-icon icon-demo-xsd">&#9654;</div><div><div class="block-title">Worked Demo &mdash; Dosage and Age: Permissive vs. Constrained Types</div><div class="block-sub">Wrong type names corrected; restriction facets applied</div></div></div>
+      <div class="block-body">
+        <div class="ba-grid">
+          <div class="ba-panel bef"><div class="ba-label">Before &mdash; Wrong Types, No Constraints</div>
+            <div class="ba-code">&lt;xs:element name="dosageMg"
+            type=<span class="c-err">"xs:string"</span>/&gt;      &lt;!-- too permissive --&gt;
+&lt;xs:element name="appointmentDt"
+            type=<span class="c-err">"xs:datetime"</span>/&gt;   &lt;!-- wrong case --&gt;
+&lt;xs:element name="patientAge"
+            type=<span class="c-err">"xs:number"</span>/&gt;     &lt;!-- doesn't exist --&gt;</div>
+          </div>
+          <div class="ba-panel aft"><div class="ba-label">After &mdash; Correct Types with Constraints</div>
+            <div class="ba-code">&lt;xs:element name="dosageMg"&gt;
+  &lt;xs:simpleType&gt;
+    &lt;xs:restriction base=<span class="c-ok">"xs:decimal"</span>&gt;
+      &lt;xs:minInclusive value="0.5"/&gt;
+      &lt;xs:maxInclusive value="2000"/&gt;
+    &lt;/xs:restriction&gt;
+  &lt;/xs:simpleType&gt;
+&lt;/xs:element&gt;
+&lt;xs:element name="appointmentDt"
+            type=<span class="c-ok">"xs:dateTime"</span>/&gt;  &lt;!-- capital T --&gt;
+&lt;xs:element name="patientAge"&gt;
+  &lt;xs:simpleType&gt;
+    &lt;xs:restriction base=<span class="c-ok">"xs:integer"</span>&gt;
+      &lt;xs:minInclusive value="0"/&gt;
+      &lt;xs:maxInclusive value="150"/&gt;
+    &lt;/xs:restriction&gt;
+  &lt;/xs:simpleType&gt;
+&lt;/xs:element&gt;</div>
+          </div>
+        </div>
+        <div class="demo-note xsd">
+          <p><code>xs:number</code> does not exist in XSD 1.0. Use <code>xs:decimal</code> for fractional values (dosages, lab values, amounts) and <code>xs:integer</code> for whole numbers (age, counts). The restriction wraps the base type and adds facet bounds. <code>xs:dateTime</code> requires the capital T and expects ISO 8601 combined format: <code>2024-03-15T09:30:00</code>. Use <code>xs:date</code> for date-only values.</p>
+        </div>
+      </div>
+    </div>
+    <div class="block">
+      <div class="block-hd"><div class="block-icon icon-practice-xsd">&#9998;</div><div><div class="block-title">Practice &mdash; Fix the Claims Schema Types</div><div class="block-sub">Three type errors: missing prefix, wrong case, nonexistent type</div></div></div>
+      <div class="block-body">
+        <p class="prac-desc">The fragment below has <strong>three type errors</strong>: a restriction base missing its <code>xs:</code> prefix, a date-time type with wrong capitalization, and a type name that does not exist in XSD. Fix all three, then validate.</p>
+        <div class="starter">&lt;xs:element name="npiCode"&gt;
+  &lt;xs:simpleType&gt;
+    &lt;xs:restriction base="string"&gt;
+      &lt;xs:length value="10"/&gt;
+    &lt;/xs:restriction&gt;
+  &lt;/xs:simpleType&gt;
+&lt;/xs:element&gt;
+&lt;xs:element name="claimDate"   type="xs:datetime"/&gt;
+&lt;xs:element name="claimAmount" type="xs:number"/&gt;</div>
+        <textarea class="xml-ed focus-xsd" id="ed-7" placeholder="Paste the fragment above, fix the three type errors, and validate..."></textarea>
+        <div class="ctrl-row">
+          <button class="btn btn-val-xsd" onclick="validate(7)">Validate Schema</button>
+          <button class="btn btn-hint"    onclick="showHint(7)">Show Hint</button>
+          <button class="btn btn-reveal"  onclick="toggleAnswer(7)">Reveal Answer</button>
+        </div>
+        <div class="feedback" id="fb-7"></div>
+        <div class="hints-box xsd" id="hints-7"></div>
+        <div class="answer-box" id="ans-7"><div class="answer-label">Answer</div>
+          <div class="answer-code">&lt;xs:element name="npiCode"&gt;
+  &lt;xs:simpleType&gt;
+    &lt;xs:restriction base="xs:string"&gt;
+      &lt;xs:length value="10"/&gt;
+    &lt;/xs:restriction&gt;
+  &lt;/xs:simpleType&gt;
+&lt;/xs:element&gt;
+&lt;xs:element name="claimDate"   type="xs:dateTime"/&gt;
+&lt;xs:element name="claimAmount" type="xs:decimal"/&gt;</div>
+        </div>
+      </div>
+    </div>
+    <div class="block">
+      <div class="block-hd"><div class="block-icon icon-ask">?</div><div><div class="block-title">Ask Claude &mdash; Module 7</div><div class="block-sub">Questions about built-in types, xs:restriction, or XSD facets</div></div></div>
+      <div class="block-body">
+        <textarea class="llm-in" id="llm-in-7" placeholder="e.g.  What is the difference between xs:decimal and xs:float?  How do I use xs:pattern to validate an NPI?  What facets apply to xs:date?  When should I use xs:enumeration?"></textarea>
+        <div class="ctrl-row"><button class="btn btn-ask" onclick="askClaude(7)">Ask Claude</button></div>
+        <div class="llm-resp" id="llm-resp-7"><div class="llm-inner" id="llm-inner-7"></div></div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="mod-divider" />
+
+  <!-- ══════ MODULE 8 ══════ -->
+  <section class="mod-section" id="mod-8">
+    <div class="mod-header">
+      <span class="mod-num xsd">08</span>
+      <div class="mod-header-r">
+        <h2 class="mod-title">Complex Types and Compositors</h2>
+        <div class="mod-tags"><span class="tag tag-structure">Structure</span><span class="tag tag-types">Types</span></div>
+      </div>
+    </div>
+    <div class="mod-intro">
+      <p>When an element contains child elements, it must be given a <strong>complex type</strong> — defined inline with <code>&lt;xs:complexType&gt;</code> or named and reused. Inside, child elements are grouped by a <strong>compositor</strong>: <code>xs:sequence</code> — all children must appear in that order; <code>xs:choice</code> — exactly one child must appear; <code>xs:all</code> — all children must appear in any order.</p>
+      <p>Choosing the wrong compositor is a critical mistake. <code>xs:choice</code> means "pick one" — using it for fields that should all appear means a validator accepts documents missing required data. When all children are required and ordered, use <code>xs:sequence</code>.</p>
+      <p>Occurrence constraints control repetition. <code>minOccurs</code> defaults to <code>1</code>; <code>maxOccurs</code> defaults to <code>1</code>. Set <code>minOccurs="0"</code> for optional elements. For unlimited repetition, use <code>maxOccurs="unbounded"</code> — the word <code>"many"</code> is invalid. <code>maxOccurs</code> must always be greater than or equal to <code>minOccurs</code>.</p>
+    </div>
+    <div class="block">
+      <div class="block-hd"><div class="block-icon icon-demo-xsd">&#9654;</div><div><div class="block-title">Worked Demo &mdash; Lab Request: Wrong Compositor vs. Correct</div><div class="block-sub">xs:choice vs. xs:sequence, and unbounded repetition</div></div></div>
+      <div class="block-body">
+        <div class="ba-grid">
+          <div class="ba-panel bef"><div class="ba-label">Before &mdash; Wrong Compositor and maxOccurs</div>
+            <div class="ba-code">&lt;xs:element name="labRequest"&gt;
+  &lt;xs:complexType&gt;
+    <span class="c-err">&lt;xs:choice&gt;</span>  &lt;!-- allows only ONE element --&gt;
+      &lt;xs:element name="testCode"   type="xs:string"/&gt;
+      &lt;xs:element name="patientRef" type="xs:string"/&gt;
+      &lt;xs:element name="orderDate"  type="xs:date"/&gt;
+      &lt;xs:element name="diagnosis"  type="xs:string"
+                  maxOccurs=<span class="c-err">"many"</span>/&gt;
+    &lt;/xs:choice&gt;
+  &lt;/xs:complexType&gt;
+&lt;/xs:element&gt;</div>
+          </div>
+          <div class="ba-panel aft"><div class="ba-label">After &mdash; xs:sequence, Correct maxOccurs</div>
+            <div class="ba-code">&lt;xs:element name="labRequest"&gt;
+  &lt;xs:complexType&gt;
+    <span class="c-ok">&lt;xs:sequence&gt;</span>  &lt;!-- all must appear, in order --&gt;
+      &lt;xs:element name="testCode"   type="xs:string"/&gt;
+      &lt;xs:element name="patientRef" type="xs:string"/&gt;
+      &lt;xs:element name="orderDate"  type="xs:date"/&gt;
+      &lt;xs:element name="diagnosis"  type="xs:string"
+                  minOccurs="0"
+                  maxOccurs=<span class="c-ok">"unbounded"</span>/&gt;
+    &lt;/xs:sequence&gt;
+  &lt;/xs:complexType&gt;
+&lt;/xs:element&gt;</div>
+          </div>
+        </div>
+        <div class="demo-note xsd">
+          <p>A conforming instance under the <code>xs:choice</code> version could supply only <code>testCode</code> and omit the other two required fields — validation would still pass. Under <code>xs:sequence</code>, all four children must appear. <code>maxOccurs="many"</code> is not a keyword; the only valid non-integer value is <code>"unbounded"</code>. Adding <code>minOccurs="0"</code> makes <code>diagnosis</code> optional — zero or more occurrences — appropriate when a code may not yet be assigned.</p>
+        </div>
+      </div>
+    </div>
+    <div class="block">
+      <div class="block-hd"><div class="block-icon icon-practice-xsd">&#9998;</div><div><div class="block-title">Practice &mdash; Fix the Clinical Note Schema</div><div class="block-sub">Three errors: wrong compositor, invalid maxOccurs, misspelled use value</div></div></div>
+      <div class="block-body">
+        <p class="prac-desc">The schema below has <strong>three errors</strong> across compositor choice, occurrence value, and attribute use spelling. Fix all three, then validate.</p>
+        <div class="starter">&lt;xs:element name="clinicalNote"&gt;
+  &lt;xs:complexType&gt;
+    &lt;xs:choice&gt;
+      &lt;xs:element name="noteId"   type="xs:string"/&gt;
+      &lt;xs:element name="noteDate" type="xs:date"/&gt;
+      &lt;xs:element name="body"     type="xs:string"
+                  maxOccurs="many"/&gt;
+    &lt;/xs:choice&gt;
+    &lt;xs:attribute name="author" type="xs:string" use="require"/&gt;
+  &lt;/xs:complexType&gt;
+&lt;/xs:element&gt;</div>
+        <textarea class="xml-ed focus-xsd" id="ed-8" placeholder="Paste the schema above, fix the three errors, and validate..."></textarea>
+        <div class="ctrl-row">
+          <button class="btn btn-val-xsd" onclick="validate(8)">Validate Schema</button>
+          <button class="btn btn-hint"    onclick="showHint(8)">Show Hint</button>
+          <button class="btn btn-reveal"  onclick="toggleAnswer(8)">Reveal Answer</button>
+        </div>
+        <div class="feedback" id="fb-8"></div>
+        <div class="hints-box xsd" id="hints-8"></div>
+        <div class="answer-box" id="ans-8"><div class="answer-label">Answer</div>
+          <div class="answer-code">&lt;xs:element name="clinicalNote"&gt;
+  &lt;xs:complexType&gt;
+    &lt;xs:sequence&gt;
+      &lt;xs:element name="noteId"   type="xs:string"/&gt;
+      &lt;xs:element name="noteDate" type="xs:date"/&gt;
+      &lt;xs:element name="body"     type="xs:string"
+                  maxOccurs="unbounded"/&gt;
+    &lt;/xs:sequence&gt;
+    &lt;xs:attribute name="author" type="xs:string" use="required"/&gt;
+  &lt;/xs:complexType&gt;
+&lt;/xs:element&gt;</div>
+        </div>
+      </div>
+    </div>
+    <div class="block">
+      <div class="block-hd"><div class="block-icon icon-ask">?</div><div><div class="block-title">Ask Claude &mdash; Module 8</div><div class="block-sub">Questions about xs:complexType, compositors, or minOccurs/maxOccurs</div></div></div>
+      <div class="block-body">
+        <textarea class="llm-in" id="llm-in-8" placeholder="e.g.  When would I use xs:all instead of xs:sequence?  Can I nest xs:sequence inside xs:choice?  How do named complex types differ from anonymous ones?"></textarea>
+        <div class="ctrl-row"><button class="btn btn-ask" onclick="askClaude(8)">Ask Claude</button></div>
+        <div class="llm-resp" id="llm-resp-8"><div class="llm-inner" id="llm-inner-8"></div></div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="mod-divider" />
+
+  <!-- ══════ MODULE 9 ══════ -->
+  <section class="mod-section" id="mod-9">
+    <div class="mod-header">
+      <span class="mod-num xsd">09</span>
+      <div class="mod-header-r">
+        <h2 class="mod-title">Attribute Declarations</h2>
+        <div class="mod-tags"><span class="tag tag-attributes">Attributes</span><span class="tag tag-schema">Schema</span></div>
+      </div>
+    </div>
+    <div class="mod-intro">
+      <p>Attributes in XSD are declared with <code>&lt;xs:attribute&gt;</code>, placed after all compositor content inside a <code>&lt;xs:complexType&gt;</code>. Every <code>xs:attribute</code> requires at minimum a <code>name</code> and a <code>type</code>. Behavior is controlled through <code>use</code>, <code>default</code>, and <code>fixed</code>.</p>
+      <p>The <code>use</code> property has three valid values: <code>required</code> — the attribute must appear; <code>optional</code> — the attribute may be omitted (the default if <code>use</code> is not specified); <code>prohibited</code> — the attribute must not appear. The value <code>use="true"</code> is invalid and commonly appears from confusion with HTML boolean attributes.</p>
+      <p>An important mutual-exclusion rule: <code>use="required"</code> and <code>default</code> cannot appear together. A required attribute has no fallback — specifying a default on a required attribute is contradictory and invalid. An attribute with a <code>default</code> is implicitly optional. The <code>fixed</code> property is like <code>default</code> but disallows any value other than the fixed one.</p>
+    </div>
+    <div class="block">
+      <div class="block-hd"><div class="block-icon icon-demo-xsd">&#9654;</div><div><div class="block-title">Worked Demo &mdash; Prescription Attributes: DTD vs. XSD</div><div class="block-sub">ATTLIST declarations translated to xs:attribute with correct use values</div></div></div>
+      <div class="block-body">
+        <div class="ba-grid">
+          <div class="ba-panel bef"><div class="ba-label">Before &mdash; DTD ATTLIST</div>
+            <div class="ba-code">&lt;!ATTLIST prescription
+  status   CDATA  "pending"   &lt;!-- default value --&gt;
+  priority CDATA  #REQUIRED   &lt;!-- must appear --&gt;
+  source   CDATA  #IMPLIED&gt;  &lt;!-- optional --&gt;
+
+&lt;!-- No type validation on any attribute value --&gt;</div>
+          </div>
+          <div class="ba-panel aft"><div class="ba-label">After &mdash; XSD xs:attribute Declarations</div>
+            <div class="ba-code">&lt;xs:attribute name="status"
+              type=<span class="c-ok">"xs:string"</span>
+              default=<span class="c-ok">"pending"</span>/&gt;
+
+&lt;xs:attribute name="priority"
+              type=<span class="c-ok">"xs:string"</span>
+              use=<span class="c-ok">"required"</span>/&gt;
+
+&lt;xs:attribute name="source"
+              type=<span class="c-ok">"xs:string"</span>
+              use=<span class="c-ok">"optional"</span>/&gt;
+&lt;!-- use="optional" is the default — may be omitted --&gt;</div>
+          </div>
+        </div>
+        <div class="demo-note xsd">
+          <p><code>default="pending"</code> means: if the instance element omits the <code>status</code> attribute, the XSD processor supplies <code>status="pending"</code> automatically — equivalent to the DTD quoted literal default. This implicitly makes the attribute optional. <code>use="optional"</code> is valid but redundant since it is the default behavior when <code>use</code> is omitted entirely.</p>
+        </div>
+      </div>
+    </div>
+    <div class="block">
+      <div class="block-hd"><div class="block-icon icon-practice-xsd">&#9998;</div><div><div class="block-title">Practice &mdash; Fix the Claims Attribute Declarations</div><div class="block-sub">Three errors: missing type, invalid use value, conflicting use and default</div></div></div>
+      <div class="block-body">
+        <p class="prac-desc">The complex type below declares three attributes, each with a different error. Fix all three, then validate.</p>
+        <div class="starter">&lt;xs:element name="claim"&gt;
+  &lt;xs:complexType&gt;
+    &lt;xs:sequence&gt;
+      &lt;xs:element name="claimId" type="xs:string"/&gt;
+      &lt;xs:element name="amount"  type="xs:decimal"/&gt;
+    &lt;/xs:sequence&gt;
+    &lt;xs:attribute name="status"   use="required"/&gt;
+    &lt;xs:attribute name="category" type="xs:string" use="true"/&gt;
+    &lt;xs:attribute name="source"   type="xs:string"
+                  use="required" default="EHR"/&gt;
+  &lt;/xs:complexType&gt;
+&lt;/xs:element&gt;</div>
+        <textarea class="xml-ed focus-xsd" id="ed-9" placeholder="Paste the schema above, fix the three attribute errors, and validate..."></textarea>
+        <div class="ctrl-row">
+          <button class="btn btn-val-xsd" onclick="validate(9)">Validate Schema</button>
+          <button class="btn btn-hint"    onclick="showHint(9)">Show Hint</button>
+          <button class="btn btn-reveal"  onclick="toggleAnswer(9)">Reveal Answer</button>
+        </div>
+        <div class="feedback" id="fb-9"></div>
+        <div class="hints-box xsd" id="hints-9"></div>
+        <div class="answer-box" id="ans-9"><div class="answer-label">Answer</div>
+          <div class="answer-code">&lt;xs:element name="claim"&gt;
+  &lt;xs:complexType&gt;
+    &lt;xs:sequence&gt;
+      &lt;xs:element name="claimId" type="xs:string"/&gt;
+      &lt;xs:element name="amount"  type="xs:decimal"/&gt;
+    &lt;/xs:sequence&gt;
+    &lt;xs:attribute name="status"   type="xs:string" use="required"/&gt;
+    &lt;xs:attribute name="category" type="xs:string" use="optional"/&gt;
+    &lt;xs:attribute name="source"   type="xs:string" default="EHR"/&gt;
+  &lt;/xs:complexType&gt;
+&lt;/xs:element&gt;</div>
+        </div>
+      </div>
+    </div>
+    <div class="block">
+      <div class="block-hd"><div class="block-icon icon-ask">?</div><div><div class="block-title">Ask Claude &mdash; Module 9</div><div class="block-sub">Questions about xs:attribute, use values, default vs. fixed, or attribute placement</div></div></div>
+      <div class="block-body">
+        <textarea class="llm-in" id="llm-in-9" placeholder="e.g.  What is the difference between default and fixed on xs:attribute?  When would I use use=prohibited?  Can attributes appear in any order in an instance document?  How do I declare an ID attribute in XSD?"></textarea>
+        <div class="ctrl-row"><button class="btn btn-ask" onclick="askClaude(9)">Ask Claude</button></div>
+        <div class="llm-resp" id="llm-resp-9"><div class="llm-inner" id="llm-inner-9"></div></div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="mod-divider" />
+
+  <!-- ══════ MODULE 10 ══════ -->
+  <section class="mod-section" id="mod-10">
+    <div class="mod-header">
+      <span class="mod-num xsd">10</span>
+      <div class="mod-header-r">
+        <h2 class="mod-title">Complete Schema Design</h2>
+        <div class="mod-tags"><span class="tag tag-schema">Schema</span><span class="tag tag-xsd-val">Validation</span></div>
+      </div>
+    </div>
+    <div class="mod-intro">
+      <p>A production schema combines all techniques from prior modules: a root element with a complex type, nested named and anonymous complex types, correct simple type references, facet-constrained types, compositors that reflect real cardinality, and attribute declarations with appropriate <code>use</code> and <code>default</code> values.</p>
+      <p><strong>Named complex types</strong> are declared at the top level of the schema (direct children of <code>xs:schema</code>) with a <code>name</code> attribute. Any element anywhere in the schema can reference a named type via <code>type="TypeName"</code>. This enables reuse — a <code>PatientRefType</code> used in both lab orders and prescriptions is defined once and referenced twice.</p>
+      <p>The practice exercise is a complete self-contained schema containing errors from three different module domains. Read the entire schema before attempting corrections — some errors affect how surrounding elements validate.</p>
+    </div>
+    <div class="block">
+      <div class="block-hd"><div class="block-icon icon-demo-xsd">&#9654;</div><div><div class="block-title">Worked Demo &mdash; Clinical Note Schema: Complete and Correct</div><div class="block-sub">Named complex type, optional elements, required and defaulted attributes</div></div></div>
+      <div class="block-body">
+        <div class="ba-grid">
+          <div class="ba-panel bef"><div class="ba-label">Before &mdash; Three Mistakes Across Topic Areas</div>
+            <div class="ba-code">&lt;xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"&gt;
+  &lt;xs:element name="clinicalNote"&gt;
+    &lt;xs:complexType&gt;
+      <span class="c-err">&lt;xs:choice&gt;</span>               &lt;!-- should be sequence --&gt;
+        &lt;xs:element name="header"
+                    type="NoteHeaderType"/&gt;
+        &lt;xs:element name="assessment" type="xs:string"/&gt;
+        &lt;xs:element name="plan"       type="xs:string"
+                    minOccurs="0"/&gt;
+      &lt;/xs:choice&gt;
+      &lt;xs:attribute name="version" type="xs:string"
+                    use=<span class="c-err">"required"</span> default="1.0"/&gt;
+      &lt;xs:attribute name="status"  type="xs:string"
+                    use="required"/&gt;
+    &lt;/xs:complexType&gt;
+  &lt;/xs:element&gt;
+  &lt;xs:complexType name="NoteHeaderType"&gt;
+    &lt;xs:sequence&gt;
+      &lt;xs:element name="noteDate"  type=<span class="c-err">"xs:datetime"</span>/&gt;
+      &lt;xs:element name="authorNpi" type="xs:string"/&gt;
+    &lt;/xs:sequence&gt;
+  &lt;/xs:complexType&gt;
+&lt;/xs:schema&gt;</div>
+          </div>
+          <div class="ba-panel aft"><div class="ba-label">After &mdash; All Three Corrected</div>
+            <div class="ba-code">&lt;xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"&gt;
+  &lt;xs:element name="clinicalNote"&gt;
+    &lt;xs:complexType&gt;
+      <span class="c-ok">&lt;xs:sequence&gt;</span>             &lt;!-- all required, in order --&gt;
+        &lt;xs:element name="header"
+                    type="NoteHeaderType"/&gt;
+        &lt;xs:element name="assessment" type="xs:string"/&gt;
+        &lt;xs:element name="plan"       type="xs:string"
+                    minOccurs="0"/&gt;
+      &lt;/xs:sequence&gt;
+      &lt;xs:attribute name="version" type="xs:string"
+                    <span class="c-ok">default="1.0"</span>/&gt;     &lt;!-- no use="required" --&gt;
+      &lt;xs:attribute name="status"  type="xs:string"
+                    use="required"/&gt;
+    &lt;/xs:complexType&gt;
+  &lt;/xs:element&gt;
+  &lt;xs:complexType name="NoteHeaderType"&gt;
+    &lt;xs:sequence&gt;
+      &lt;xs:element name="noteDate"  type=<span class="c-ok">"xs:dateTime"</span>/&gt;
+      &lt;xs:element name="authorNpi" type="xs:string"/&gt;
+    &lt;/xs:sequence&gt;
+  &lt;/xs:complexType&gt;
+&lt;/xs:schema&gt;</div>
+          </div>
+        </div>
+        <div class="demo-note xsd">
+          <p>Three corrections spanning all module topics: compositor changed from <code>xs:choice</code> to <code>xs:sequence</code> (Module 8); <code>use="required"</code> removed from the attribute carrying a <code>default</code> value (Module 9); <code>xs:datetime</code> corrected to <code>xs:dateTime</code> (Module 7). The named complex type <code>NoteHeaderType</code> is declared at the top level and referenced by the <code>header</code> element — another element anywhere in the schema could reuse it without repeating the declaration.</p>
+        </div>
+      </div>
+    </div>
+    <div class="block">
+      <div class="block-hd"><div class="block-icon icon-practice-xsd">&#9998;</div><div><div class="block-title">Practice &mdash; Fix the Lab Report Schema</div><div class="block-sub">Three errors drawn from modules 7, 8, and 9</div></div></div>
+      <div class="block-body">
+        <p class="prac-desc">The complete schema below contains <strong>three errors</strong> from different module domains. Read the entire schema before making changes, then fix and validate.</p>
+        <div class="starter">&lt;xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"&gt;
+
+  &lt;xs:element name="labReport"&gt;
+    &lt;xs:complexType&gt;
+      &lt;xs:sequence&gt;
+        &lt;xs:element name="reportDate"  type="xs:datetime"/&gt;
+        &lt;xs:element name="panelResult" type="xs:decimal"
+                    minOccurs="1" maxOccurs="many"/&gt;
+        &lt;xs:element name="notes"       type="xs:string"
+                    minOccurs="0"/&gt;
+      &lt;/xs:sequence&gt;
+      &lt;xs:attribute name="labCode"  type="xs:string" use="required"/&gt;
+      &lt;xs:attribute name="priority" type="xs:string"
+                    use="required" default="routine"/&gt;
+    &lt;/xs:complexType&gt;
+  &lt;/xs:element&gt;
+
+&lt;/xs:schema&gt;</div>
+        <textarea class="xml-ed focus-xsd" id="ed-10" placeholder="Paste the schema above, identify and fix all three errors, and validate..."></textarea>
+        <div class="ctrl-row">
+          <button class="btn btn-val-xsd" onclick="validate(10)">Validate Schema</button>
+          <button class="btn btn-hint"    onclick="showHint(10)">Show Hint</button>
+          <button class="btn btn-reveal"  onclick="toggleAnswer(10)">Reveal Answer</button>
+        </div>
+        <div class="feedback" id="fb-10"></div>
+        <div class="hints-box xsd" id="hints-10"></div>
+        <div class="answer-box" id="ans-10"><div class="answer-label">Answer</div>
+          <div class="answer-code">&lt;xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"&gt;
+
+  &lt;xs:element name="labReport"&gt;
+    &lt;xs:complexType&gt;
+      &lt;xs:sequence&gt;
+        &lt;xs:element name="reportDate"  type="xs:dateTime"/&gt;
+        &lt;xs:element name="panelResult" type="xs:decimal"
+                    minOccurs="1" maxOccurs="unbounded"/&gt;
+        &lt;xs:element name="notes"       type="xs:string"
+                    minOccurs="0"/&gt;
+      &lt;/xs:sequence&gt;
+      &lt;xs:attribute name="labCode"  type="xs:string" use="required"/&gt;
+      &lt;xs:attribute name="priority" type="xs:string" default="routine"/&gt;
+    &lt;/xs:complexType&gt;
+  &lt;/xs:element&gt;
+
+&lt;/xs:schema&gt;</div>
+        </div>
+      </div>
+    </div>
+    <div class="block">
+      <div class="block-hd"><div class="block-icon icon-ask">?</div><div><div class="block-title">Ask Claude &mdash; Module 10</div><div class="block-sub">Questions about complete schema design, named types, or XSD validation tooling</div></div></div>
+      <div class="block-body">
+        <textarea class="llm-in" id="llm-in-10" placeholder="e.g.  How does a named complex type differ from an anonymous one?  How do I validate XML against XSD in Python using lxml?  What is xsi:schemaLocation?  How does Saxon handle XSD 1.1 vs 1.0?"></textarea>
+        <div class="ctrl-row"><button class="btn btn-ask" onclick="askClaude(10)">Ask Claude</button></div>
+        <div class="llm-resp" id="llm-resp-10"><div class="llm-inner" id="llm-inner-10"></div></div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ════════════════ SCRIPT ════════════════ -->
+<script>
+// ── HINT DATA ──────────────────────────────────────────────────────────────────
+const HINTS = {
+  1:  ['Start with the XML declaration: <?xml version="1.0" encoding="UTF-8"?>',
+       'Choose a root element that describes the data — <book> wraps everything',
+       'Each data field becomes a child element, e.g. <title>Clean Code</title>',
+       'Every opening tag needs a matching closing tag in the exact same case'],
+  2:  ['Look carefully at the <Dose> element — compare its opening and closing tag character by character',
+       'Check the times attribute — attribute values in XML must be wrapped in quotes',
+       'Error 1: <Dose> opens but </dose> closes — XML tag names are case-sensitive',
+       'Error 2: times=2 must be times="2" — quotes are mandatory'],
+  3:  ['Scan the observation text for the three characters with special meaning in XML',
+       'The less-than sign before 100 must become &lt;',
+       'The ampersand between mg/dL and HbA1c must become &amp;',
+       "The apostrophe in O'Sullivan must become &apos;"],
+  4:  ['Add the XML declaration at the top: <?xml version="1.0" encoding="UTF-8"?>',
+       'Add a DOCTYPE declaration: <!DOCTYPE appointments [...]>',
+       'Inside the brackets, declare the entity: <!ENTITY nvc "Northview Clinic">',
+       'Replace each "Northview Clinic" in the document body with &nvc;'],
+  5:  ['Compare the correct first ELEMENT declaration with the broken second one — one punctuation mark is missing',
+       'Every DTD declaration must begin with <! — <!ELEMENT not <ELEMENT',
+       'The (#PCDATA) content model requires both parentheses and the hash sign',
+       'Default value keywords REQUIRED and IMPLIED must be prefixed with # — #REQUIRED, #IMPLIED'],
+  6:  ['Every xs:schema element must declare the XSD namespace — look at the opening xs:schema tag',
+       'All built-in XSD type names require the xs: prefix — "string" alone is not valid',
+       'The use attribute on xs:attribute only accepts: required, optional, or prohibited',
+       'Fix in order: add xmlns:xs to xs:schema, prefix the type, change use="true" to use="required"'],
+  7:  ['The restriction base is missing its namespace prefix — compare it to the xs:element type attributes',
+       'XSD type names are case-sensitive — check the date-time type very carefully',
+       'xs:number does not exist in XSD 1.0 — use xs:decimal or xs:integer',
+       'Three fixes: base prefix, dateTime capitalization, and the nonexistent number type'],
+  8:  ['The compositor controls how many children must appear — xs:choice means only ONE is required',
+       'maxOccurs only accepts integers or the exact keyword "unbounded" — no other words are valid',
+       'The use attribute on xs:attribute has a typo — compare carefully to: required, optional, prohibited',
+       'Fix: change xs:choice to xs:sequence, fix maxOccurs value, correct the use= spelling'],
+  9:  ['One xs:attribute is missing its type property — xs:attribute requires both name and type',
+       'use="true" is not a valid XSD value — XML Schema is not HTML; boolean shortcuts do not apply',
+       'An attribute cannot be both required and have a default value — remove use="required" when a default is present',
+       'Fix: add type="xs:string" to the first, change use="true" to optional, remove use="required" from the third'],
+  10: ['Start with the type name — scan all type="..." values for the common xs:datetime mistake',
+       'Check every maxOccurs value — the keyword "many" is not valid XSD',
+       'Check every xs:attribute for the mutual-exclusion rule: required + default cannot coexist',
+       'Three fixes: dateTime capitalization, maxOccurs keyword, conflicting attribute use + default']
+};
+
+const hintCounts = {1:0,2:0,3:0,4:0,5:0,6:0,7:0,8:0,9:0,10:0};
+
+// ── LLM CONTEXTS ──────────────────────────────────────────────────────────────
+const CTX = {
+  1:  'XML basics — what XML is, how markup languages work, the XML declaration, self-describing data, and why XML is valuable for healthcare data exchange',
+  2:  'XML document structure and well-formedness — elements, attributes, nesting rules, case-sensitivity, self-closing tags, the single-root requirement',
+  3:  'XML character data — PCDATA vs CDATA sections, the five predefined entity references (&lt; &gt; &amp; &apos; &quot;), and the XML infoset concept',
+  4:  'XML general entities — internal general entities defined in a DOCTYPE subset, the ENTITY declaration syntax, entity references in document content, and external general entities',
+  5:  'XML DTDs — element type declarations, content model syntax and quantifiers, attribute list declarations, attribute types, #REQUIRED vs #IMPLIED, parameter entities, and DTD history versus XSD',
+  6:  'XSD versus DTD — why XSD was created, the xs: namespace declaration, XSD document structure, the built-in type system overview, and key advantages of XSD over DTDs for healthcare data validation',
+  7:  'XSD simple types — built-in types (xs:string, xs:integer, xs:decimal, xs:date, xs:dateTime, xs:boolean), xs:simpleType and xs:restriction, and restriction facets including minInclusive, maxInclusive, length, pattern, and enumeration',
+  8:  'XSD complex types — xs:complexType, the xs:sequence, xs:choice, and xs:all compositors, minOccurs and maxOccurs occurrence constraints, the unbounded keyword, and named vs anonymous complex types',
+  9:  'XSD attribute declarations — xs:attribute, the type, use (required/optional/prohibited), default, and fixed properties, the rule that required and default are mutually exclusive, and comparison to DTD ATTLIST',
+  10: 'Complete XSD schema design — combining simple types, complex types, and attributes into a full working schema, named vs anonymous complex types, XSD validation tooling (Saxon, Xerces, lxml), and XSD in healthcare data pipelines'
+};
+
+// ── STRIP DOCTYPE (for entity practice) ───────────────────────────────────────
+function stripDoctype(xml) {
+  const s = xml.indexOf('<!DOCTYPE');
+  if (s === -1) return xml;
+  const b = xml.indexOf('[', s);
+  if (b === -1) { const e = xml.indexOf('>', s); return e === -1 ? xml : xml.slice(0, s) + xml.slice(e + 1); }
+  const bc = xml.indexOf(']>', b);
+  return bc === -1 ? xml : xml.slice(0, s) + xml.slice(bc + 2);
+}
+
+// ── VALIDATE ──────────────────────────────────────────────────────────────────
+function validate(mod) {
+  const raw = (document.getElementById('ed-' + mod).value || '').trim();
+  const fb  = document.getElementById('fb-' + mod);
+  if (!raw) { showFB(fb, false, 'No content entered. Paste and edit the starter code above.'); return; }
+  if (mod <= 5) validateXML(mod, raw, fb);
+  else          validateXSD(mod, raw, fb);
+}
+
+function validateXML(mod, raw, fb) {
+  if (mod === 4) { validateEntityEx(raw, fb); return; }
+  if (mod === 5) { validateDTDEx(raw, fb);    return; }
+  const doc = new DOMParser().parseFromString(raw, 'application/xml');
+  const err = doc.querySelector('parsererror');
+  if (err) showFB(fb, false, 'Parse error: ' + err.textContent.replace(/\s+/g,' ').trim());
+  else     showFB(fb, true,  'Well-formed XML confirmed. Your document structure is valid.');
+}
+
+function validateEntityEx(raw, fb) {
+  const stripped = stripDoctype(raw);
+  if (stripped.trim()) {
+    const doc = new DOMParser().parseFromString(stripped, 'application/xml');
+    if (doc.querySelector('parsererror')) {
+      showFB(fb, false, 'XML structure error (outside DTD): ' + doc.querySelector('parsererror').textContent.replace(/\s+/g,' ').trim());
+      return;
+    }
+  }
+  const issues = [];
+  if (!raw.includes('<!DOCTYPE'))  issues.push('Missing <!DOCTYPE ...> declaration containing the internal subset');
+  if (!raw.includes('<!ENTITY'))   issues.push('Missing <!ENTITY nvc "..."> declaration inside the DOCTYPE brackets');
+  if (!raw.includes('&nvc;'))      issues.push('Entity reference &nvc; not found — replace the repeated text in the document body');
+  if (issues.length) showFB(fb, false, 'Issues found:\n' + issues.map(i => '  \u2022 ' + i).join('\n'));
+  else               showFB(fb, true, 'Entity declaration found and referenced correctly.');
+}
+
+function validateDTDEx(raw, fb) {
+  const issues = [];
+  if (/^\s*<ELEMENT\s/m.test(raw))             issues.push('Found <ELEMENT without ! — all DTD declarations must start with <! (e.g. <!ELEMENT)');
+  if (/<!ELEMENT\s+\w+\s+PCDATA\s*>/m.test(raw)) issues.push('Content model "PCDATA" must be written as "(#PCDATA)" — parentheses and hash sign required');
+  if (/CDATA\s+REQUIRED/m.test(raw))            issues.push('Default value "REQUIRED" must be written as "#REQUIRED"');
+  if (issues.length) showFB(fb, false, 'DTD syntax issues:\n' + issues.map(i => '  \u2022 ' + i).join('\n'));
+  else               showFB(fb, true, 'No DTD syntax errors detected. All declarations look correct.');
+}
+
+function validateXSD(mod, raw, fb) {
+  let issues = [];
+  if (mod === 6)  issues = vEx6(raw);
+  if (mod === 7)  issues = vEx7(raw);
+  if (mod === 8)  issues = vEx8(raw);
+  if (mod === 9)  issues = vEx9(raw);
+  if (mod === 10) issues = vEx10(raw);
+  if (issues.length) showFB(fb, false, 'Schema issues found:\n' + issues.map(i => '  \u2022 ' + i).join('\n'));
+  else               showFB(fb, true,  'No schema errors detected. All checked patterns look correct.');
+}
+
+function vEx6(r) {
+  const i = [];
+  if (!r.includes('xmlns:xs='))             i.push('xs:schema is missing the namespace declaration — add xmlns:xs="http://www.w3.org/2001/XMLSchema"');
+  if (/type="(?!xs:)[a-z][a-z]/.test(r))   i.push('Found a type reference missing the xs: prefix — all built-in types must be xs:string, xs:integer, etc.');
+  if (/use="true"/.test(r))                 i.push('use="true" is not valid — valid use values are required, optional, or prohibited');
+  return i;
+}
+function vEx7(r) {
+  const i = [];
+  if (/xs:datetime["<\s/]/.test(r))         i.push('xs:datetime is not valid — the correct spelling is xs:dateTime (capital T in Time)');
+  if (/xs:number["<\s/]/.test(r))           i.push('xs:number does not exist in XSD 1.0 — use xs:decimal for decimals or xs:integer for whole numbers');
+  if (/base="(?!xs:)[a-z]/.test(r))         i.push('A restriction base is missing the xs: prefix — write base="xs:string" not base="string"');
+  return i;
+}
+function vEx8(r) {
+  const i = [];
+  if (/<xs:choice/.test(r) && !/<xs:sequence/.test(r)) i.push('xs:choice allows only ONE of its children — if all children are required, use xs:sequence instead');
+  if (/maxOccurs="many"/.test(r))           i.push('maxOccurs="many" is not valid — use the keyword maxOccurs="unbounded"');
+  if (/use="require"(?!d)/.test(r))         i.push('use="require" is a typo — the correct spelling is use="required"');
+  return i;
+}
+function vEx9(r) {
+  const i = [];
+  const attrs = r.match(/<xs:attribute[^/]*\/>/g) || [];
+  let missingType = false;
+  attrs.forEach(a => { if (!a.includes('type=') && !a.includes('ref=')) missingType = true; });
+  if (missingType)                          i.push('At least one xs:attribute is missing the required type property — add type="xs:string" or appropriate type');
+  if (/use="true"/.test(r))                 i.push('use="true" is not valid — valid attribute use values are required, optional, and prohibited');
+  const withDef = r.match(/<xs:attribute[^/]*default="[^"]*"[^/]*\/>/g) || [];
+  withDef.forEach(a => { if (a.includes('use="required"')) i.push('xs:attribute cannot have both use="required" and default — remove use="required" when a default is present'); });
+  return i;
+}
+function vEx10(r) {
+  const i = [];
+  if (/xs:datetime["<\s/]/.test(r))         i.push('Type xs:datetime is incorrect — use xs:dateTime (capital T)');
+  if (/maxOccurs="many"/.test(r))           i.push('maxOccurs="many" is not valid — use maxOccurs="unbounded"');
+  const withDef = r.match(/<xs:attribute[^/]*default="[^"]*"[^/]*\/>/g) || [];
+  withDef.forEach(a => { if (a.includes('use="required"')) i.push('Conflicting xs:attribute properties — use="required" and default cannot appear together; remove use="required"'); });
+  return i;
+}
+
+function showFB(el, ok, msg) {
+  el.className = 'feedback ' + (ok ? 'ok' : 'err');
+  el.textContent = (ok ? '\u2713  ' : '\u2717  ') + msg;
+  el.style.display = 'block';
+}
+
+// ── HINTS ─────────────────────────────────────────────────────────────────────
+function showHint(mod) {
+  const box   = document.getElementById('hints-' + mod);
+  const hints = HINTS[mod];
+  const idx   = hintCounts[mod];
+  box.style.display = 'block';
+  if (idx >= hints.length) return;
+  const row = document.createElement('div');
+  row.className = 'hint-row';
+  row.innerHTML = '<span class="hint-n">' + (idx + 1) + '</span><span>' + hints[idx] + '</span>';
+  box.appendChild(row);
+  hintCounts[mod] = idx + 1;
+}
+
+// ── REVEAL ANSWER ─────────────────────────────────────────────────────────────
+function toggleAnswer(mod) {
+  const box = document.getElementById('ans-' + mod);
+  box.style.display = (box.style.display === 'block') ? 'none' : 'block';
+}
+
+// ── ASK CLAUDE ────────────────────────────────────────────────────────────────
+async function askClaude(mod) {
+  const input   = document.getElementById('llm-in-' + mod);
+  const respDiv = document.getElementById('llm-resp-' + mod);
+  const inner   = document.getElementById('llm-inner-' + mod);
+  const q       = (input.value || '').trim();
+  if (!q) return;
+  inner.innerHTML = '<span class="thinking">Thinking\u2026</span>';
+  respDiv.classList.add('show');
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: 'You are a clear, patient instructor teaching XML and XSD for healthcare data engineering. The student is currently studying: ' + CTX[mod] + '. Answer concisely in 2-4 paragraphs. Include a short code example only when it directly illustrates your answer. Respond in plain text without markdown formatting.',
+        messages: [{ role: 'user', content: q }]
+      })
+    });
+    const data = await res.json();
+    inner.textContent = (data.content && data.content[0]) ? data.content[0].text : 'No response received.';
+  } catch(e) {
+    inner.textContent = 'Could not reach the API. Please check your connection and try again.';
+  }
+}
+
+// ── SIDEBAR ACTIVE TRACKING ───────────────────────────────────────────────────
+const sections = document.querySelectorAll('.mod-section');
+const navLinks  = document.querySelectorAll('.nav-item');
+
+const obs = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const id  = entry.target.id;
+      const num = parseInt(id.replace('mod-', ''));
+      navLinks.forEach(n => n.classList.remove('active-xml', 'active-xsd'));
+      const link = document.querySelector('.nav-item[href="#' + id + '"]');
+      if (link) link.classList.add(num <= 5 ? 'active-xml' : 'active-xsd');
+    }
+  });
+}, { threshold: 0.15, rootMargin: '-80px 0px -55% 0px' });
+
+sections.forEach(s => obs.observe(s));
+if (navLinks.length) navLinks[0].classList.add('active-xml');
+</script>
+</body>
+</html>

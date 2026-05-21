@@ -1,0 +1,1142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Integrated SQL — CTEs + Windows + Parameters</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0b0f14;
+    --surface: #141a23;
+    --surface-raised: #1a2230;
+    --border: #2a3545;
+    --border-accent: #475a78;
+    --text: #e4eaf1;
+    --text-muted: #8d99aa;
+    --text-dim: #5e6b7d;
+    --accent: #f0b756;
+    --accent-glow: rgba(240,183,86,0.10);
+    --green: #3fb950;
+    --green-bg: rgba(63,185,80,0.10);
+    --red: #f85149;
+    --red-bg: rgba(248,81,73,0.10);
+    --orange: #d29922;
+    --orange-bg: rgba(210,153,34,0.10);
+
+    /* Technique colors */
+    --c-cte: #7ee787;
+    --c-cte-glow: rgba(126,231,135,0.08);
+    --c-win: #d2a8ff;
+    --c-win-glow: rgba(210,168,255,0.08);
+    --c-param: #79c0ff;
+    --c-param-glow: rgba(121,192,255,0.08);
+
+    --keyword: #ff7b72;
+    --string: #a5d6ff;
+    --param-hl: #79c0ff;
+    --cte-hl: #7ee787;
+    --win-hl: #d2a8ff;
+    --clause: #ffa657;
+    --comment: #5e6b7d;
+    --radius: 8px;
+    --mono: 'IBM Plex Mono', monospace;
+    --serif: 'Source Serif 4', Georgia, serif;
+    --sans: 'DM Sans', system-ui, sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.7;
+    min-height: 100vh;
+  }
+
+  /* ── Top bar ── */
+  .topbar {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(11,15,20,0.88);
+    backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 24px;
+    display: flex; align-items: center; gap: 16px;
+  }
+  .topbar-logo {
+    font-family: var(--mono); font-weight: 600;
+    font-size: 14px; letter-spacing: 0.5px;
+    background: linear-gradient(90deg, var(--c-cte), var(--c-win), var(--c-param));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .topbar-progress {
+    flex: 1; height: 4px;
+    background: var(--surface-raised); border-radius: 2px;
+    overflow: hidden;
+  }
+  .topbar-progress-fill {
+    height: 100%; width: 0%;
+    background: linear-gradient(90deg, var(--c-cte), var(--c-win), var(--c-param));
+    border-radius: 2px;
+    transition: width 0.5s ease;
+  }
+  .topbar-score {
+    font-family: var(--mono); font-size: 13px;
+    color: var(--text-muted);
+  }
+
+  /* ── Layout ── */
+  .container { max-width: 920px; margin: 0 auto; padding: 0 24px 120px; }
+
+  /* ── Hero ── */
+  .hero {
+    padding: 80px 0 60px;
+    text-align: center;
+    position: relative;
+  }
+  .hero::before {
+    content: '';
+    position: absolute; top: -20px; left: 50%; transform: translateX(-50%);
+    width: 700px; height: 350px;
+    background: radial-gradient(ellipse at 30% 50%, rgba(126,231,135,0.05) 0%, transparent 50%),
+                radial-gradient(ellipse at 70% 50%, rgba(210,168,255,0.05) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 60%, rgba(121,192,255,0.04) 0%, transparent 50%);
+    pointer-events: none;
+  }
+  .hero h1 {
+    font-family: var(--serif);
+    font-size: clamp(1.8rem, 4.5vw, 2.7rem);
+    font-weight: 700; line-height: 1.25;
+    margin-bottom: 16px;
+  }
+  .hero h1 .g { color: var(--c-cte); }
+  .hero h1 .p { color: var(--c-win); }
+  .hero h1 .b { color: var(--c-param); }
+  .hero p {
+    color: var(--text-muted); font-size: 17px;
+    max-width: 620px; margin: 0 auto 28px;
+  }
+
+  /* Legend pills */
+  .legend {
+    display: flex; gap: 16px; justify-content: center;
+    flex-wrap: wrap; margin-bottom: 32px;
+  }
+  .legend-pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-family: var(--mono); font-size: 12px;
+    padding: 5px 14px; border-radius: 20px;
+    border: 1px solid;
+  }
+  .legend-pill.cte  { color: var(--c-cte);  border-color: rgba(126,231,135,0.3); background: var(--c-cte-glow); }
+  .legend-pill.win  { color: var(--c-win);  border-color: rgba(210,168,255,0.3); background: var(--c-win-glow); }
+  .legend-pill.par  { color: var(--c-param); border-color: rgba(121,192,255,0.3); background: var(--c-param-glow); }
+  .legend-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+  }
+  .legend-pill.cte .legend-dot { background: var(--c-cte); }
+  .legend-pill.win .legend-dot { background: var(--c-win); }
+  .legend-pill.par .legend-dot { background: var(--c-param); }
+
+  .hero-cta {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--accent); color: #000;
+    font-weight: 600; font-size: 15px;
+    padding: 12px 28px; border-radius: 6px;
+    border: none; cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .hero-cta:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 20px rgba(240,183,86,0.3);
+  }
+
+  /* ── Sections ── */
+  .section { margin-top: 64px; }
+  .section-label {
+    font-family: var(--mono); font-size: 11px;
+    letter-spacing: 2px; text-transform: uppercase;
+    color: var(--accent); margin-bottom: 8px;
+  }
+  .section h2 {
+    font-family: var(--serif); font-size: 1.55rem;
+    font-weight: 700; margin-bottom: 16px;
+  }
+  .section p, .section li {
+    color: var(--text-muted); line-height: 1.8;
+  }
+  .section ul { padding-left: 20px; margin: 12px 0; }
+  .section li { margin-bottom: 6px; }
+  .section li::marker { color: var(--accent); }
+
+  /* ── Code blocks ── */
+  .code-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    margin: 20px 0;
+    overflow-x: auto;
+    font-family: var(--mono);
+    font-size: 13.5px;
+    line-height: 1.85;
+    position: relative;
+  }
+  .code-block .label {
+    position: absolute; top: 8px; right: 12px;
+    font-size: 10px; letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+  .kw { color: var(--keyword); font-weight: 500; }
+  .str { color: var(--string); }
+  .cmt { color: var(--comment); font-style: italic; }
+  .fn { color: var(--win-hl); font-weight: 500; }
+  .ct { color: var(--cte-hl); font-weight: 500; }
+  .pm { color: var(--param-hl); font-weight: 500; }
+  .cl { color: var(--clause); }
+
+  .callout {
+    background: var(--accent-glow);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 var(--radius) var(--radius) 0;
+    padding: 16px 20px;
+    margin: 20px 0;
+    font-size: 14px;
+    color: var(--text-muted);
+  }
+  .callout strong { color: var(--accent); }
+  .callout.cte-c {
+    background: var(--c-cte-glow);
+    border-left-color: var(--c-cte);
+  }
+  .callout.cte-c strong { color: var(--c-cte); }
+  .callout.win-c {
+    background: var(--c-win-glow);
+    border-left-color: var(--c-win);
+  }
+  .callout.win-c strong { color: var(--c-win); }
+  .callout.par-c {
+    background: var(--c-param-glow);
+    border-left-color: var(--c-param);
+  }
+  .callout.par-c strong { color: var(--c-param); }
+
+  /* ── Exercise cards ── */
+  .exercise {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    margin-top: 48px;
+    overflow: hidden;
+    transition: border-color 0.3s;
+  }
+  .exercise.solved { border-color: var(--green); }
+  .exercise-header {
+    display: flex; align-items: center; gap: 12px;
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface-raised);
+    flex-wrap: wrap;
+  }
+  .exercise-num {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--mono); font-size: 13px; font-weight: 600;
+    background: var(--accent-glow); color: var(--accent);
+    border: 1px solid rgba(240,183,86,0.3);
+    flex-shrink: 0;
+    transition: background 0.3s, color 0.3s, border-color 0.3s;
+  }
+  .exercise.solved .exercise-num {
+    background: var(--green-bg); color: var(--green);
+    border-color: rgba(63,185,80,0.3);
+  }
+  .exercise-title { font-weight: 600; font-size: 15px; flex: 1; min-width: 200px; }
+  .exercise-diff {
+    font-family: var(--mono); font-size: 11px;
+    letter-spacing: 0.5px; padding: 3px 10px;
+    border-radius: 20px; flex-shrink: 0;
+  }
+  .diff-easy { background: var(--green-bg); color: var(--green); }
+  .diff-med { background: var(--orange-bg); color: var(--orange); }
+  .diff-hard { background: var(--red-bg); color: var(--red); }
+
+  /* Technique tags on exercises */
+  .tech-tags {
+    display: flex; gap: 6px; flex-wrap: wrap;
+    width: 100%; margin-top: 4px;
+  }
+  .tech-tag {
+    font-family: var(--mono); font-size: 10px;
+    letter-spacing: 0.5px; text-transform: uppercase;
+    padding: 2px 8px; border-radius: 3px;
+  }
+  .tech-tag.cte  { background: var(--c-cte-glow);  color: var(--c-cte);  border: 1px solid rgba(126,231,135,0.2); }
+  .tech-tag.win  { background: var(--c-win-glow);  color: var(--c-win);  border: 1px solid rgba(210,168,255,0.2); }
+  .tech-tag.par  { background: var(--c-param-glow); color: var(--c-param); border: 1px solid rgba(121,192,255,0.2); }
+
+  .exercise-body { padding: 24px; }
+  .exercise-body > p {
+    color: var(--text-muted); margin-bottom: 16px; font-size: 15px;
+  }
+
+  .schema-box {
+    background: rgba(240,183,86,0.05);
+    border: 1px solid rgba(240,183,86,0.15);
+    border-radius: var(--radius);
+    padding: 14px 18px;
+    margin-bottom: 20px;
+    font-family: var(--mono); font-size: 13px;
+    line-height: 1.6;
+    color: var(--accent);
+  }
+  .schema-box .tname { color: var(--clause); font-weight: 600; }
+  .schema-box .cols { color: var(--text-muted); }
+
+  /* ── Section dividers within an exercise ── */
+  .code-section-label {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-family: var(--mono); font-size: 11px;
+    letter-spacing: 1px; text-transform: uppercase;
+    margin: 18px 0 6px; padding: 3px 10px;
+    border-radius: 3px;
+  }
+  .code-section-label.cte  { color: var(--c-cte);  background: var(--c-cte-glow); }
+  .code-section-label.win  { color: var(--c-win);  background: var(--c-win-glow); }
+  .code-section-label.par  { color: var(--c-param); background: var(--c-param-glow); }
+
+  /* ── Fill-in code area ── */
+  .fill-code {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    font-family: var(--mono); font-size: 13.5px;
+    line-height: 2.6;
+    margin-bottom: 16px;
+    white-space: pre-wrap;
+    word-break: break-word;
+    overflow-x: auto;
+  }
+  .fill-code .blank-wrap {
+    display: inline-block;
+    position: relative;
+    vertical-align: baseline;
+    margin: 0 1px;
+    padding-bottom: 14px; /* reserve space for the label */
+  }
+  .fill-code input {
+    background: var(--surface-raised);
+    border: 1px dashed var(--border-accent);
+    border-radius: 4px;
+    color: var(--accent);
+    font-family: var(--mono); font-size: 13.5px;
+    padding: 2px 8px;
+    height: 24px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    vertical-align: baseline;
+  }
+  .fill-code input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px var(--accent-glow);
+  }
+  .fill-code input.correct {
+    border-color: var(--green);
+    color: var(--green);
+    background: var(--green-bg);
+  }
+  .fill-code input.wrong {
+    border-color: var(--red);
+    color: var(--red);
+    background: var(--red-bg);
+    animation: shake 0.3s;
+  }
+  @keyframes shake {
+    0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}
+  }
+
+  /* Technique-tinted inputs */
+  .fill-code input.t-cte  { border-color: rgba(126,231,135,0.45); color: var(--c-cte); }
+  .fill-code input.t-win  { border-color: rgba(210,168,255,0.45); color: var(--c-win); }
+  .fill-code input.t-par  { border-color: rgba(121,192,255,0.45); color: var(--c-param); }
+  .fill-code input.t-cte:focus  { box-shadow: 0 0 0 2px var(--c-cte-glow); border-color: var(--c-cte); }
+  .fill-code input.t-win:focus  { box-shadow: 0 0 0 2px var(--c-win-glow); border-color: var(--c-win); }
+  .fill-code input.t-par:focus  { box-shadow: 0 0 0 2px var(--c-param-glow); border-color: var(--c-param); }
+
+  .blank-label {
+    position: absolute;
+    left: 0; right: 0;
+    bottom: -1px;
+    font-size: 9px; letter-spacing: 0.5px;
+    color: var(--text-dim); text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    pointer-events: none;
+    line-height: 1;
+  }
+
+  /* ── Per-blank reveal button ── */
+  .blank-reveal-btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 20px; height: 20px;
+    background: transparent;
+    border: 1px solid rgba(248,81,73,0.25);
+    border-radius: 3px;
+    color: var(--red);
+    cursor: pointer;
+    font-size: 12px;
+    vertical-align: baseline;
+    margin-left: 2px;
+    opacity: 0.5;
+    transition: opacity 0.15s, background 0.15s, border-color 0.15s;
+    position: relative;
+    top: -1px;
+  }
+  .blank-reveal-btn:hover {
+    opacity: 1;
+    background: var(--red-bg);
+    border-color: rgba(248,81,73,0.5);
+  }
+  .blank-reveal-btn.used {
+    opacity: 0.25;
+    pointer-events: none;
+    border-color: rgba(63,185,80,0.2);
+    color: var(--green);
+  }
+
+  /* ── Buttons row ── */
+  .exercise-actions {
+    display: flex; gap: 10px; flex-wrap: wrap;
+    margin-top: 8px;
+  }
+  .btn {
+    font-family: var(--sans);
+    font-size: 13px; font-weight: 600;
+    padding: 8px 18px; border-radius: 6px;
+    border: 1px solid var(--border);
+    cursor: pointer; transition: all 0.15s;
+  }
+  .btn-check {
+    background: var(--accent); color: #000; border-color: var(--accent);
+  }
+  .btn-check:hover { box-shadow: 0 2px 12px rgba(240,183,86,0.35); }
+  .btn-hint {
+    background: transparent; color: var(--orange);
+    border-color: rgba(210,153,34,0.3);
+  }
+  .btn-hint:hover { background: var(--orange-bg); }
+  .btn-reveal {
+    background: transparent; color: var(--red);
+    border-color: rgba(248,81,73,0.3);
+  }
+  .btn-reveal:hover { background: var(--red-bg); }
+  .btn-reset {
+    background: transparent; color: var(--text-muted);
+    border-color: var(--border);
+  }
+  .btn-reset:hover { background: var(--surface-raised); }
+
+  /* ── Hint / feedback ── */
+  .hint-area {
+    margin-top: 14px;
+    padding: 12px 16px;
+    border-radius: var(--radius);
+    font-size: 14px;
+    display: none;
+  }
+  .hint-area.visible { display: block; }
+  .hint-area.hint { background: var(--orange-bg); color: var(--orange); }
+  .hint-area.success { background: var(--green-bg); color: var(--green); }
+  .hint-area.error { background: var(--red-bg); color: var(--red); }
+
+  /* ── Explanation ── */
+  .explanation {
+    margin-top: 16px;
+    border-top: 1px solid var(--border);
+    padding-top: 16px;
+    display: none;
+  }
+  .explanation.visible { display: block; }
+  .explanation p { color: var(--text-muted); font-size: 14px; margin-bottom: 8px; line-height: 1.75; }
+  .explanation code {
+    background: var(--surface-raised); padding: 1px 6px;
+    border-radius: 3px; font-family: var(--mono); font-size: 13px;
+    color: var(--accent);
+  }
+  .explanation code.cte { color: var(--c-cte); }
+  .explanation code.win { color: var(--c-win); }
+  .explanation code.par { color: var(--c-param); }
+
+  /* ── Footer ── */
+  .footer {
+    text-align: center; padding: 60px 0 40px;
+    color: var(--text-dim); font-size: 13px;
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 640px) {
+    .container { padding: 0 16px 80px; }
+    .code-block, .fill-code { padding: 14px 16px; font-size: 12px; }
+    .exercise-body { padding: 16px; }
+    .fill-code input { font-size: 12px; height: 22px; }
+    .fill-code .blank-wrap { padding-bottom: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ── Top bar ── -->
+<div class="topbar">
+  <div class="topbar-logo">SQL::INTEGRATED</div>
+  <div class="topbar-progress"><div class="topbar-progress-fill" id="progressFill"></div></div>
+  <div class="topbar-score" id="scoreLabel">0 / 7</div>
+</div>
+
+<div class="container">
+
+<!-- ══════════════════════════════════════════ -->
+<!--  HERO                                     -->
+<!-- ══════════════════════════════════════════ -->
+<div class="hero">
+  <h1><span class="g">CTEs</span> + <span class="p">Window&nbsp;Functions</span> + <span class="b">Parameters</span></h1>
+  <p>Real-world SQL rarely uses just one technique. This tutorial combines all three — structuring logic with CTEs, computing analytics with window functions, and keeping it injection-safe with parameterized execution.</p>
+
+  <div class="legend">
+    <span class="legend-pill cte"><span class="legend-dot"></span>CTE</span>
+    <span class="legend-pill win"><span class="legend-dot"></span>Window Fn</span>
+    <span class="legend-pill par"><span class="legend-dot"></span>Parameter</span>
+  </div>
+
+  <button class="hero-cta" onclick="document.getElementById('recap').scrollIntoView()">Start Learning &darr;</button>
+</div>
+
+<!-- ══════════════════════════════════════════ -->
+<!--  RECAP                                    -->
+<!-- ══════════════════════════════════════════ -->
+<div class="section" id="recap">
+  <div class="section-label">Quick Recap</div>
+  <h2>Three Techniques, One Query</h2>
+  <p>Before diving into exercises, here's a reminder of what each technique contributes and <em>why</em> combining them is so powerful.</p>
+
+  <div class="callout cte-c">
+    <strong>CTEs (WITH … AS)</strong> — Break complex logic into named, readable steps. Each CTE is a temporary named result set that later CTEs and the main query can reference.
+  </div>
+  <div class="callout win-c">
+    <strong>Window Functions (fn OVER(…))</strong> — Compute rankings, running totals, and row-to-row comparisons <em>without</em> collapsing rows. They run after WHERE / GROUP BY, so wrapping them in a CTE lets you filter on their results.
+  </div>
+  <div class="callout par-c">
+    <strong>Parameterized Queries (%s / :name)</strong> — Replace hard-coded values with placeholders so the database binds user input safely. This prevents SQL injection and makes queries reusable.
+  </div>
+
+  <p style="margin-top:20px">Here's how they fit together in a single statement:</p>
+
+  <div class="code-block">
+    <span class="label">Combined Pattern</span>
+<span class="cmt">-- The SQL string (with CTE + window + placeholders)</span>
+query = """
+<span class="ct">WITH</span> <span class="ct">filtered</span> <span class="ct">AS</span> (                      <span class="cmt">-- CTE: named step</span>
+    SELECT id, rep, region, amount
+    FROM sales
+    WHERE region = <span class="pm">%s</span>                    <span class="cmt">-- Parameter: safe binding</span>
+),
+<span class="ct">ranked</span> <span class="ct">AS</span> (
+    SELECT *,
+        <span class="fn">RANK</span>() <span class="fn">OVER</span> (                     <span class="cmt">-- Window: rank without collapse</span>
+            <span class="fn">ORDER BY</span> amount DESC
+        ) AS sales_rank
+    FROM <span class="ct">filtered</span>                         <span class="cmt">-- CTE referencing earlier CTE</span>
+)
+SELECT rep, amount, sales_rank
+FROM <span class="ct">ranked</span>
+WHERE sales_rank &lt;= <span class="pm">%s</span>                  <span class="cmt">-- Parameter: top-N threshold</span>
+"""
+
+<span class="cmt">-- Execute with safe binding</span>
+cursor.execute(query, (<span class="pm">region_input</span>, <span class="pm">top_n</span>))
+  </div>
+
+  <p style="margin-top:16px"><strong style="color:var(--text)">Why this works:</strong></p>
+  <ul>
+    <li>The <strong style="color:var(--c-cte)">first CTE</strong> filters by region using a <strong style="color:var(--c-param)">parameter</strong> — no string concatenation.</li>
+    <li>The <strong style="color:var(--c-cte)">second CTE</strong> applies a <strong style="color:var(--c-win)">window function</strong> on the already-filtered data.</li>
+    <li>The outer query filters on the window result using another <strong style="color:var(--c-param)">parameter</strong>.</li>
+    <li>The entire SQL string is passed to <code style="font-family:var(--mono)">cursor.execute()</code> with a parameter tuple — fully injection-safe.</li>
+  </ul>
+</div>
+
+<!-- ══════════════════════════════════════════ -->
+<!--  EXERCISES                                -->
+<!-- ══════════════════════════════════════════ -->
+<div class="section" id="exercises">
+  <div class="section-label">Practice</div>
+  <h2>Fill in the Blanks</h2>
+  <p>Each exercise integrates CTEs, window functions, and parameters into a single problem. Blanks are <span style="color:var(--c-cte)">color-coded by technique</span>. Click the <strong style="color:var(--red)">◔</strong> button beside any blank to reveal just that answer, or use <strong style="color:var(--red)">Reveal All</strong> to show everything. Use <strong style="color:var(--orange)">Hint</strong> to get a text hint for the first incorrect blank.</p>
+</div>
+
+<div id="exerciseContainer"></div>
+
+<div class="footer">
+  Integrated SQL Tutorial &middot; Structure. Analyze. Secure.
+</div>
+
+</div><!-- /container -->
+
+<script>
+// ═══════════════════════════════════════════
+//  EXERCISE DATA — 7 progressive exercises
+//  tech: "cte" | "win" | "par" per blank
+// ═══════════════════════════════════════════
+const exercises = [
+
+  // ── 1 ──
+  {
+    id: 1,
+    title: "Parameterized CTE with a Running Total",
+    difficulty: "easy",
+    techs: ["cte","par","win"],
+    schema: { table: "transactions", cols: "id, account_id, amount, txn_date" },
+    description: "Filter transactions to a specific account (parameterized), then compute a running total ordered by date. The CTE handles the filter; the outer query applies the window function.",
+    codeLines: [
+      '-- SQL query string',
+      'query = """',
+      '{0} acct_txns AS (',
+      '    SELECT id, amount, txn_date',
+      '    FROM transactions',
+      '    WHERE account_id = {1}',
+      ')',
+      'SELECT',
+      '    txn_date, amount,',
+      '    {2}(amount) OVER (',
+      '        ORDER BY txn_date',
+      '    ) AS running_total',
+      'FROM acct_txns',
+      '"""',
+      '',
+      'cursor.execute(query, ({3},))'
+    ],
+    blanks: [
+      { answer: "WITH",       tech: "cte", hint: "Keyword that starts a CTE block.",         label: "CTE keyword" },
+      { answer: "%s",         tech: "par", hint: "Positional placeholder for the account ID.", label: "parameter" },
+      { answer: "SUM",        tech: "win", hint: "Aggregate function for the running total.", label: "window fn" },
+      { answer: "acct_id",    tech: "par", hint: "Variable holding the user's account ID.",  label: "bound value",
+        accept: ["acct_id","account_id","acct","user_acct","account","acc_id"] }
+    ],
+    explanation: "The <code class='cte'>WITH</code> clause creates a CTE that filters by account using a <code class='par'>%s</code> placeholder. The outer query applies <code class='win'>SUM() OVER(ORDER BY txn_date)</code> to produce a running total. The parameter is bound safely via the execute tuple."
+  },
+
+  // ── 2 ──
+  {
+    id: 2,
+    title: "Ranked Employees in a Department",
+    difficulty: "easy",
+    techs: ["cte","win","par"],
+    schema: { table: "employees", cols: "id, name, department, salary, hire_date" },
+    description: "Use a CTE to rank employees by salary within a user-specified department, then return only the top N. Both the department and the limit come from parameters.",
+    codeLines: [
+      'query = """',
+      'WITH dept_ranked AS (',
+      '    SELECT name, salary,',
+      '        {0}() OVER (',
+      '            ORDER BY salary {1}',
+      '        ) AS rnk',
+      '    FROM employees',
+      '    WHERE department = {2}',
+      ')',
+      'SELECT name, salary, rnk',
+      'FROM {3}',
+      'WHERE rnk <= {4}',
+      '"""',
+      '',
+      'cursor.execute(query, ({5}, {6}))'
+    ],
+    blanks: [
+      { answer: "ROW_NUMBER", tech: "win", hint: "Window function that assigns 1, 2, 3… with no ties.", label: "window fn" },
+      { answer: "DESC",       tech: "win", hint: "Highest salary should get rank 1.",                    label: "sort dir" },
+      { answer: "%s",         tech: "par", hint: "Placeholder for the department filter.",               label: "dept param" },
+      { answer: "dept_ranked",tech: "cte", hint: "Reference the CTE you defined above.",                label: "CTE name" },
+      { answer: "%s",         tech: "par", hint: "Placeholder for the top-N limit.",                    label: "limit param" },
+      { answer: "dept_input", tech: "par", hint: "Variable for the department name.",                   label: "value 1",
+        accept: ["dept_input","department","dept","user_dept","department_input","dept_name"] },
+      { answer: "top_n",      tech: "par", hint: "Variable for how many to return.",                    label: "value 2",
+        accept: ["top_n","limit","n","num","top_count","max_rows","count"] }
+    ],
+    explanation: "The CTE filters by department (<code class='par'>%s</code>) and applies <code class='win'>ROW_NUMBER()</code> ordered by salary descending. The outer query filters on the rank using a second <code class='par'>%s</code>. Both values are safely bound in the execute tuple — order matters: department first, then top_n."
+  },
+
+  // ── 3 ──
+  {
+    id: 3,
+    title: "Month-over-Month Revenue Change",
+    difficulty: "easy",
+    techs: ["cte","win","par"],
+    schema: { table: "revenue", cols: "id, region, month_date, amount" },
+    description: "For a given region, compute month-over-month revenue change using <code>LAG()</code>. The CTE filters by region (parameterized); the outer query calculates the delta.",
+    codeLines: [
+      'query = """',
+      'WITH region_rev {0} (',
+      '    SELECT month_date, amount',
+      '    FROM revenue',
+      '    WHERE region = {1}',
+      '),',
+      'with_prev AS (',
+      '    SELECT',
+      '        month_date, amount,',
+      '        {2}(amount, 1) OVER (',
+      '            ORDER BY {3}',
+      '        ) AS prev_amount',
+      '    FROM {4}',
+      ')',
+      'SELECT',
+      '    month_date, amount, prev_amount,',
+      '    amount - prev_amount AS mom_change',
+      'FROM with_prev',
+      'ORDER BY month_date',
+      '"""',
+      '',
+      'cursor.execute(query, ({5},))'
+    ],
+    blanks: [
+      { answer: "AS",          tech: "cte", hint: "Connects the CTE name to its definition.",        label: "connector" },
+      { answer: "%s",          tech: "par", hint: "Placeholder for the region filter.",              label: "region param" },
+      { answer: "LAG",         tech: "win", hint: "Window function that looks back to a prior row.", label: "window fn" },
+      { answer: "month_date",  tech: "win", hint: "Order chronologically to make LAG meaningful.",   label: "order col" },
+      { answer: "region_rev",  tech: "cte", hint: "Second CTE reads from the first — by name.",     label: "source CTE" },
+      { answer: "region_input",tech: "par", hint: "Variable for the user's region.",                label: "bound value",
+        accept: ["region_input","region","user_region","reg","target_region","region_name"] }
+    ],
+    explanation: "Two chained CTEs: <code class='cte'>region_rev</code> filters with a <code class='par'>parameter</code>, then <code class='cte'>with_prev</code> applies <code class='win'>LAG()</code> to pull each month's prior amount. The outer query computes the delta. This is a very common reporting pattern."
+  },
+
+  // ── 4 ──
+  {
+    id: 4,
+    title: "Percentile Ranking with Date Range",
+    difficulty: "med",
+    techs: ["cte","win","par"],
+    schema: { table: "test_scores", cols: "id, student_name, subject, score, test_date" },
+    description: "Find each student's percentile rank in a given subject, but only for tests taken within a parameterized date range. Use <code>PERCENT_RANK()</code> — which returns a value from 0 to 1.",
+    codeLines: [
+      'query = """',
+      'WITH filtered_scores AS (',
+      '    SELECT student_name, score',
+      '    FROM test_scores',
+      '    WHERE subject = {0}',
+      '    AND test_date BETWEEN {1} AND {2}',
+      ')',
+      '{3} (',
+      '    SELECT',
+      '        student_name, score,',
+      '        {4}() OVER (',
+      '            {5} score ASC',
+      '        ) AS pctl',
+      '    FROM filtered_scores',
+      ')',
+      'SELECT student_name, score,',
+      '       ROUND(pctl * 100, 1) AS percentile',
+      'FROM ranked',
+      'ORDER BY pctl DESC',
+      '"""',
+      '',
+      'cursor.execute(query, ({6}, {7}, {8}))'
+    ],
+    blanks: [
+      { answer: "%s",           tech: "par", hint: "Placeholder for the subject.",                       label: "subject param" },
+      { answer: "%s",           tech: "par", hint: "Placeholder for the start date.",                    label: "start param" },
+      { answer: "%s",           tech: "par", hint: "Placeholder for the end date.",                      label: "end param" },
+      { answer: "ranked AS",    tech: "cte", hint: "Name this second CTE 'ranked' and connect with AS.", label: "CTE name + AS",
+        accept: ["ranked AS"] },
+      { answer: "PERCENT_RANK", tech: "win", hint: "Window function returning a 0–1 percentile rank.",  label: "window fn" },
+      { answer: "ORDER BY",     tech: "win", hint: "Clause that sets ranking order inside OVER().",     label: "ordering" },
+      { answer: "subj_input",   tech: "par", hint: "Variable for the subject.",                         label: "value 1",
+        accept: ["subj_input","subject","subj","subject_input","user_subject"] },
+      { answer: "start_date",   tech: "par", hint: "Variable for the range start.",                     label: "value 2",
+        accept: ["start_date","from_date","date_start","begin_date","start"] },
+      { answer: "end_date",     tech: "par", hint: "Variable for the range end.",                       label: "value 3",
+        accept: ["end_date","to_date","date_end","finish_date","end"] }
+    ],
+    explanation: "Three parameters filter by subject and date range in the first CTE. The second CTE applies <code class='win'>PERCENT_RANK()</code> on the cleaned data. The outer query multiplies by 100 for a human-readable percentile. This pattern — filter → rank → present — is a staple of analytics reporting."
+  },
+
+  // ── 5 ──
+  {
+    id: 5,
+    title: "Moving Average with Named Parameters",
+    difficulty: "med",
+    techs: ["cte","win","par"],
+    schema: { table: "sensor_data", cols: "id, sensor_id, reading, recorded_at" },
+    description: "For a specific sensor (named parameter), compute a <strong>5-point moving average</strong> of readings ordered by timestamp. Use named <code>:param</code> style and a frame clause.",
+    codeLines: [
+      'query = """',
+      'WITH sensor_stream AS (',
+      '    SELECT reading, recorded_at',
+      '    FROM sensor_data',
+      '    WHERE sensor_id = {0}',
+      ')',
+      'SELECT',
+      '    recorded_at, reading,',
+      '    {1}(reading) OVER (',
+      '        ORDER BY recorded_at',
+      '        {2} BETWEEN {3} AND CURRENT ROW',
+      '    ) AS moving_avg_5',
+      'FROM {4}',
+      'ORDER BY recorded_at',
+      '"""',
+      '',
+      'cursor.execute(query, {{"sid": {5}}})'
+    ],
+    blanks: [
+      { answer: ":sid",          tech: "par", hint: "Named placeholder matching the dict key 'sid'.",       label: "named param" },
+      { answer: "AVG",           tech: "win", hint: "Aggregate function for the average.",                  label: "window fn" },
+      { answer: "ROWS",          tech: "win", hint: "Frame type that counts physical rows.",                label: "frame type" },
+      { answer: "4 PRECEDING",   tech: "win", hint: "Current row + 4 before = 5-point window.",            label: "frame start" },
+      { answer: "sensor_stream", tech: "cte", hint: "Reference the CTE you defined above.",                label: "CTE name" },
+      { answer: "sensor_id_input", tech: "par", hint: "Variable holding the target sensor ID.",            label: "bound value",
+        accept: ["sensor_id_input","sensor_id","sid","sensor","sensor_input","s_id","target_sensor"] }
+    ],
+    explanation: "A <code class='par'>:sid</code> named parameter filters in the CTE. The outer query uses <code class='win'>AVG() OVER(ROWS BETWEEN 4 PRECEDING AND CURRENT ROW)</code> — a 5-point moving average. Named parameters use a dict instead of a tuple, which is clearer when multiple parameters are involved."
+  },
+
+  // ── 6 ──
+  {
+    id: 6,
+    title: "Top Customers per Region with Spending Quartiles",
+    difficulty: "med",
+    techs: ["cte","win","par"],
+    schema: { table: "orders(id, customer_id, region, amount) &amp; customers(id, name)", cols: "" },
+    description: "Chain three CTEs: (1) filter orders to a date range, (2) aggregate spending per customer with a JOIN, (3) assign spending quartiles via NTILE. The outer query returns only the top quartile.",
+    codeLines: [
+      'query = """',
+      '{0} recent_orders AS (',
+      '    SELECT customer_id, region, amount',
+      '    FROM orders',
+      '    WHERE order_date >= {1}',
+      '),',
+      'customer_spend AS (',
+      '    SELECT',
+      '        c.name, ro.region,',
+      '        SUM(ro.amount) AS total_spend',
+      '    FROM recent_orders ro',
+      '    {2} customers c ON ro.customer_id = c.id',
+      '    GROUP BY c.name, ro.region',
+      '),',
+      'quartiled AS (',
+      '    SELECT name, region, total_spend,',
+      '        {3}({4}) OVER (',
+      '            {5} region',
+      '            ORDER BY total_spend DESC',
+      '        ) AS spend_q',
+      '    FROM {6}',
+      ')',
+      'SELECT name, region, total_spend, spend_q',
+      'FROM quartiled',
+      'WHERE spend_q = 1',
+      'ORDER BY total_spend DESC',
+      '"""',
+      '',
+      'cursor.execute(query, ({7},))'
+    ],
+    blanks: [
+      { answer: "WITH",           tech: "cte", hint: "Keyword that starts the CTE block.",              label: "CTE keyword" },
+      { answer: "%s",             tech: "par", hint: "Placeholder for the cutoff date.",                label: "date param" },
+      { answer: "JOIN",           tech: "cte", hint: "Combine orders with customer names.",             label: "join keyword",
+        accept: ["JOIN","INNER JOIN","join","inner join"] },
+      { answer: "NTILE",          tech: "win", hint: "Window function that splits rows into N buckets.",label: "window fn" },
+      { answer: "4",              tech: "win", hint: "How many buckets for quartiles?",                 label: "bucket count" },
+      { answer: "PARTITION BY",   tech: "win", hint: "Restart bucketing per region.",                   label: "partition clause" },
+      { answer: "customer_spend", tech: "cte", hint: "This CTE reads from the aggregation step.",      label: "source CTE" },
+      { answer: "cutoff_date",    tech: "par", hint: "Variable for the date threshold.",               label: "bound value",
+        accept: ["cutoff_date","start_date","min_date","from_date","date_input","cutoff","since_date"] }
+    ],
+    explanation: "Three chained CTEs form a pipeline: <code class='cte'>recent_orders</code> filters with a <code class='par'>parameter</code>, <code class='cte'>customer_spend</code> JOINs and aggregates, and <code class='cte'>quartiled</code> applies <code class='win'>NTILE(4) OVER(PARTITION BY region ...)</code>. The outer query picks the top quartile. Each CTE is independently testable."
+  },
+
+  // ── 7 ──
+  {
+    id: 7,
+    title: "Multi-Metric Dashboard Query",
+    difficulty: "hard",
+    techs: ["cte","win","par"],
+    schema: { table: "sales(id, rep_id, region, amount, sale_date) &amp; reps(id, name, hire_date)", cols: "" },
+    description: "Build a dashboard-ready query: filter by region and date range (3 parameters), compute per-rep totals, rank reps by total, and add each rep's running cumulative contribution — all in one statement with chained CTEs and multiple window functions.",
+    codeLines: [
+      'query = """',
+      'WITH filtered AS (',
+      '    SELECT rep_id, amount',
+      '    FROM sales',
+      '    WHERE region = {0}',
+      '    AND sale_date BETWEEN {1} AND {2}',
+      '),',
+      'rep_totals AS (',
+      '    SELECT',
+      '        r.name,',
+      '        {3}(f.amount) AS total_sales,',
+      '        COUNT(*) AS deal_count',
+      '    FROM filtered f',
+      '    JOIN reps r ON f.rep_id = r.id',
+      '    {4} r.name',
+      '),',
+      'dashboard AS (',
+      '    SELECT',
+      '        name, total_sales, deal_count,',
+      '        {5}() OVER (',
+      '            ORDER BY total_sales DESC',
+      '        ) AS rank,',
+      '        SUM(total_sales) OVER (',
+      '            ORDER BY total_sales {6}',
+      '            {7} BETWEEN UNBOUNDED PRECEDING AND {8}',
+      '        ) AS cumulative_total',
+      '    FROM {9}',
+      ')',
+      'SELECT name, total_sales, deal_count,',
+      '       rank, cumulative_total',
+      'FROM dashboard',
+      'ORDER BY rank',
+      '"""',
+      '',
+      'cursor.execute(query, ({10}, {11}, {12}))'
+    ],
+    blanks: [
+      { answer: "%s",            tech: "par", hint: "Placeholder for the region.",                       label: "region param" },
+      { answer: "%s",            tech: "par", hint: "Placeholder for range start.",                      label: "start param" },
+      { answer: "%s",            tech: "par", hint: "Placeholder for range end.",                        label: "end param" },
+      { answer: "SUM",           tech: "cte", hint: "Aggregate to total each rep's sales.",             label: "aggregate fn" },
+      { answer: "GROUP BY",      tech: "cte", hint: "Required clause when aggregating per rep.",        label: "grouping" },
+      { answer: "DENSE_RANK",    tech: "win", hint: "Ranking function with no gaps after ties.",        label: "rank fn",
+        accept: ["DENSE_RANK","RANK","ROW_NUMBER"] },
+      { answer: "DESC",          tech: "win", hint: "Highest total first for cumulative ordering.",     label: "sort dir" },
+      { answer: "ROWS",          tech: "win", hint: "Frame type for physical row counting.",            label: "frame type" },
+      { answer: "CURRENT ROW",   tech: "win", hint: "Frame ends at the current row.",                   label: "frame end" },
+      { answer: "rep_totals",    tech: "cte", hint: "The dashboard CTE reads from the aggregation CTE.",label: "source CTE" },
+      { answer: "region_input",  tech: "par", hint: "Variable for the region.",                         label: "value 1",
+        accept: ["region_input","region","reg","user_region","target_region"] },
+      { answer: "start_date",    tech: "par", hint: "Variable for range start.",                        label: "value 2",
+        accept: ["start_date","from_date","date_start","begin_date","start"] },
+      { answer: "end_date",      tech: "par", hint: "Variable for range end.",                          label: "value 3",
+        accept: ["end_date","to_date","date_end","finish_date","end"] }
+    ],
+    explanation: "This is a production-level analytics pattern. <code class='cte'>filtered</code> narrows data with three <code class='par'>parameters</code>. <code class='cte'>rep_totals</code> aggregates per rep. <code class='cte'>dashboard</code> adds two window functions: <code class='win'>DENSE_RANK()</code> for competitive ranking and <code class='win'>SUM() OVER(ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)</code> for a running cumulative. The entire complex query is injection-safe via parameterized execution."
+  }
+];
+
+// ═══════════════════════════════════════════
+//  RENDER ENGINE
+// ═══════════════════════════════════════════
+let solved = new Set();
+
+function updateProgress() {
+  const pct = (solved.size / exercises.length) * 100;
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('scoreLabel').textContent = `${solved.size} / ${exercises.length}`;
+}
+
+function renderExercises() {
+  const container = document.getElementById('exerciseContainer');
+  exercises.forEach(ex => {
+    const div = document.createElement('div');
+    div.className = 'exercise';
+    div.id = `ex-${ex.id}`;
+
+    const diffClass = ex.difficulty === 'easy' ? 'diff-easy' : ex.difficulty === 'med' ? 'diff-med' : 'diff-hard';
+    const diffLabel = ex.difficulty === 'easy' ? 'Easy' : ex.difficulty === 'med' ? 'Medium' : 'Hard';
+
+    let schemaHTML = '';
+    if (ex.schema.cols) {
+      schemaHTML = `<div class="schema-box"><span class="tname">${ex.schema.table}</span> <span class="cols">(${ex.schema.cols})</span></div>`;
+    } else {
+      schemaHTML = `<div class="schema-box"><span class="tname">${ex.schema.table}</span></div>`;
+    }
+
+    // Tech tags
+    const techLabels = { cte: "CTE", win: "Window Fn", par: "Parameter" };
+    const usedTechs = [...new Set(ex.techs)];
+    const tagsHTML = usedTechs.map(t => `<span class="tech-tag ${t}">${techLabels[t]}</span>`).join('');
+
+    const joined = ex.codeLines.join('\n');
+    let codeHTML = joined.replace(/\{(\d+)\}/g, (_, idx) => {
+      const b = ex.blanks[parseInt(idx)];
+      const ansLen = b.answer.length;
+      // Size input to answer length + small padding, with a sensible minimum
+      const widthCh = Math.max(ansLen + 2, 6);
+      const techClass = b.tech ? ` t-${b.tech}` : '';
+      return `<span class="blank-wrap"><input type="text" class="${techClass}" data-ex="${ex.id}" data-blank="${idx}" style="width:${widthCh}ch" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="???" /><button class="blank-reveal-btn" title="Reveal this blank" onclick="revealBlank(${ex.id},${idx})">&#9684;</button><span class="blank-label">${b.label}</span></span>`;
+    });
+
+    // Syntax highlight static parts
+    codeHTML = codeHTML
+      .replace(/\b(SELECT|FROM|WHERE|AND|OR|INSERT INTO|UPDATE|SET|DELETE|JOIN|INNER JOIN|LEFT JOIN|CROSS JOIN|ON|GROUP BY|HAVING|ORDER BY|DESC|ASC|IN|LIKE|AS|INTO|UNION ALL|UNION|WITH|WINDOW|CURRENT ROW|BETWEEN|ROUND|COUNT)\b/g, '<span class="kw">$1</span>')
+      .replace(/\b(PARTITION BY|OVER|ROWS|RANGE|PRECEDING|FOLLOWING|UNBOUNDED)\b/g, '<span class="cl">$1</span>')
+      .replace(/\b(SUM|AVG|MIN|MAX|ROW_NUMBER|RANK|DENSE_RANK|NTILE|LAG|LEAD|FIRST_VALUE|LAST_VALUE|PERCENT_RANK)\b/g, '<span class="fn">$1</span>')
+      .replace(/(--[^\n]*)/g, '<span class="cmt">$1</span>')
+      .replace(/(""")/g, '<span class="cmt">$1</span>');
+
+    div.innerHTML = `
+      <div class="exercise-header">
+        <div class="exercise-num">${ex.id}</div>
+        <div class="exercise-title">${ex.title}</div>
+        <div class="exercise-diff ${diffClass}">${diffLabel}</div>
+        <div class="tech-tags">${tagsHTML}</div>
+      </div>
+      <div class="exercise-body">
+        <p>${ex.description}</p>
+        ${schemaHTML}
+        <div class="fill-code">${codeHTML}</div>
+        <div class="exercise-actions">
+          <button class="btn btn-check" onclick="checkExercise(${ex.id})">Check Answer</button>
+          <button class="btn btn-hint" onclick="showHint(${ex.id})">Hint</button>
+          <button class="btn btn-reveal" onclick="revealAnswer(${ex.id})">Reveal All</button>
+          <button class="btn btn-reset" onclick="resetExercise(${ex.id})">Reset</button>
+        </div>
+        <div class="hint-area" id="hint-${ex.id}"></div>
+        <div class="explanation" id="explain-${ex.id}"><p>${ex.explanation}</p></div>
+      </div>
+    `;
+    container.appendChild(div);
+  });
+}
+
+function getExercise(id) { return exercises.find(e => e.id === id); }
+function getInputs(id) { return Array.from(document.querySelectorAll(`input[data-ex="${id}"]`)); }
+
+function normalize(s) {
+  return s.trim().replace(/\s+/g, ' ').replace(/[""]/g, '"').replace(/['']/g, "'").toUpperCase();
+}
+
+function checkBlank(ex, idx, value) {
+  const b = ex.blanks[idx];
+  const nv = normalize(value);
+  const na = normalize(b.answer);
+  if (nv === na) return true;
+  if (b.accept) return b.accept.some(a => normalize(a) === nv);
+  return false;
+}
+
+function checkExercise(id) {
+  const ex = getExercise(id);
+  const inputs = getInputs(id);
+  const hintArea = document.getElementById(`hint-${id}`);
+  let allCorrect = true;
+
+  inputs.forEach((inp, idx) => {
+    inp.classList.remove('correct', 'wrong');
+    if (checkBlank(ex, idx, inp.value)) {
+      inp.classList.add('correct');
+    } else {
+      inp.classList.add('wrong');
+      allCorrect = false;
+    }
+  });
+
+  if (allCorrect) {
+    hintArea.className = 'hint-area visible success';
+    hintArea.textContent = '✓ All correct — nice work!';
+    solved.add(id);
+    document.getElementById(`ex-${id}`).classList.add('solved');
+    document.getElementById(`explain-${id}`).classList.add('visible');
+    updateProgress();
+  } else {
+    const wrongCount = inputs.filter((inp, i) => !checkBlank(ex, i, inp.value)).length;
+    hintArea.className = 'hint-area visible error';
+    hintArea.textContent = `✗ ${wrongCount} blank${wrongCount > 1 ? 's' : ''} still incorrect. Try again or use Hint.`;
+  }
+}
+
+function showHint(id) {
+  const ex = getExercise(id);
+  const inputs = getInputs(id);
+  const hintArea = document.getElementById(`hint-${id}`);
+
+  let targetIdx = -1;
+  for (let i = 0; i < inputs.length; i++) {
+    if (!checkBlank(ex, i, inputs[i].value)) { targetIdx = i; break; }
+  }
+  if (targetIdx < 0) targetIdx = 0;
+
+  const b = ex.blanks[targetIdx];
+  const techName = { cte: "CTE", win: "Window Fn", par: "Parameter" }[b.tech] || "";
+  hintArea.className = 'hint-area visible hint';
+  hintArea.innerHTML = `<strong>[${techName}] Hint for "${b.label}":</strong> ${b.hint}`;
+}
+
+function checkAllDone(id) {
+  const ex = getExercise(id);
+  const inputs = getInputs(id);
+  const allCorrect = inputs.every((inp, idx) => checkBlank(ex, idx, inp.value));
+  if (allCorrect) {
+    const hintArea = document.getElementById(`hint-${id}`);
+    hintArea.className = 'hint-area visible success';
+    hintArea.textContent = '✓ All blanks complete — nice work!';
+    solved.add(id);
+    document.getElementById(`ex-${id}`).classList.add('solved');
+    document.getElementById(`explain-${id}`).classList.add('visible');
+    updateProgress();
+  }
+}
+
+function revealBlank(id, idx) {
+  const ex = getExercise(id);
+  const inp = document.querySelector(`input[data-ex="${id}"][data-blank="${idx}"]`);
+  if (!inp) return;
+  inp.value = ex.blanks[idx].answer;
+  inp.classList.remove('wrong');
+  inp.classList.add('correct');
+  // Mark the reveal button as used
+  const btn = inp.nextElementSibling;
+  if (btn && btn.classList.contains('blank-reveal-btn')) {
+    btn.classList.add('used');
+  }
+  // Check if entire exercise is now complete
+  checkAllDone(id);
+}
+
+function revealAnswer(id) {
+  const ex = getExercise(id);
+  const inputs = getInputs(id);
+  inputs.forEach((inp, idx) => {
+    inp.value = ex.blanks[idx].answer;
+    inp.classList.remove('wrong');
+    inp.classList.add('correct');
+    const btn = inp.nextElementSibling;
+    if (btn && btn.classList.contains('blank-reveal-btn')) {
+      btn.classList.add('used');
+    }
+  });
+  const hintArea = document.getElementById(`hint-${id}`);
+  hintArea.className = 'hint-area visible success';
+  hintArea.textContent = 'Answer revealed. Study how the three techniques interlock!';
+  solved.add(id);
+  document.getElementById(`ex-${id}`).classList.add('solved');
+  document.getElementById(`explain-${id}`).classList.add('visible');
+  updateProgress();
+}
+
+function resetExercise(id) {
+  const inputs = getInputs(id);
+  inputs.forEach(inp => {
+    inp.value = '';
+    inp.classList.remove('correct', 'wrong');
+    const btn = inp.nextElementSibling;
+    if (btn && btn.classList.contains('blank-reveal-btn')) {
+      btn.classList.remove('used');
+    }
+  });
+  const hintArea = document.getElementById(`hint-${id}`);
+  hintArea.className = 'hint-area';
+  hintArea.textContent = '';
+  document.getElementById(`explain-${id}`).classList.remove('visible');
+}
+
+// ── Initialize ──
+renderExercises();
+updateProgress();
+</script>
+
+</body>
+</html>

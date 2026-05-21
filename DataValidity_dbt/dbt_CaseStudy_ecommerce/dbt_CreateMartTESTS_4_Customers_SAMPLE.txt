@@ -1,0 +1,52 @@
+version: 2
+
+models:
+  - name: customers
+    description: Data mart for customer-related dimensions and facts, for analytical and reporting purposes
+    columns:
+      - name: user_id
+        description: Unique ID for the user
+        data_tests:
+          - unique # Fill in uniqueness test
+          - not_null # Fill in not null test 
+          - relationships: # Fill in relationship test to staging users
+              to: ref('stg_looker__users')
+              field: id
+      - name: customer_first_name
+        description: Customer first name
+        data_tests:
+          - not_null 
+      - name: customer_last_name
+        description: Customer last name
+        data_tests:
+          - not_null 
+      - name: customer_country
+        description: Customer country
+      - name: customer_acquisition_channel
+        description: Customer acquisition channel
+        data_tests: 
+          - not_null
+          - accepted_values: # Fill in accepted value test 
+              values: ['Display', 'Email', 'Facebook', 'Organic', 'Search']
+      - name: total_amount_spent 
+        description: Total amount customer has spent
+      - name: total_items_purchased
+        description: Total items purchased
+      - name: first_order_completed_at
+        description: When the first order was completed at, if at all
+      - name: last_order_completed_at
+        description: When the last order was completed at, if at all
+      - name: num_orders
+        description: Total number of orders placed
+      - name: num_orders_shipped
+        description: Number of orders shipped
+      - name: num_orders_complete
+        description: Number of orders completed
+      - name: num_orders_processing
+        description: Number of orders still processing
+      - name: num_orders_cancelled
+        description: Number of orders cancelled
+      - name: num_orders_returned
+        description: Number of orders returned
+      - name: num_web_sessions
+        description: Number of web sessions

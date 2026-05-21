@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>C-CDA Section Template ID</title>
+  <style>
+    :root {
+      --bg: #f7f9fc;
+      --panel: #ffffff;
+      --text: #1f2937;
+      --muted: #64748b;
+      --border: #d8dee9;
+      --header: #eaf1fb;
+      --accent: #1d4ed8;
+      --code-bg: #eef2ff;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 32px;
+      font-family: Arial, Helvetica, sans-serif;
+      line-height: 1.45;
+      background: var(--bg);
+      color: var(--text);
+    }
+    main {
+      max-width: 1180px;
+      margin: 0 auto;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+      overflow: hidden;
+    }
+    header {
+      padding: 28px 32px 20px;
+      border-bottom: 1px solid var(--border);
+      background: linear-gradient(180deg, #ffffff, #f1f5fb);
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: 28px;
+      letter-spacing: -0.02em;
+    }
+    .subtitle {
+      margin: 0;
+      color: var(--muted);
+      max-width: 920px;
+    }
+    .note {
+      margin: 18px 0 0;
+      padding: 12px 14px;
+      border-left: 4px solid var(--accent);
+      background: #f8fbff;
+      color: #334155;
+      border-radius: 8px;
+    }
+    section { padding: 24px 32px 32px; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+      font-size: 14px;
+    }
+    thead th {
+      text-align: left;
+      background: var(--header);
+      color: #0f172a;
+      border-bottom: 2px solid var(--border);
+      padding: 12px 14px;
+      font-size: 15px;
+    }
+    tbody td {
+      vertical-align: top;
+      border-bottom: 1px solid var(--border);
+      padding: 11px 14px;
+    }
+    tbody tr:nth-child(even) { background: #fbfdff; }
+    .id {
+      font-family: Consolas, Monaco, "Courier New", monospace;
+      font-size: 13px;
+      word-break: break-all;
+      color: #1e293b;
+    }
+    .name {
+      font-weight: 700;
+      color: #0f172a;
+    }
+    .comment { color: #334155; }
+    .source {
+      margin-top: 18px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    a { color: var(--accent); }
+    @media print {
+      body { padding: 0; background: white; }
+      main { box-shadow: none; border: 0; border-radius: 0; }
+      header, section { padding: 18px 22px; }
+      table { font-size: 11px; }
+      thead { display: table-header-group; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <h1>C-CDA Section Template ID</h1>
+      <p class="subtitle">Two-column quick reference for common C-CDA section-level template IDs. The left column lists the template identifier as published in C-CDA template references; the right column gives a purpose/extraction comment for mapping work.</p>
+      <p class="note"><strong>Extraction note:</strong> This page lists section-level template IDs only. For detailed parsing, also key on the entry-level templates inside each section, such as Medication Activity entries inside the Medications Section.</p>
+    </header>
+    <section>
+      <table aria-label="C-CDA section template IDs and purpose/extraction comments">
+        <thead>
+          <tr>
+            <th style="width: 42%;">Section Template ID</th>
+            <th style="width: 58%;">Purpose/Extraction comment</th>
+          </tr>
+        </thead>
+        <tbody>
+
+          <tr><td class="id">2.16.840.1.113883.10.20.21.2.3:2015-08-01</td><td class="comment"><span class="name">Activities Section</span> — Planned or performed care activities, often used in care-plan contexts.</td></tr>
+
+          <tr><td class="id">2.16.840.1.113883.10.20.22.2.43:2015-08-01</td><td class="comment"><span class="name">Admission Diagnosis Section</span> — Diagnoses or reasons documented at admission.</td></tr>
+
+          <tr><td class="id">2.16.840.1.113883.10.20.22.2.44:2015-08-01</td><td class="comment"><span class="name">Admission Medications Section</span> — Medications documented at time of admission.</td></tr>
+
+          <tr><td class="id">2.16.840.1.113883.10.20.22.2.21.1:2022-02-14</td><td class="comment"><span class="name">Advance Directives Section</span> — Advance directives, care preferences, and related legal/clinical instructions.</td></tr>
+
+          <tr><td class="id">2.16.840.1.113883.10.20.22.2.6.1:2015-08-01</td><td class="comment"><span class="name">Allergies and Intolerances Section</span> — Allergies, intolerances, reactions, severity, and allergy status.</td></tr>
+
+          <tr><td class="id">2.16.840.1.113883.10.20.22.2.25:2014-06-09</td><td class="comment"><span class="name">Anesthesia Section</span> — Anesthesia type, course, and related procedure information.</td></tr>
+
+          <tr><td class="id">2.16.840.1.113883.10.20.22.2.9:2014-06-09</td><td class="comment"><span class="name">Assessment and Plan Section</span> — Combined clinical assessment and planned next steps.</td></tr>
+
+          <tr><td class="id">2.16.840.1.113883.10.20.22.2.8</td><td class="comment"><span class="name">Assessment Section</span> — Clinician’s assessment or interpretation of the patient’s condition.</td></tr>
+
+          <tr><td class="id">2.16.840.1.113883.10.20.22.2.500:2022-06-01</td><td class="comment"><span class="name">Care Teams Section</span> — Members of the patient’s care team and their roles/responsibilities.</td></tr>
+
+          <tr><td class="id">2.16.840.1.113883.10.20.22.2.13</td><td class="comment"><span class="name">Chief Complaint and Reason for Visit Section</span> — Combined chief complaint and reason-for-visit narrative.</td></tr>
+
+          <tr><td class="id">1.3.6.1.4.1.19376.1.5.3.1.1.13.2.1</td><td class="comment"><span class="name">Chief Complaint Section</span> — Captures the patient’s stated main reason or complaint for the encounter.</td></tr>
+
+          <tr><td class="id">2.16.840.1.113883.10.20.22.2.37:2015-08-01</td><td class="comment"><span class="name">Complications Section</span> — Complications associated with treatment, procedures, or hospitalization.</td></tr>
+
+          <tr><td class="id">2.16.840.1.113883.10.20.22.2.64</td><td class="comment"><span class="name">Course of Care Section</span> — Narrative or structured summary of care over time.</td></tr>
+
+          <tr><td class="id">2.16.840.1.113883.10.20.22.2.24:2015-08-01</td><td class="comment"><span class="name">Discharge Diagnosis Section</span> — Diagnoses assigned at discharge.</td></tr>
+
+          <tr><td class="id">2.16.840.1.113883.10.20.22.2.11.1:2015-08-01</td><td class="comment"><span class="name">Discharge Medications Section</span> — Medications the patient should take after discharge.</td></tr>
+
+          <tr><td class="id">2.16.840.1.113883.10.20.22.2.22.1:2015-08-01</td><td class="comment"><span class="name">Encounters Section</span> — Prior and current encounters, visits, admissions, and related encounter details.</td></tr>
+
+          <tr><td class="id">2.16.840.1.113883.10.20.22.2.15:2015-08-01</td><td class="comment"><span class="name">Family History Section</span> — Family member conditions, genetic risks, and family health history.</td></tr>
+
+          <tr><td class="id">2.16.840.1.113883.10.20.22.2.14:2014-06-09</td><td class="comment"><span class="name">Functional Status Section</span> — Functional limitations, activities of daily living, mobility, and related assessments.</td></tr>
+
+          <tr><td class="id">2.16.840.1.113883.10.20.2.5</td><td class="comment"><span class="name">General Status Section</span> — Broad statement of the patient’s overall clinical status.</td></tr>
+
+          <tr><td class="id">2.16.840.1.113883.10.20.22.2.60</td><td class="comment"><span class="name">Goals Section</span> — Patient or care-team goals, targets, and desired outcomes.</td></tr>
+
+          <tr><td class="id">2.16.840.1.113883.10.20.22.2.58:2015-08-01</td><td class="comment"><span class="name">Health Concerns Section</span> — Health-related matters of concern or risk that may require attention or management.</td></tr>
+
+          <tr><td class="id">1.3.6.1.4.1.19376.1.5.3.1.3.4</td><td class="comment"><span class="name">History of Present Illness Section</span> — Narrative clinical history describing the current illness or condition.</td></tr>
+
+          <tr><td class="id">2.16.840.1.113883.10.20.22.2.42</td><td class="comment"><span class="name">Hospital Consultations Section</span> — Consultations performed during a hospitalization.</td></tr>
+
+          <tr><td class="id">1.3.6.1.4.1.19376.1.5.3.1.3.5</td><td class="comment"><span class="name">Hospital Course Section</span> — Summarizes significant events, treatment, and progress during hospitalization.</td></tr>
+
+          <tr><td class="id">2.16.840.1.113883.10.20.22.2.41</td><td class="comment"><span class="name">Hospital Discharge Instructions Section</span> — Instructions given to the patient after hospital discharge.</td></tr>
+
+          <tr><td class="id">1.3.6.1.4.1.19376.1.5.3.1.3.26</td><td class="comment"><span class="name">Hospital Discharge Physical Section</span> — Physical exam status at time of discharge.</td></tr>
+
+          <tr><td class="id">2.16.840.1.113883.10.20.22.2.16</td><td class="comment"><span class="name">Hospital Discharge Studies Summary Section</span> — Summary of studies and diagnostic testing around discharge.</td></tr>
+
+          <tr><td class="id">2.16.840.1.113883.10.20.22.2.2.1:2015-08-01</td><td class="comment"><span class="name">Immunizations Section</span> — Immunization history, vaccine administrations, and vaccine-not-given information.</td></tr>
+
+          <tr><td class="id">2.16.840.1.113883.10.20.22.2.45:2014-06-09</td><td class="comment"><span class="name">Instructions Section</span> — Patient instructions, provider instructions, or care directions.</td></tr>
+
+          <tr><td class="id">2.16.840.1.113883.10.20.22.2.23:2014-06-09</td><td class="comment"><span class="name">Medical Equipment Section</span> — Durable medical equipment, assistive devices, prosthetics, and supplies.</td></tr>
+
+          <tr><td class="id">2.16.840.1.113883.10.20.22.2.39</td><td class="comment"><span class="name">Medical General History Section</span> — General narrative medical history not isolated to a narrower section.</td></tr>
+
+          <tr><td class="id">2.16.840.1.113883.10.20.22.2.38:2014-06-09</td><td class="comment"><span class="name">Medications Administered Section</span> — Medications administered during an encounter or procedure.</td></tr>
+
+          <tr><td class="id">2.16.840.1.113883.10.20.22.2.1.1:2014-06-09</td><td class="comment"><span class="name">Medications Section</span> — Current and historical medications; primary section anchor for medication-list extraction.</td></tr>
+
+          <tr><td class="id">2.16.840.1.113883.10.20.22.2.56:2015-08-01</td><td class="comment"><span class="name">Mental Status Section</span> — Mental status observations and behavioral/cognitive findings.</td></tr>
+
+          <tr><td class="id">2.16.840.1.113883.10.20.22.2.57</td><td class="comment"><span class="name">Nutrition Section</span> — Nutrition status, diet, feeding, and related care information.</td></tr>
+
+          <tr><td class="id">2.16.840.1.113883.10.20.21.2.1</td><td class="comment"><span class="name">Objective Section</span> — Objective observations, measurements, results, and findings.</td></tr>
+
+          <tr><td class="id">2.16.840.1.113883.10.20.7.12</td><td class="comment"><span class="name">Operative Note Fluids Section</span> — Fluids administered or managed during a procedure or operation.</td></tr>
+
+          <tr><td class="id">2.16.840.1.113883.10.20.7.14</td><td class="comment"><span class="name">Operative Note Surgical Procedure Section</span> — Main surgical procedure information in an operative note.</td></tr>
+
+          <tr><td class="id">2.16.840.1.113883.10.20.22.2.61</td><td class="comment"><span class="name">Outcomes Section</span> — Outcomes used to evaluate patient status or progress against goals.</td></tr>
+
+          <tr><td class="id">2.16.840.1.113883.10.20.22.2.20:2015-08-01</td><td class="comment"><span class="name">Past Medical History Section</span> — Prior illnesses, surgeries, injuries, and other historical medical conditions.</td></tr>
+
+          <tr><td class="id">2.16.840.1.113883.10.20.22.2.18:2015-08-01</td><td class="comment"><span class="name">Payers Section</span> — Insurance coverage, payer, policy, and authorization information.</td></tr>
+
+          <tr><td class="id">2.16.840.1.113883.10.20.2.10:2015-08-01</td><td class="comment"><span class="name">Physical Exam Section</span> — Physical examination findings from the encounter.</td></tr>
+
+          <tr><td class="id">2.16.840.1.113883.10.20.22.2.10:2014-06-09</td><td class="comment"><span class="name">Plan of Treatment Section</span> — Orders, planned interventions, follow-up actions, and future care plans.</td></tr>
+
+          <tr><td class="id">2.16.840.1.113883.10.20.22.2.30:2014-06-09</td><td class="comment"><span class="name">Planned Procedure Section</span> — Procedures intended or scheduled for future care.</td></tr>
+
+          <tr><td class="id">2.16.840.1.113883.10.20.22.2.35</td><td class="comment"><span class="name">Postoperative Diagnosis Section</span> — Diagnosis or clinical condition after surgery.</td></tr>
+
+          <tr><td class="id">2.16.840.1.113883.10.20.22.2.36:2015-08-01</td><td class="comment"><span class="name">Postprocedure Diagnosis Section</span> — Diagnosis or clinical condition after a procedure.</td></tr>
+
+          <tr><td class="id">2.16.840.1.113883.10.20.22.2.34:2015-08-01</td><td class="comment"><span class="name">Preoperative Diagnosis Section</span> — Diagnosis or clinical condition before surgery or procedure.</td></tr>
+
+          <tr><td class="id">2.16.840.1.113883.10.20.22.2.5.1:2015-08-01</td><td class="comment"><span class="name">Problem Section</span> — Active and historical clinical problems, diagnoses, or health conditions.</td></tr>
+
+          <tr><td class="id">2.16.840.1.113883.10.20.22.2.27</td><td class="comment"><span class="name">Procedure Description Section</span> — Narrative details describing how a procedure was performed.</td></tr>
+
+          <tr><td class="id">2.16.840.1.113883.10.20.18.2.12</td><td class="comment"><span class="name">Procedure Disposition Section</span> — Patient disposition after a procedure, such as recovery or transfer location.</td></tr>
+
+          <tr><td class="id">2.16.840.1.113883.10.20.18.2.9</td><td class="comment"><span class="name">Procedure Estimated Blood Loss Section</span> — Estimated blood loss associated with a procedure.</td></tr>
+
+          <tr><td class="id">2.16.840.1.113883.10.20.22.2.28:2015-08-01</td><td class="comment"><span class="name">Procedure Findings Section</span> — Findings observed during a procedure.</td></tr>
+
+          <tr><td class="id">2.16.840.1.113883.10.20.22.2.40</td><td class="comment"><span class="name">Procedure Implants Section</span> — Implants, devices, or materials placed during a procedure.</td></tr>
+
+          <tr><td class="id">2.16.840.1.113883.10.20.22.2.29:2014-06-09</td><td class="comment"><span class="name">Procedure Indications Section</span> — Clinical reasons or indications for performing a procedure.</td></tr>
+
+          <tr><td class="id">2.16.840.1.113883.10.20.22.2.31</td><td class="comment"><span class="name">Procedure Specimens Taken Section</span> — Specimens collected during a procedure.</td></tr>
+
+          <tr><td class="id">2.16.840.1.113883.10.20.22.2.7.1:2014-06-09</td><td class="comment"><span class="name">Procedures Section</span> — Past, current, or planned procedures relevant to the patient.</td></tr>
+
+          <tr><td class="id">1.3.6.1.4.1.19376.1.5.3.1.3.1:2014-06-09</td><td class="comment"><span class="name">Reason for Referral Section</span> — Explains why the patient is being referred to another provider or service.</td></tr>
+
+          <tr><td class="id">2.16.840.1.113883.10.20.22.2.12</td><td class="comment"><span class="name">Reason for Visit Section</span> — Reason the patient sought care for the encounter.</td></tr>
+
+          <tr><td class="id">2.16.840.1.113883.10.20.22.2.3.1:2015-08-01</td><td class="comment"><span class="name">Results Section</span> — Laboratory, diagnostic, and other clinical results.</td></tr>
+
+          <tr><td class="id">1.3.6.1.4.1.19376.1.5.3.1.3.18</td><td class="comment"><span class="name">Review of Systems Section</span> — Organ-system review of symptoms reported or denied by the patient.</td></tr>
+
+          <tr><td class="id">2.16.840.1.113883.10.20.22.2.17:2015-08-01</td><td class="comment"><span class="name">Social History Section</span> — Social determinants, tobacco, alcohol, occupation, living situation, and related history.</td></tr>
+
+          <tr><td class="id">2.16.840.1.113883.10.20.21.2.2</td><td class="comment"><span class="name">Subjective Section</span> — Patient-reported symptoms, history, and subjective statements.</td></tr>
+
+          <tr><td class="id">2.16.840.1.113883.10.20.7.13</td><td class="comment"><span class="name">Surgical Drains Section</span> — Drains placed, managed, or removed during surgery.</td></tr>
+
+          <tr><td class="id">2.16.840.1.113883.10.20.22.2.4.1:2015-08-01</td><td class="comment"><span class="name">Vital Signs Section</span> — Vital signs such as blood pressure, pulse, respiratory rate, height, weight, and temperature.</td></tr>
+        
+        </tbody>
+      </table>
+      <p class="source">Source basis: HL7 C-CDA section template index and C-CDA template descriptions. Confirm the exact version/extension required by your implementation guide, trading partner, or validation profile.</p>
+    </section>
+  </main>
+</body>
+</html>

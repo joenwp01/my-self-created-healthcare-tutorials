@@ -1,0 +1,1012 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SQL Window Functions — Interactive Tutorial</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --surface-raised: #1c2333;
+    --border: #30363d;
+    --border-accent: #6e40c9;
+    --text: #e6edf3;
+    --text-muted: #8b949e;
+    --text-dim: #6e7681;
+    --accent: #d2a8ff;
+    --accent-glow: rgba(210,168,255,0.12);
+    --green: #3fb950;
+    --green-bg: rgba(63,185,80,0.12);
+    --red: #f85149;
+    --red-bg: rgba(248,81,73,0.12);
+    --orange: #d29922;
+    --orange-bg: rgba(210,153,34,0.12);
+    --purple: #bc8cff;
+    --rose: #f778ba;
+    --rose-glow: rgba(247,120,186,0.12);
+    --keyword: #ff7b72;
+    --string: #a5d6ff;
+    --param: #ffa657;
+    --winfn: #d2a8ff;
+    --clause: #79c0ff;
+    --comment: #6e7681;
+    --radius: 8px;
+    --mono: 'IBM Plex Mono', monospace;
+    --serif: 'Source Serif 4', Georgia, serif;
+    --sans: 'DM Sans', system-ui, sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.7;
+    min-height: 100vh;
+  }
+
+  /* ── Top bar ── */
+  .topbar {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(13,17,23,0.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 24px;
+    display: flex; align-items: center; gap: 16px;
+  }
+  .topbar-logo {
+    font-family: var(--mono); font-weight: 600;
+    color: var(--accent); font-size: 14px;
+    letter-spacing: 0.5px;
+  }
+  .topbar-progress {
+    flex: 1; height: 4px;
+    background: var(--surface-raised); border-radius: 2px;
+    overflow: hidden;
+  }
+  .topbar-progress-fill {
+    height: 100%; width: 0%;
+    background: linear-gradient(90deg, var(--accent), var(--rose));
+    border-radius: 2px;
+    transition: width 0.5s ease;
+  }
+  .topbar-score {
+    font-family: var(--mono); font-size: 13px;
+    color: var(--text-muted);
+  }
+
+  /* ── Layout ── */
+  .container { max-width: 880px; margin: 0 auto; padding: 0 24px 120px; }
+
+  /* ── Hero ── */
+  .hero {
+    padding: 80px 0 60px;
+    text-align: center;
+    position: relative;
+  }
+  .hero::before {
+    content: '';
+    position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+    width: 600px; height: 300px;
+    background: radial-gradient(ellipse, rgba(210,168,255,0.07) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero h1 {
+    font-family: var(--serif);
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 700; line-height: 1.2;
+    margin-bottom: 16px;
+  }
+  .hero h1 span { color: var(--accent); }
+  .hero p {
+    color: var(--text-muted); font-size: 17px;
+    max-width: 600px; margin: 0 auto 32px;
+  }
+  .hero-cta {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--accent); color: #000;
+    font-weight: 600; font-size: 15px;
+    padding: 12px 28px; border-radius: 6px;
+    border: none; cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .hero-cta:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 20px rgba(210,168,255,0.35);
+  }
+
+  /* ── Sections ── */
+  .section { margin-top: 64px; }
+  .section-label {
+    font-family: var(--mono); font-size: 11px;
+    letter-spacing: 2px; text-transform: uppercase;
+    color: var(--accent); margin-bottom: 8px;
+  }
+  .section h2 {
+    font-family: var(--serif); font-size: 1.6rem;
+    font-weight: 700; margin-bottom: 16px;
+  }
+  .section h3 {
+    font-family: var(--serif); font-size: 1.15rem;
+    font-weight: 600; margin: 28px 0 10px;
+    color: var(--text);
+  }
+  .section p, .section li {
+    color: var(--text-muted); line-height: 1.8;
+  }
+  .section ul { padding-left: 20px; margin: 12px 0; }
+  .section li { margin-bottom: 6px; }
+  .section li::marker { color: var(--accent); }
+
+  /* ── Code blocks ── */
+  .code-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    margin: 20px 0;
+    overflow-x: auto;
+    font-family: var(--mono);
+    font-size: 14px;
+    line-height: 1.8;
+    position: relative;
+  }
+  .code-block .label {
+    position: absolute; top: 8px; right: 12px;
+    font-size: 10px; letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+  .kw { color: var(--keyword); font-weight: 500; }
+  .str { color: var(--string); }
+  .param { color: var(--param); font-weight: 500; }
+  .cmt { color: var(--comment); font-style: italic; }
+  .fn { color: var(--winfn); font-weight: 500; }
+  .cl { color: var(--clause); }
+
+  .callout {
+    background: var(--accent-glow);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 var(--radius) var(--radius) 0;
+    padding: 16px 20px;
+    margin: 20px 0;
+    font-size: 14px;
+    color: var(--text-muted);
+  }
+  .callout strong { color: var(--accent); }
+  .callout.warn {
+    background: var(--orange-bg);
+    border-left-color: var(--orange);
+  }
+  .callout.warn strong { color: var(--orange); }
+  .callout.rose {
+    background: var(--rose-glow);
+    border-left-color: var(--rose);
+  }
+  .callout.rose strong { color: var(--rose); }
+
+  /* ── Anatomy diagram ── */
+  .anatomy {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    margin: 24px 0;
+    font-family: var(--mono); font-size: 14px;
+    line-height: 2.1;
+  }
+  .anatomy .arrow {
+    color: var(--text-dim);
+    font-size: 12px;
+    margin-left: 4px;
+  }
+
+  /* ── Function reference grid ── */
+  .fn-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 12px;
+    margin: 20px 0;
+  }
+  .fn-card {
+    background: var(--surface-raised);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+  }
+  .fn-card .fn-name {
+    font-family: var(--mono); font-size: 13px;
+    font-weight: 600; color: var(--winfn);
+    margin-bottom: 4px;
+  }
+  .fn-card .fn-desc {
+    font-size: 13px; color: var(--text-muted);
+    line-height: 1.5;
+  }
+
+  /* ── Exercise cards ── */
+  .exercise {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    margin-top: 48px;
+    overflow: hidden;
+    transition: border-color 0.3s;
+  }
+  .exercise.solved { border-color: var(--green); }
+  .exercise-header {
+    display: flex; align-items: center; gap: 12px;
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface-raised);
+  }
+  .exercise-num {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--mono); font-size: 13px; font-weight: 600;
+    background: var(--accent-glow); color: var(--accent);
+    border: 1px solid rgba(210,168,255,0.25);
+    flex-shrink: 0;
+    transition: background 0.3s, color 0.3s, border-color 0.3s;
+  }
+  .exercise.solved .exercise-num {
+    background: var(--green-bg); color: var(--green);
+    border-color: rgba(63,185,80,0.3);
+  }
+  .exercise-title { font-weight: 600; font-size: 15px; }
+  .exercise-diff {
+    margin-left: auto;
+    font-family: var(--mono); font-size: 11px;
+    letter-spacing: 0.5px; padding: 3px 10px;
+    border-radius: 20px; flex-shrink: 0;
+  }
+  .diff-easy { background: var(--green-bg); color: var(--green); }
+  .diff-med { background: var(--orange-bg); color: var(--orange); }
+  .diff-hard { background: var(--red-bg); color: var(--red); }
+
+  .exercise-body { padding: 24px; }
+  .exercise-body > p {
+    color: var(--text-muted); margin-bottom: 16px; font-size: 15px;
+  }
+
+  .schema-box {
+    background: rgba(247,120,186,0.06);
+    border: 1px solid rgba(247,120,186,0.15);
+    border-radius: var(--radius);
+    padding: 14px 18px;
+    margin-bottom: 20px;
+    font-family: var(--mono); font-size: 13px;
+    line-height: 1.6;
+    color: var(--rose);
+  }
+  .schema-box .tname { color: var(--param); font-weight: 600; }
+  .schema-box .cols { color: var(--text-muted); }
+
+  /* ── Fill-in code area ── */
+  .fill-code {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    font-family: var(--mono); font-size: 14px;
+    line-height: 2.6;
+    margin-bottom: 16px;
+    white-space: pre-wrap;
+    word-break: break-word;
+    overflow-x: auto;
+  }
+  .fill-code .blank-wrap {
+    display: inline-block;
+    position: relative;
+    vertical-align: baseline;
+    margin: 0 1px;
+    padding-bottom: 14px;
+  }
+  .fill-code input {
+    background: var(--surface-raised);
+    border: 1px dashed var(--border-accent);
+    border-radius: 4px;
+    color: var(--winfn);
+    font-family: var(--mono); font-size: 14px;
+    padding: 2px 8px;
+    height: 26px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    vertical-align: baseline;
+  }
+  .fill-code input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px var(--accent-glow);
+  }
+  .fill-code input.correct {
+    border-color: var(--green);
+    color: var(--green);
+    background: var(--green-bg);
+  }
+  .fill-code input.wrong {
+    border-color: var(--red);
+    color: var(--red);
+    background: var(--red-bg);
+    animation: shake 0.3s;
+  }
+  @keyframes shake {
+    0%,100% { transform: translateX(0); }
+    25% { transform: translateX(-4px); }
+    75% { transform: translateX(4px); }
+  }
+
+  .blank-label {
+    position: absolute;
+    left: 0; right: 0;
+    bottom: -1px;
+    font-size: 9px; letter-spacing: 0.5px;
+    color: var(--text-dim); text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    pointer-events: none;
+    line-height: 1;
+  }
+
+  /* ── Buttons row ── */
+  .exercise-actions {
+    display: flex; gap: 10px; flex-wrap: wrap;
+    margin-top: 8px;
+  }
+  .btn {
+    font-family: var(--sans);
+    font-size: 13px; font-weight: 600;
+    padding: 8px 18px; border-radius: 6px;
+    border: 1px solid var(--border);
+    cursor: pointer; transition: all 0.15s;
+  }
+  .btn-check {
+    background: var(--accent); color: #000; border-color: var(--accent);
+  }
+  .btn-check:hover { box-shadow: 0 2px 12px rgba(210,168,255,0.35); }
+  .btn-hint {
+    background: transparent; color: var(--orange);
+    border-color: rgba(210,153,34,0.3);
+  }
+  .btn-hint:hover { background: var(--orange-bg); }
+  .btn-reveal {
+    background: transparent; color: var(--red);
+    border-color: rgba(248,81,73,0.3);
+  }
+  .btn-reveal:hover { background: var(--red-bg); }
+  .btn-reset {
+    background: transparent; color: var(--text-muted);
+    border-color: var(--border);
+  }
+  .btn-reset:hover { background: var(--surface-raised); }
+
+  /* ── Hint / feedback area ── */
+  .hint-area {
+    margin-top: 14px;
+    padding: 12px 16px;
+    border-radius: var(--radius);
+    font-size: 14px;
+    display: none;
+  }
+  .hint-area.visible { display: block; }
+  .hint-area.hint { background: var(--orange-bg); color: var(--orange); }
+  .hint-area.success { background: var(--green-bg); color: var(--green); }
+  .hint-area.error { background: var(--red-bg); color: var(--red); }
+
+  /* ── Explanation toggle ── */
+  .explanation {
+    margin-top: 16px;
+    border-top: 1px solid var(--border);
+    padding-top: 16px;
+    display: none;
+  }
+  .explanation.visible { display: block; }
+  .explanation p { color: var(--text-muted); font-size: 14px; margin-bottom: 8px; }
+  .explanation code {
+    background: var(--surface-raised); padding: 1px 6px;
+    border-radius: 3px; font-family: var(--mono); font-size: 13px;
+    color: var(--winfn);
+  }
+
+  /* ── Footer ── */
+  .footer {
+    text-align: center; padding: 60px 0 40px;
+    color: var(--text-dim); font-size: 13px;
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 600px) {
+    .container { padding: 0 16px 80px; }
+    .code-block, .fill-code, .anatomy { padding: 14px 16px; font-size: 12px; }
+    .exercise-body { padding: 16px; }
+    .fill-code input { font-size: 12px; height: 22px; }
+    .fill-code .blank-wrap { padding-bottom: 12px; }
+    .fn-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ── Top bar ── -->
+<div class="topbar">
+  <div class="topbar-logo">SQL::WINDOW</div>
+  <div class="topbar-progress"><div class="topbar-progress-fill" id="progressFill"></div></div>
+  <div class="topbar-score" id="scoreLabel">0 / 7</div>
+</div>
+
+<div class="container">
+
+<!-- ── Hero ── -->
+<div class="hero">
+  <h1>SQL Window <span>Functions</span></h1>
+  <p>Compute rankings, running totals, moving averages, and row comparisons — all without collapsing your result set. Window functions let you aggregate while keeping every row.</p>
+  <button class="hero-cta" onclick="document.getElementById('concept').scrollIntoView()">Start Learning &darr;</button>
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!--  CONCEPT SECTION                       -->
+<!-- ═══════════════════════════════════════ -->
+<div class="section" id="concept">
+  <div class="section-label">Concept</div>
+  <h2>What is a Window Function?</h2>
+  <p>A <strong style="color:var(--text)">window function</strong> performs a calculation across a set of rows that are related to the current row — its "window." Unlike <code style="font-family:var(--mono);color:var(--keyword)">GROUP BY</code>, which collapses many rows into one, a window function <em>keeps every row</em> and adds the computed value as a new column.</p>
+
+  <div class="callout">
+    <strong>The core insight:</strong> GROUP BY asks "give me one row per group." Window functions ask "give me every row, but also tell me something about the group each row belongs to."
+  </div>
+
+  <p style="margin-top:20px">Compare these two approaches to getting department salary averages:</p>
+
+  <div class="code-block">
+    <span class="label">GROUP BY — rows collapse</span>
+<span class="kw">SELECT</span> department, <span class="fn">AVG</span>(salary) <span class="kw">AS</span> avg_salary
+<span class="kw">FROM</span> employees
+<span class="kw">GROUP BY</span> department;
+
+<span class="cmt">-- Result: one row per department</span>
+<span class="cmt">-- Engineering  │ 95000</span>
+<span class="cmt">-- Marketing    │ 72000</span>
+  </div>
+
+  <div class="code-block">
+    <span class="label">Window Function — rows preserved</span>
+<span class="kw">SELECT</span> name, department, salary,
+       <span class="fn">AVG</span>(salary) <span class="cl">OVER</span> (<span class="cl">PARTITION BY</span> department) <span class="kw">AS</span> dept_avg
+<span class="kw">FROM</span> employees;
+
+<span class="cmt">-- Result: every employee row, with their dept average added</span>
+<span class="cmt">-- Alice  │ Engineering │ 110000 │ 95000</span>
+<span class="cmt">-- Bob    │ Engineering │  80000 │ 95000</span>
+<span class="cmt">-- Carol  │ Marketing   │  72000 │ 72000</span>
+  </div>
+
+  <p style="margin-top:16px">The magic keyword is <code style="font-family:var(--mono);color:var(--clause)">OVER()</code>. It turns any aggregate — or a specialized function like <code style="font-family:var(--mono);color:var(--winfn)">ROW_NUMBER()</code> — into a window function.</p>
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!--  ANATOMY SECTION                       -->
+<!-- ═══════════════════════════════════════ -->
+<div class="section">
+  <div class="section-label">Structure</div>
+  <h2>Anatomy of a Window Function</h2>
+
+  <div class="anatomy">
+<span class="fn">function_name</span>(<span class="param">args</span>) <span class="cl">OVER</span> (       <span class="arrow">← the function + OVER keyword</span>
+    <span class="cl">PARTITION BY</span> col           <span class="arrow">← optional: divides rows into groups (like GROUP BY)</span>
+    <span class="cl">ORDER BY</span> col [ASC|DESC]    <span class="arrow">← optional: sets the row order within each partition</span>
+    <span class="cl">ROWS BETWEEN</span> ... <span class="cl">AND</span> ...  <span class="arrow">← optional: defines the "frame" of rows to consider</span>
+)
+  </div>
+
+  <p style="margin-top:16px">The three clauses inside <code style="font-family:var(--mono);color:var(--clause)">OVER()</code> are all optional:</p>
+  <ul>
+    <li><strong style="color:var(--clause)">PARTITION BY</strong> — Divides the result set into groups. The function resets for each group. Omit it to treat the entire table as one partition.</li>
+    <li><strong style="color:var(--clause)">ORDER BY</strong> — Determines row order within each partition. Required for ranking functions and running calculations.</li>
+    <li><strong style="color:var(--clause)">Frame clause</strong> (ROWS/RANGE BETWEEN) — Fine-tunes exactly which rows relative to the current row are included. Defaults vary by function.</li>
+  </ul>
+
+  <div class="callout warn">
+    <strong>Execution order matters:</strong> Window functions run <em>after</em> WHERE, GROUP BY, and HAVING, but <em>before</em> ORDER BY and LIMIT. You cannot use a window function inside a WHERE clause — wrap it in a CTE or subquery if you need to filter on a window result.
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!--  FUNCTION REFERENCE                    -->
+<!-- ═══════════════════════════════════════ -->
+<div class="section">
+  <div class="section-label">Reference</div>
+  <h2>Common Window Functions</h2>
+
+  <h3>Ranking Functions</h3>
+  <div class="fn-grid">
+    <div class="fn-card">
+      <div class="fn-name">ROW_NUMBER()</div>
+      <div class="fn-desc">Assigns 1, 2, 3… to each row. No ties — always unique within the partition.</div>
+    </div>
+    <div class="fn-card">
+      <div class="fn-name">RANK()</div>
+      <div class="fn-desc">Like ROW_NUMBER but ties share a rank, leaving gaps (1, 2, 2, 4).</div>
+    </div>
+    <div class="fn-card">
+      <div class="fn-name">DENSE_RANK()</div>
+      <div class="fn-desc">Like RANK but no gaps after ties (1, 2, 2, 3).</div>
+    </div>
+    <div class="fn-card">
+      <div class="fn-name">NTILE(n)</div>
+      <div class="fn-desc">Splits rows into <em>n</em> roughly equal buckets, labeled 1 through n.</div>
+    </div>
+  </div>
+
+  <h3>Value Functions</h3>
+  <div class="fn-grid">
+    <div class="fn-card">
+      <div class="fn-name">LAG(col, n)</div>
+      <div class="fn-desc">Returns the value from <em>n</em> rows before the current row (default n=1).</div>
+    </div>
+    <div class="fn-card">
+      <div class="fn-name">LEAD(col, n)</div>
+      <div class="fn-desc">Returns the value from <em>n</em> rows after the current row.</div>
+    </div>
+    <div class="fn-card">
+      <div class="fn-name">FIRST_VALUE(col)</div>
+      <div class="fn-desc">Returns the first value in the window frame.</div>
+    </div>
+    <div class="fn-card">
+      <div class="fn-name">LAST_VALUE(col)</div>
+      <div class="fn-desc">Returns the last value in the window frame (beware default frame!).</div>
+    </div>
+  </div>
+
+  <h3>Aggregate Functions as Windows</h3>
+  <div class="fn-grid">
+    <div class="fn-card">
+      <div class="fn-name">SUM() OVER()</div>
+      <div class="fn-desc">Running or partitioned sum without collapsing rows.</div>
+    </div>
+    <div class="fn-card">
+      <div class="fn-name">AVG() OVER()</div>
+      <div class="fn-desc">Running or partitioned average alongside each row.</div>
+    </div>
+    <div class="fn-card">
+      <div class="fn-name">COUNT() OVER()</div>
+      <div class="fn-desc">Running or partitioned count per row.</div>
+    </div>
+    <div class="fn-card">
+      <div class="fn-name">MAX() / MIN() OVER()</div>
+      <div class="fn-desc">Partition-level max or min visible on every row.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!--  WORKED EXAMPLE                        -->
+<!-- ═══════════════════════════════════════ -->
+<div class="section" id="example">
+  <div class="section-label">Worked Example</div>
+  <h2>Your First Window Function</h2>
+  <p><strong style="color:var(--text)">Scenario:</strong> You have a table <code style="color:var(--param);font-family:var(--mono)">sales</code> with columns <code style="color:var(--text-muted);font-family:var(--mono)">id, rep_name, region, amount, sale_date</code>. You want every sale row, but with each rep's rank within their region based on amount.</p>
+
+  <div class="code-block">
+<span class="kw">SELECT</span>
+    rep_name,
+    region,
+    amount,
+    <span class="fn">RANK</span>() <span class="cl">OVER</span> (
+        <span class="cl">PARTITION BY</span> region         <span class="cmt">-- restart ranking per region</span>
+        <span class="cl">ORDER BY</span> amount <span class="kw">DESC</span>       <span class="cmt">-- highest amount = rank 1</span>
+    ) <span class="kw">AS</span> region_rank
+<span class="kw">FROM</span> sales;
+
+<span class="cmt">-- Result: every row, with a rank added</span>
+<span class="cmt">-- Alice │ West  │ 50000 │ 1</span>
+<span class="cmt">-- Bob   │ West  │ 42000 │ 2</span>
+<span class="cmt">-- Carol │ East  │ 61000 │ 1</span>
+<span class="cmt">-- Dave  │ East  │ 61000 │ 1  ← tie: both rank 1</span>
+<span class="cmt">-- Eve   │ East  │ 35000 │ 3  ← rank 3, not 2 (gap after tie)</span>
+  </div>
+
+  <p style="margin-top:16px"><strong style="color:var(--text)">What happened:</strong></p>
+  <ul>
+    <li><code style="font-family:var(--mono);color:var(--winfn)">RANK()</code> is the window function — it computes a ranking number.</li>
+    <li><code style="font-family:var(--mono);color:var(--clause)">OVER()</code> turns it into a window operation instead of a regular call.</li>
+    <li><code style="font-family:var(--mono);color:var(--clause)">PARTITION BY region</code> means ranking restarts for each region.</li>
+    <li><code style="font-family:var(--mono);color:var(--clause)">ORDER BY amount DESC</code> means the highest amount gets rank 1.</li>
+    <li>Every original row is preserved — nothing collapses.</li>
+  </ul>
+
+  <div class="callout rose">
+    <strong>RANK vs. DENSE_RANK vs. ROW_NUMBER:</strong> With two tied amounts at rank 1, RANK skips to 3. DENSE_RANK would continue to 2. ROW_NUMBER would arbitrarily assign 1 and 2 — it never produces ties.
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!--  EXERCISES                             -->
+<!-- ═══════════════════════════════════════ -->
+<div class="section" id="exercises">
+  <div class="section-label">Practice</div>
+  <h2>Fill in the Blanks</h2>
+  <p>Each exercise presents a scenario and a window function query with missing pieces. Type the correct SQL in each blank, then check your work. Use <strong style="color:var(--orange)">Hint</strong> if stuck, or <strong style="color:var(--red)">Reveal</strong> to see the answer.</p>
+</div>
+
+<div id="exerciseContainer"></div>
+
+<div class="footer">
+  SQL Window Functions Tutorial &middot; Every row gets a window seat.
+</div>
+
+</div><!-- /container -->
+
+<script>
+// ═══════════════════════════════════════════
+//  EXERCISE DATA — 7 exercises
+// ═══════════════════════════════════════════
+const exercises = [
+  // ── 1. ROW_NUMBER — basic ranking ──
+  {
+    id: 1,
+    title: "ROW_NUMBER — Assign Sequential Ranks",
+    difficulty: "easy",
+    schema: { table: "employees", cols: "id, name, department, salary, hire_date" },
+    description: "Assign a unique row number to each employee within their department, ordered by salary highest-first.",
+    codeLines: [
+      'SELECT',
+      '    name, department, salary,',
+      '    {0}() {1} (',
+      '        {2} department',
+      '        ORDER BY salary {3}',
+      '    ) AS dept_rank',
+      'FROM employees;'
+    ],
+    blanks: [
+      { answer: "ROW_NUMBER", hint: "The window function that assigns 1, 2, 3… with no ties.", label: "function" },
+      { answer: "OVER", hint: "The keyword that makes any function a window function.", label: "keyword" },
+      { answer: "PARTITION BY", hint: "Clause that divides rows into groups — like GROUP BY but without collapsing.", label: "partition clause" },
+      { answer: "DESC", hint: "To get the highest salary as rank 1, sort in this direction.", label: "sort direction" }
+    ],
+    explanation: "<code>ROW_NUMBER()</code> assigns a unique sequential integer starting at 1 within each partition. <code>OVER</code> activates the window, <code>PARTITION BY</code> resets numbering per department, and <code>DESC</code> ensures the highest salary gets 1."
+  },
+
+  // ── 2. SUM() OVER — running total ──
+  {
+    id: 2,
+    title: "Running Total with SUM() OVER",
+    difficulty: "easy",
+    schema: { table: "daily_revenue", cols: "id, revenue_date, amount" },
+    description: "Calculate a cumulative running total of daily revenue, ordered by date. Each row should show its own amount plus all previous days' amounts.",
+    codeLines: [
+      'SELECT',
+      '    revenue_date,',
+      '    amount,',
+      '    {0}(amount) OVER (',
+      '        {1} revenue_date ASC',
+      '    ) AS running_total',
+      'FROM daily_revenue;'
+    ],
+    blanks: [
+      { answer: "SUM", hint: "The aggregate function that totals values.", label: "aggregate fn" },
+      { answer: "ORDER BY", hint: "Which clause inside OVER() sets the cumulative order?", label: "ordering clause" }
+    ],
+    explanation: "When you put <code>SUM()</code> inside <code>OVER()</code> with an <code>ORDER BY</code>, it becomes a running (cumulative) sum. Without <code>PARTITION BY</code>, the entire table is one partition. Each row sees the sum of all amounts from the first row up to and including itself."
+  },
+
+  // ── 3. LAG — compare to previous row ──
+  {
+    id: 3,
+    title: "LAG — Compare to the Previous Row",
+    difficulty: "easy",
+    schema: { table: "monthly_sales", cols: "id, sale_month, region, revenue" },
+    description: "For each region, show the current month's revenue alongside the <em>previous</em> month's revenue, then compute the month-over-month change.",
+    codeLines: [
+      'SELECT',
+      '    sale_month, region, revenue,',
+      '    {0}(revenue, {1}) OVER (',
+      '        PARTITION BY {2}',
+      '        ORDER BY {3}',
+      '    ) AS prev_month_rev,',
+      '    revenue - LAG(revenue, 1) OVER (',
+      '        PARTITION BY region',
+      '        ORDER BY sale_month',
+      '    ) AS mom_change',
+      'FROM monthly_sales;'
+    ],
+    blanks: [
+      { answer: "LAG", hint: "Window function that looks backward to a previous row.", label: "function" },
+      { answer: "1", hint: "How many rows back? We want the immediately previous row.", label: "offset" },
+      { answer: "region", hint: "We want each region's history separate.", label: "partition col" },
+      { answer: "sale_month", hint: "Order chronologically within each region.", label: "order col" }
+    ],
+    explanation: "<code>LAG(revenue, 1)</code> reaches back one row (in the defined order) and returns that row's revenue. Subtracting it from the current revenue gives month-over-month change. The first row per partition returns NULL since there's no prior row."
+  },
+
+  // ── 4. DENSE_RANK with a CTE filter ──
+  {
+    id: 4,
+    title: "Top-N per Group with DENSE_RANK",
+    difficulty: "med",
+    schema: { table: "products", cols: "id, name, category, units_sold" },
+    description: "Find the <strong>top 3 best-selling products</strong> in each category. Use <code>DENSE_RANK()</code> so ties don't consume extra slots. Since you can't filter window results in WHERE, wrap it in a CTE.",
+    codeLines: [
+      'WITH ranked_products AS (',
+      '    SELECT',
+      '        name, category, units_sold,',
+      '        {0}() OVER (',
+      '            PARTITION BY category',
+      '            ORDER BY {1} DESC',
+      '        ) AS sales_rank',
+      '    FROM products',
+      ')',
+      'SELECT name, category, units_sold, sales_rank',
+      'FROM {2}',
+      'WHERE sales_rank {3} 3;'
+    ],
+    blanks: [
+      { answer: "DENSE_RANK", hint: "Ranking function with no gaps after ties (1, 2, 2, 3).", label: "function" },
+      { answer: "units_sold", hint: "Rank by the column that measures sales volume.", label: "order col" },
+      { answer: "ranked_products", hint: "Reference the CTE you just defined.", label: "CTE name" },
+      { answer: "<=", hint: "Operator to include ranks 1, 2, and 3.", label: "filter operator" }
+    ],
+    explanation: "<code>DENSE_RANK()</code> ensures that if two products tie at rank 2, the next product is still rank 3 (not 4). The CTE wrapping is necessary because window functions can't be used in <code>WHERE</code> — they execute after filtering. The outer query filters <code>sales_rank <= 3</code>."
+  },
+
+  // ── 5. AVG with a frame clause — moving average ──
+  {
+    id: 5,
+    title: "Moving Average with a Frame Clause",
+    difficulty: "med",
+    schema: { table: "stock_prices", cols: "id, ticker, trade_date, close_price" },
+    description: "Calculate a <strong>7-day moving average</strong> of closing price for each stock ticker. The frame should include the current row and the 6 preceding rows.",
+    codeLines: [
+      'SELECT',
+      '    ticker, trade_date, close_price,',
+      '    {0}(close_price) OVER (',
+      '        PARTITION BY ticker',
+      '        ORDER BY trade_date',
+      '        {1} BETWEEN {2} AND CURRENT ROW',
+      '    ) AS moving_avg_7d',
+      'FROM stock_prices;'
+    ],
+    blanks: [
+      { answer: "AVG", hint: "Aggregate function that computes the mean.", label: "function" },
+      { answer: "ROWS", hint: "Frame clause keyword that counts physical rows (not value ranges).", label: "frame type" },
+      { answer: "6 PRECEDING", hint: "Current row + 6 previous rows = 7-day window.", label: "frame start" }
+    ],
+    explanation: "The frame clause <code>ROWS BETWEEN 6 PRECEDING AND CURRENT ROW</code> tells the database to compute the AVG using exactly 7 rows: the current row plus the 6 before it. <code>ROWS</code> counts physical rows; <code>RANGE</code> would compare values instead. This is the standard pattern for N-period moving averages."
+  },
+
+  // ── 6. NTILE — percentile buckets ──
+  {
+    id: 6,
+    title: "NTILE — Percentile Buckets",
+    difficulty: "med",
+    schema: { table: "customers", cols: "id, name, total_spend, signup_date" },
+    description: "Divide all customers into <strong>4 equal quartile buckets</strong> based on their total spending (highest spenders in bucket 1). Then show only the top quartile.",
+    codeLines: [
+      'WITH bucketed AS (',
+      '    SELECT',
+      '        name, total_spend,',
+      '        {0}({1}) OVER (',
+      '            ORDER BY total_spend {2}',
+      '        ) AS spend_quartile',
+      '    FROM customers',
+      ')',
+      'SELECT name, total_spend, spend_quartile',
+      'FROM bucketed',
+      'WHERE spend_quartile = {3};'
+    ],
+    blanks: [
+      { answer: "NTILE", hint: "Window function that distributes rows into N equal-sized buckets.", label: "function" },
+      { answer: "4", hint: "How many buckets for quartiles?", label: "bucket count" },
+      { answer: "DESC", hint: "Highest spenders should be in bucket 1.", label: "sort direction" },
+      { answer: "1", hint: "Which bucket number represents the top quartile?", label: "filter value" }
+    ],
+    explanation: "<code>NTILE(4)</code> splits the ordered result set into 4 roughly equal groups numbered 1–4. With <code>DESC</code> ordering, the highest spenders land in bucket 1. This is commonly used for percentile analysis, customer segmentation, and cohort identification."
+  },
+
+  // ── 7. LEAD + LAG + frame — multi-function window ──
+  {
+    id: 7,
+    title: "Multi-Function Window — Prev, Next & Running Total",
+    difficulty: "hard",
+    schema: { table: "patient_visits", cols: "id, patient_id, visit_date, charge_amount" },
+    description: "For each patient, on each visit show: the <em>previous</em> visit's charge, the <em>next</em> visit's charge, and the running total of all charges to date. Three different window functions, all partitioned by patient and ordered by visit date.",
+    codeLines: [
+      'SELECT',
+      '    patient_id, visit_date, charge_amount,',
+      '',
+      '    {0}(charge_amount, 1) OVER w AS prev_charge,',
+      '    {1}(charge_amount, 1) OVER w AS next_charge,',
+      '    SUM(charge_amount)       OVER w AS running_total',
+      '',
+      'FROM patient_visits',
+      '{2} w AS (',
+      '    PARTITION BY {3}',
+      '    ORDER BY {4}',
+      ');'
+    ],
+    blanks: [
+      { answer: "LAG", hint: "Function that looks back to the previous row.", label: "look-back fn" },
+      { answer: "LEAD", hint: "Function that looks ahead to the next row.", label: "look-ahead fn" },
+      { answer: "WINDOW", hint: "SQL keyword that defines a reusable named window specification.", label: "define keyword" },
+      { answer: "patient_id", hint: "Each patient's visits should be independent.", label: "partition col" },
+      { answer: "visit_date", hint: "Order visits chronologically within each patient.", label: "order col" }
+    ],
+    explanation: "The <code>WINDOW</code> clause (SQL standard, supported in PostgreSQL, MySQL 8+, SQLite 3.28+) lets you define a named window spec once and reference it with <code>OVER w</code> from multiple functions. This avoids repeating the same <code>PARTITION BY ... ORDER BY ...</code> three times. <code>LAG</code> looks back, <code>LEAD</code> looks forward, and <code>SUM</code> with an ordered window produces a running total."
+  }
+];
+
+// ═══════════════════════════════════════════
+//  RENDER ENGINE
+// ═══════════════════════════════════════════
+let solved = new Set();
+
+function updateProgress() {
+  const pct = (solved.size / exercises.length) * 100;
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('scoreLabel').textContent = `${solved.size} / ${exercises.length}`;
+}
+
+function renderExercises() {
+  const container = document.getElementById('exerciseContainer');
+  exercises.forEach(ex => {
+    const div = document.createElement('div');
+    div.className = 'exercise';
+    div.id = `ex-${ex.id}`;
+
+    const diffClass = ex.difficulty === 'easy' ? 'diff-easy' : ex.difficulty === 'med' ? 'diff-med' : 'diff-hard';
+    const diffLabel = ex.difficulty === 'easy' ? 'Easy' : ex.difficulty === 'med' ? 'Medium' : 'Hard';
+
+    let schemaHTML = '';
+    if (ex.schema.cols) {
+      schemaHTML = `<div class="schema-box"><span class="tname">${ex.schema.table}</span> <span class="cols">(${ex.schema.cols})</span></div>`;
+    } else {
+      schemaHTML = `<div class="schema-box"><span class="tname">${ex.schema.table}</span></div>`;
+    }
+
+    const joined = ex.codeLines.join('\n');
+    let codeHTML = joined.replace(/\{(\d+)\}/g, (_, idx) => {
+      const b = ex.blanks[parseInt(idx)];
+      const ansLen = b.answer.length;
+      const widthCh = Math.max(ansLen + 2, 6);
+      return `<span class="blank-wrap"><input type="text" data-ex="${ex.id}" data-blank="${idx}" style="width:${widthCh}ch" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="???" /><span class="blank-label">${b.label}</span></span>`;
+    });
+
+    // Syntax highlight static parts
+    codeHTML = codeHTML
+      .replace(/\b(SELECT|FROM|WHERE|AND|OR|INSERT INTO|UPDATE|SET|DELETE|JOIN|INNER JOIN|LEFT JOIN|ON|GROUP BY|HAVING|ORDER BY|DESC|ASC|IN|LIKE|AS|INTO|UNION ALL|UNION|WITH|WINDOW|CURRENT ROW)\b/g, '<span class="kw">$1</span>')
+      .replace(/\b(PARTITION BY|OVER|ROWS BETWEEN|RANGE BETWEEN|ROWS|RANGE|PRECEDING|FOLLOWING|UNBOUNDED)\b/g, '<span class="cl">$1</span>')
+      .replace(/\b(SUM|AVG|COUNT|MAX|MIN|ROW_NUMBER|RANK|DENSE_RANK|NTILE|LAG|LEAD|FIRST_VALUE|LAST_VALUE)\b/g, '<span class="fn">$1</span>')
+      .replace(/(--[^\n]*)/g, '<span class="cmt">$1</span>');
+
+    div.innerHTML = `
+      <div class="exercise-header">
+        <div class="exercise-num">${ex.id}</div>
+        <div class="exercise-title">${ex.title}</div>
+        <div class="exercise-diff ${diffClass}">${diffLabel}</div>
+      </div>
+      <div class="exercise-body">
+        <p>${ex.description}</p>
+        ${schemaHTML}
+        <div class="fill-code">${codeHTML}</div>
+        <div class="exercise-actions">
+          <button class="btn btn-check" onclick="checkExercise(${ex.id})">Check Answer</button>
+          <button class="btn btn-hint" onclick="showHint(${ex.id})">Hint</button>
+          <button class="btn btn-reveal" onclick="revealAnswer(${ex.id})">Reveal</button>
+          <button class="btn btn-reset" onclick="resetExercise(${ex.id})">Reset</button>
+        </div>
+        <div class="hint-area" id="hint-${ex.id}"></div>
+        <div class="explanation" id="explain-${ex.id}"><p>${ex.explanation}</p></div>
+      </div>
+    `;
+    container.appendChild(div);
+  });
+}
+
+function getExercise(id) { return exercises.find(e => e.id === id); }
+
+function getInputs(id) {
+  return Array.from(document.querySelectorAll(`input[data-ex="${id}"]`));
+}
+
+function normalize(s) {
+  return s.trim().replace(/\s+/g, ' ').replace(/[""]/g, '"').replace(/['']/g, "'").toUpperCase();
+}
+
+function checkBlank(ex, idx, value) {
+  const b = ex.blanks[idx];
+  const nv = normalize(value);
+  const na = normalize(b.answer);
+  if (nv === na) return true;
+  if (b.accept) {
+    return b.accept.some(a => normalize(a) === nv);
+  }
+  return false;
+}
+
+function checkExercise(id) {
+  const ex = getExercise(id);
+  const inputs = getInputs(id);
+  const hintArea = document.getElementById(`hint-${id}`);
+  let allCorrect = true;
+
+  inputs.forEach((inp, idx) => {
+    inp.classList.remove('correct', 'wrong');
+    if (checkBlank(ex, idx, inp.value)) {
+      inp.classList.add('correct');
+    } else {
+      inp.classList.add('wrong');
+      allCorrect = false;
+    }
+  });
+
+  if (allCorrect) {
+    hintArea.className = 'hint-area visible success';
+    hintArea.textContent = '✓ All correct — nice work!';
+    solved.add(id);
+    document.getElementById(`ex-${id}`).classList.add('solved');
+    document.getElementById(`explain-${id}`).classList.add('visible');
+    updateProgress();
+  } else {
+    const wrongCount = inputs.filter((inp, i) => !checkBlank(ex, i, inp.value)).length;
+    hintArea.className = 'hint-area visible error';
+    hintArea.textContent = `✗ ${wrongCount} blank${wrongCount > 1 ? 's' : ''} still incorrect. Try again or use Hint.`;
+  }
+}
+
+function showHint(id) {
+  const ex = getExercise(id);
+  const inputs = getInputs(id);
+  const hintArea = document.getElementById(`hint-${id}`);
+
+  let targetIdx = -1;
+  for (let i = 0; i < inputs.length; i++) {
+    if (!checkBlank(ex, i, inputs[i].value)) { targetIdx = i; break; }
+  }
+  if (targetIdx < 0) targetIdx = 0;
+
+  const b = ex.blanks[targetIdx];
+  hintArea.className = 'hint-area visible hint';
+  hintArea.innerHTML = `<strong>Hint for "${b.label}":</strong> ${b.hint}`;
+}
+
+function revealAnswer(id) {
+  const ex = getExercise(id);
+  const inputs = getInputs(id);
+  inputs.forEach((inp, idx) => {
+    inp.value = ex.blanks[idx].answer;
+    inp.classList.remove('wrong');
+    inp.classList.add('correct');
+  });
+  const hintArea = document.getElementById(`hint-${id}`);
+  hintArea.className = 'hint-area visible success';
+  hintArea.textContent = 'Answer revealed. Study the pattern, then try the next one!';
+  solved.add(id);
+  document.getElementById(`ex-${id}`).classList.add('solved');
+  document.getElementById(`explain-${id}`).classList.add('visible');
+  updateProgress();
+}
+
+function resetExercise(id) {
+  const inputs = getInputs(id);
+  inputs.forEach(inp => {
+    inp.value = '';
+    inp.classList.remove('correct', 'wrong');
+  });
+  const hintArea = document.getElementById(`hint-${id}`);
+  hintArea.className = 'hint-area';
+  hintArea.textContent = '';
+  document.getElementById(`explain-${id}`).classList.remove('visible');
+}
+
+// ── Initialize ──
+renderExercises();
+updateProgress();
+</script>
+
+</body>
+</html>

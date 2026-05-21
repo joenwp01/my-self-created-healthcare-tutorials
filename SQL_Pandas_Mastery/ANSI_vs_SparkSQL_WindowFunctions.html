@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ANSI SQL vs SparkSQL — Window Functions Tutorial</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Lora:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0e14;--surface:#111823;--raised:#1a2333;--inset:#080c12;--border:#223145;--border2:#34476a;
+--text:#e6edf5;--muted:#8599b3;--dim:#4a6383;--accent:#2dd4bf;--accent-bg:rgba(45,212,191,.06);
+--green:#34d399;--green-bg:rgba(52,211,153,.08);--red:#fb7185;--red-bg:rgba(251,113,133,.08);
+--orange:#fbbf24;--orange-bg:rgba(251,191,36,.08);
+--ansi:#38bdf8;--ansi-bg:rgba(56,189,248,.06);--ansi-bdr:rgba(56,189,248,.3);
+--spark:#fb923c;--spark-bg:rgba(251,146,60,.06);--spark-bdr:rgba(251,146,60,.3);
+--mono:'IBM Plex Mono',monospace;--serif:'Lora',Georgia,serif;--sans:'Inter',system-ui,sans-serif;--r:8px}
+*{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15px;line-height:1.7;min-height:100vh}
+.top{position:sticky;top:0;z-index:100;background:rgba(10,14,20,.93);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:11px 22px;display:flex;align-items:center;gap:14px}
+.top-logo{font-family:var(--mono);font-weight:600;font-size:12px;background:linear-gradient(90deg,var(--ansi),var(--spark));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.top-db{font-family:var(--mono);font-size:10px;padding:3px 9px;border-radius:20px;border:1px solid var(--border)}
+.top-db.loading{color:var(--orange);border-color:rgba(251,191,36,.3)}
+.top-db.ready{color:var(--green);border-color:rgba(52,211,153,.3)}
+.cont{max-width:1080px;margin:0 auto;padding:0 22px 100px}
+.hero{padding:60px 0 40px;text-align:center}
+.hero h1{font-family:var(--serif);font-size:clamp(1.4rem,4vw,2.1rem);font-weight:700;line-height:1.25;margin-bottom:12px}
+.hero h1 .a{color:var(--ansi)} .hero h1 .s{color:var(--spark)}
+.hero p{color:var(--muted);font-size:14px;max-width:680px;margin:0 auto 16px;font-weight:300}
+.pills{display:flex;gap:10px;justify-content:center;margin-bottom:16px}
+.pill{font-family:var(--mono);font-size:10px;padding:3px 11px;border-radius:20px;border:1px solid}
+.pill.a{color:var(--ansi);border-color:var(--ansi-bdr);background:var(--ansi-bg)}
+.pill.s{color:var(--spark);border-color:var(--spark-bdr);background:var(--spark-bg)}
+.dev{font-family:var(--mono);font-size:11px;color:var(--muted);margin-bottom:16px}
+.dev span{color:var(--accent);font-weight:600}
+.overview{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px 24px;margin-top:24px}
+.overview h2{font-family:var(--serif);font-size:1.15rem;margin-bottom:10px}
+.overview p{font-size:13.5px;color:var(--muted);font-weight:300;margin-bottom:8px}
+.overview strong{color:var(--text);font-weight:600}
+.topic{margin-top:48px}
+.topic-head{border-left:3px solid var(--accent);padding:4px 14px;margin-bottom:14px}
+.topic-num{font-family:var(--mono);font-size:10px;letter-spacing:2px;color:var(--accent);text-transform:uppercase}
+.topic-title{font-family:var(--serif);font-size:1.2rem;font-weight:700;margin-top:2px}
+.topic-desc{color:var(--muted);font-size:13px;font-weight:300;margin-top:4px}
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);margin-top:14px;overflow:hidden}
+.panel-head{padding:11px 18px;background:var(--raised);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;font-size:12px;font-weight:600}
+.panel-head.demo{color:var(--accent)}
+.panel-head.prac{color:var(--orange)}
+.panel-body{padding:16px 20px}
+.scenario{background:var(--inset);border-left:3px solid var(--accent);padding:11px 15px;border-radius:0 var(--r) var(--r) 0;margin-bottom:14px;font-size:13px;color:var(--muted);font-weight:300}
+.scenario strong{color:var(--text)}
+.dual{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+@media(max-width:780px){.dual{grid-template-columns:1fr}}
+.side{border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+.side-hd{padding:7px 13px;font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:1px;font-weight:600;border-bottom:1px solid var(--border)}
+.side.a .side-hd{color:var(--ansi);background:var(--ansi-bg)}
+.side.s .side-hd{color:var(--spark);background:var(--spark-bg)}
+.code{background:var(--inset);padding:12px 15px;font-family:var(--mono);font-size:11.5px;line-height:1.85;white-space:pre-wrap;word-break:break-word;overflow-x:auto;color:var(--text)}
+.code .kw{color:var(--red);font-weight:500}.code .fn{color:var(--accent)}.code .cm{color:var(--dim);font-style:italic}.code .st{color:#86efac}
+.sqlnote{padding:7px 13px;font-size:10.5px;color:var(--orange);background:var(--orange-bg);border-top:1px solid var(--border);font-family:var(--mono);font-style:italic}
+.rslt{padding:10px 13px;border-top:1px solid var(--border);background:var(--surface)}
+.rslt-lbl{font-family:var(--mono);font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:10.5px}
+th{background:var(--raised);color:var(--muted);font-weight:600;text-align:left;padding:5px 9px;border-bottom:1px solid var(--border);white-space:nowrap}
+td{padding:4px 9px;border-bottom:1px solid rgba(34,49,69,.4);white-space:nowrap}
+tr:last-child td{border-bottom:none}
+.diff{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--orange);border-radius:var(--r);padding:13px 16px;margin-top:12px}
+.diff h4{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--orange);margin-bottom:6px}
+.diff p{font-size:13px;color:var(--muted);font-weight:300}
+.diff code{background:var(--inset);padding:1px 5px;border-radius:3px;font-family:var(--mono);font-size:11px;color:var(--spark)}
+.prac-body{padding:16px 20px}
+.prac-ansi{background:var(--inset);border:1px solid var(--ansi-bdr);border-radius:var(--r);margin-bottom:14px;overflow:hidden}
+.prac-ansi-hd{padding:7px 13px;font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--ansi);background:var(--ansi-bg);font-weight:600;border-bottom:1px solid var(--border)}
+.fill{background:var(--inset);border:1px dashed var(--border2);border-radius:var(--r);padding:14px 17px;font-family:var(--mono);font-size:12px;line-height:2.3;white-space:pre-wrap;word-break:break-word;overflow-x:auto;color:var(--text);margin-bottom:10px}
+.fill .kw{color:var(--red)}.fill .fn{color:var(--accent)}.fill .cm{color:var(--dim);font-style:italic}
+.blk{display:inline-block;position:relative}
+.fill input{background:var(--raised);border:1px dashed var(--border2);border-radius:4px;color:var(--spark);font-family:var(--mono);font-size:12px;padding:2px 7px;height:23px;outline:none;vertical-align:baseline}
+.fill input:focus{border-color:var(--spark);box-shadow:0 0 0 2px var(--spark-bg)}
+.fill input.ok{border-color:var(--green);color:var(--green);background:var(--green-bg)}
+.fill input.bad{border-color:var(--red);color:var(--red);background:var(--red-bg);animation:sh .3s}
+@keyframes sh{0%,100%{transform:translateX(0)}25%{transform:translateX(-3px)}75%{transform:translateX(3px)}}
+.rv{display:inline-flex;width:16px;height:16px;background:transparent;border:1px solid rgba(251,113,133,.3);border-radius:3px;color:var(--red);cursor:pointer;font-size:10px;align-items:center;justify-content:center;margin-left:2px;opacity:.5}
+.rv:hover{opacity:1;background:var(--red-bg)}
+.rv.used{opacity:.2;pointer-events:none;color:var(--green);border-color:rgba(52,211,153,.2)}
+.acts{display:flex;gap:8px;margin-top:8px;align-items:center;flex-wrap:wrap}
+.btn{font-family:var(--sans);font-size:11px;font-weight:600;padding:6px 14px;border-radius:5px;border:1px solid var(--border);cursor:pointer}
+.btn-sub{background:var(--spark);color:#000;border-color:var(--spark)}
+.btn-rv{background:transparent;color:var(--red);border-color:rgba(251,113,133,.3)}
+.btn-rs{background:transparent;color:var(--muted);border-color:var(--border)}
+.stat{margin-left:auto;font-family:var(--mono);font-size:11px;font-weight:600;padding:3px 10px;border-radius:4px}
+.stat.ok{background:var(--green-bg);color:var(--green)}
+.stat.bad{background:var(--red-bg);color:var(--red)}
+.out{margin-top:10px;display:none;border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+.out.show{display:block}
+.out-hd{padding:5px 11px;font-family:var(--mono);font-size:9px;color:var(--muted);background:var(--raised);letter-spacing:1px;text-transform:uppercase}
+.footer{text-align:center;padding:40px 0 30px;color:var(--dim);font-size:11px}
+</style>
+</head>
+<body>
+<div class="top">
+  <div class="top-logo">ANSI::vs::SPARK</div>
+  <div style="flex:1"></div>
+  <div class="top-db loading" id="dbStatus">SQLite Loading…</div>
+</div>
+<div class="cont">
+<div class="hero">
+  <h1>Window Functions: <span class="a">ANSI SQL</span> vs <span class="s">SparkSQL</span></h1>
+  <p>ANSI SQL and SparkSQL share most syntax — but diverge in the corners that matter for analytical queries. Frame boundaries, NULL handling, and RANGE semantics all differ in subtle ways. This tutorial contrasts them side-by-side, then lets you practice rewriting ANSI queries in Spark dialect.</p>
+  <div class="pills"><span class="pill a">● ANSI SQL (standard)</span><span class="pill s">● SparkSQL (learn by practice)</span></div>
+  <div class="dev">Developed by: <span>Joe Williams</span></div>
+</div>
+
+<div class="overview">
+  <h2>How This Tutorial Works</h2>
+  <p>Each topic has two panels. The <strong>Demo panel</strong> shows the same problem solved in both dialects with live results and an explanation of differences. The <strong>Practice panel</strong> beneath it shows a new problem pre-solved in ANSI SQL, then asks you to fill in the SparkSQL equivalent. Per-blank <strong style="color:var(--red)">◔</strong> reveal buttons help when you're stuck; the Submit button scores your attempt against the full solution.</p>
+  <p><strong>Note on the engine:</strong> Both sides run through SQLite in the browser. SQLite follows most ANSI SQL window semantics faithfully, but lacks <code style="font-family:var(--mono);color:var(--orange)">IGNORE NULLS</code>, strict <code style="font-family:var(--mono);color:var(--orange)">RANGE BETWEEN n PRECEDING</code>, and some advanced frame expressions. Where behavior deviates from the ANSI standard, a note appears beneath the code.</p>
+</div>
+
+<div id="topicContainer"></div>
+<div class="footer">ANSI SQL vs SparkSQL Window Functions Tutorial · Developed by Joe Williams</div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.3/sql-wasm.js"></script>
+<script>
+let db=null;
+async function initDB(){try{const SQL=await initSqlJs({locateFile:f=>`https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.3/${f}`});db=new SQL.Database();seedDB();document.getElementById('dbStatus').className='top-db ready';document.getElementById('dbStatus').textContent='SQLite Ready';runAllDemos()}catch(e){document.getElementById('dbStatus').textContent='DB Error'}}
+function seedDB(){db.run(`
+CREATE TABLE sales(sale_id INT,region TEXT,sale_date TEXT,amount REAL);
+INSERT INTO sales VALUES(1,'West','2026-01-05',100),(2,'West','2026-01-10',150),(3,'West','2026-01-15',200),(4,'West','2026-01-20',NULL),(5,'West','2026-01-25',180),(6,'East','2026-01-05',90),(7,'East','2026-01-12',110),(8,'East','2026-01-18',NULL),(9,'East','2026-01-24',140),(10,'East','2026-01-30',160);
+`)}
+function run(sql){try{return db.exec(sql)}catch(e){return[{error:e.message}]}}
+function tbl(r){if(!r||r.error)return`<div style="padding:10px;color:var(--red);font-size:11px">${r?r.error:'no data'}</div>`;if(!r.columns)return'';let h='<table><thead><tr>';r.columns.forEach(c=>h+=`<th>${c}</th>`);h+='</tr></thead><tbody>';r.values.forEach(row=>{h+='<tr>';row.forEach(v=>h+=`<td>${v===null?'<span style="color:var(--dim)">NULL</span>':typeof v==='number'?Math.round(v*100)/100:v}</td>`);h+='</tr>'});return h+'</tbody></table>'}
+function hl(s){return s.replace(/(--[^\n]*)/g,'<span class="cm">$1</span>').replace(/\b(SELECT|FROM|WHERE|AS|OVER|PARTITION BY|ORDER BY|ROWS|RANGE|BETWEEN|AND|PRECEDING|FOLLOWING|CURRENT ROW|UNBOUNDED|DESC|ASC|IGNORE NULLS|RESPECT NULLS|WITH|GROUP BY)\b/g,'<span class="kw">$1</span>').replace(/\b(SUM|AVG|COUNT|MAX|MIN|LAG|LEAD|FIRST_VALUE|LAST_VALUE|ROW_NUMBER|RANK|COALESCE|CAST)\b/g,'<span class="fn">$1</span>')}
+
+// ═══════ TOPICS ═══════
+const topics=[
+{n:1,title:"Running Total (SUM OVER with ROWS)",desc:"Cumulative running total — the simplest window. ANSI and Spark both handle this identically, a good baseline.",
+demo:{scenario:"Compute a <strong>running total of sales amounts</strong> per region, ordered by date.",
+ansi:"SELECT region, sale_date, amount,\n  SUM(amount) OVER (\n    PARTITION BY region\n    ORDER BY sale_date\n    ROWS BETWEEN UNBOUNDED PRECEDING\n             AND CURRENT ROW\n  ) AS running_total\nFROM sales\nWHERE region = 'West'",
+spark:"SELECT region, sale_date, amount,\n  SUM(amount) OVER (\n    PARTITION BY region\n    ORDER BY sale_date\n    ROWS BETWEEN UNBOUNDED PRECEDING\n             AND CURRENT ROW\n  ) AS running_total\nFROM sales\nWHERE region = 'West'",
+ansiNote:"SQLite supports ROWS frames faithfully per ANSI.",sparkNote:"Spark behavior identical for ROWS frames.",
+diff:"For <strong>ROWS-based frames</strong>, ANSI and Spark behave identically. However, notice that row 4 has a NULL amount — both dialects propagate the NULL through the running total by default. To skip NULLs, you'd need <code>COALESCE(amount, 0)</code>. <strong>Key takeaway:</strong> ROWS frames are the portable choice."},
+practice:{scenario:"Compute a running total of sales amounts for the <strong>East</strong> region, ordered by date.",
+ansi:"SELECT region, sale_date, amount,\n  SUM(amount) OVER (\n    PARTITION BY region\n    ORDER BY sale_date\n    ROWS BETWEEN UNBOUNDED PRECEDING\n             AND CURRENT ROW\n  ) AS running_total\nFROM sales\nWHERE region = 'East'",
+fill:"SELECT region, sale_date, amount,\n  {0}(amount) {1} (\n    PARTITION BY region\n    {2} sale_date\n    {3} BETWEEN UNBOUNDED PRECEDING\n             AND CURRENT ROW\n  ) AS running_total\nFROM sales\nWHERE region = 'East'",
+blanks:[{a:"SUM"},{a:"OVER"},{a:"ORDER BY"},{a:"ROWS"}],
+run:"SELECT region, sale_date, amount, SUM(amount) OVER (PARTITION BY region ORDER BY sale_date ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS running_total FROM sales WHERE region = 'East'"}},
+
+{n:2,title:"Moving Average (ROWS BETWEEN n PRECEDING AND n FOLLOWING)",desc:"3-row moving average — a classic smoothing pattern. Both dialects support this identically with ROWS frames.",
+demo:{scenario:"Compute a <strong>3-row centered moving average</strong> of sales amounts for the West region (1 row before, current, 1 row after).",
+ansi:"SELECT sale_date, amount,\n  AVG(amount) OVER (\n    ORDER BY sale_date\n    ROWS BETWEEN 1 PRECEDING\n             AND 1 FOLLOWING\n  ) AS moving_avg\nFROM sales\nWHERE region = 'West'",
+spark:"SELECT sale_date, amount,\n  AVG(amount) OVER (\n    ORDER BY sale_date\n    ROWS BETWEEN 1 PRECEDING\n             AND 1 FOLLOWING\n  ) AS moving_avg\nFROM sales\nWHERE region = 'West'",
+ansiNote:"SQLite computes AVG ignoring NULLs in the window — ANSI standard behavior.",sparkNote:"Spark matches ANSI for ROWS-based moving averages.",
+diff:"Both dialects produce identical results for <strong>ROWS BETWEEN n PRECEDING AND n FOLLOWING</strong>. Notice that the NULL in row 4 is skipped by AVG — this is ANSI standard and works the same in Spark. The edge rows (first and last) have smaller frames because there are no additional rows before/after."},
+practice:{scenario:"Compute a <strong>2-row trailing moving average</strong> (current row + 1 preceding) of amounts for the East region.",
+ansi:"SELECT sale_date, amount,\n  AVG(amount) OVER (\n    ORDER BY sale_date\n    ROWS BETWEEN 1 PRECEDING\n             AND CURRENT ROW\n  ) AS trailing_avg\nFROM sales\nWHERE region = 'East'",
+fill:"SELECT sale_date, amount,\n  {0}(amount) OVER (\n    ORDER BY sale_date\n    ROWS BETWEEN {1} PRECEDING\n             AND {2} ROW\n  ) AS trailing_avg\nFROM sales\nWHERE region = 'East'",
+blanks:[{a:"AVG"},{a:"1"},{a:"CURRENT"}],
+run:"SELECT sale_date, amount, AVG(amount) OVER (ORDER BY sale_date ROWS BETWEEN 1 PRECEDING AND CURRENT ROW) AS trailing_avg FROM sales WHERE region = 'East'"}},
+
+{n:3,title:"LAG with NULL Handling (IGNORE NULLS)",desc:"Fetching the previous row's value — this is where ANSI and Spark diverge. ANSI supports IGNORE NULLS to skip null values; Spark historically did not.",
+demo:{scenario:"For each sale in the West region, get the <strong>previous sale's amount</strong>, <em>skipping NULLs</em>.",
+ansi:"SELECT sale_date, amount,\n  LAG(amount) IGNORE NULLS\n    OVER (ORDER BY sale_date)\n    AS prev_amount\nFROM sales\nWHERE region = 'West'",
+spark:"-- Spark lacks IGNORE NULLS on LAG\n-- Must use a workaround with LAST_VALUE\nSELECT sale_date, amount,\n  LAST_VALUE(amount, true) OVER (\n    ORDER BY sale_date\n    ROWS BETWEEN UNBOUNDED PRECEDING\n             AND 1 PRECEDING\n  ) AS prev_amount\nFROM sales\nWHERE region = 'West'",
+ansiNote:"SQLite does NOT support IGNORE NULLS — this demo simulates the intended ANSI result by substituting a workaround query.",sparkNote:"Spark's LAST_VALUE(col, true) takes a second arg to skip nulls. SQLite doesn't support this either — simulated.",
+diff:"This is the <strong>biggest divergence</strong>. ANSI SQL supports <code>LAG(col) IGNORE NULLS</code> to skip null values when fetching the previous row. Spark historically lacked this and required a workaround using <code>LAST_VALUE(col, true)</code> with a frame ending at <code>1 PRECEDING</code>. Modern Spark 3.0+ added partial IGNORE NULLS support, but the workaround remains the portable pattern. Note row 5: ANSI returns 200 (skipping the NULL at row 4), while a naive Spark <code>LAG</code> would return NULL."},
+practice:{scenario:"For each sale in the <strong>East</strong> region, get the previous amount using the Spark-compatible workaround (LAST_VALUE with a trailing frame).",
+ansi:"-- ANSI version (reference)\nSELECT sale_date, amount,\n  LAG(amount) IGNORE NULLS\n    OVER (ORDER BY sale_date)\n    AS prev_amount\nFROM sales WHERE region = 'East'",
+fill:"SELECT sale_date, amount,\n  {0}(amount) OVER (\n    ORDER BY sale_date\n    ROWS BETWEEN {1} PRECEDING\n             AND {2} PRECEDING\n  ) AS prev_amount\nFROM sales\nWHERE region = 'East'",
+blanks:[{a:"LAST_VALUE"},{a:"UNBOUNDED"},{a:"1"}],
+run:"SELECT sale_date, amount, LAST_VALUE(amount) OVER (ORDER BY sale_date ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING) AS prev_amount FROM sales WHERE region = 'East'"}},
+
+{n:4,title:"RANGE vs ROWS Frames",desc:"ANSI supports complex RANGE BETWEEN expressions (e.g., 7 days before current date). Spark restricts RANGE to numeric offsets, forcing workarounds for date-based ranges.",
+demo:{scenario:"For each West sale, compute the <strong>total sales in the preceding 10 days</strong> (a date-range window).",
+ansi:"-- ANSI SQL: RANGE with date interval\nSELECT sale_date, amount,\n  SUM(amount) OVER (\n    ORDER BY sale_date\n    RANGE BETWEEN INTERVAL '10' DAY\n             PRECEDING AND CURRENT ROW\n  ) AS last_10_days\nFROM sales WHERE region = 'West'",
+spark:"-- Spark: convert date to numeric days\n-- then use RANGE on the numeric column\nSELECT sale_date, amount,\n  SUM(amount) OVER (\n    ORDER BY CAST(\n      julianday(sale_date) AS INTEGER)\n    RANGE BETWEEN 10 PRECEDING\n             AND CURRENT ROW\n  ) AS last_10_days\nFROM sales WHERE region = 'West'",
+ansiNote:"SQLite does NOT support RANGE with interval expressions. Simulated result uses the Spark-style numeric-days approach.",sparkNote:"Spark requires numeric RANGE offsets. Dates must be converted to numeric days (julianday in SQLite).",
+diff:"<strong>RANGE semantics differ meaningfully.</strong> ANSI SQL lets you write <code>RANGE BETWEEN INTERVAL '10' DAY PRECEDING</code> directly on a date column. Spark requires the ORDER BY column to be numeric for RANGE — forcing you to convert dates to integers (day counts) first. The logic is the same; the syntax burden shifts onto the analyst. For portable queries, use <strong>ROWS</strong> frames whenever possible and avoid RANGE with date intervals."},
+practice:{scenario:"For East sales, compute the total of sales in the preceding <strong>5 days</strong> using the Spark-compatible numeric RANGE pattern.",
+ansi:"-- ANSI reference\nSELECT sale_date, amount,\n  SUM(amount) OVER (\n    ORDER BY sale_date\n    RANGE BETWEEN INTERVAL '5' DAY\n             PRECEDING AND CURRENT ROW\n  ) AS last_5_days\nFROM sales WHERE region = 'East'",
+fill:"SELECT sale_date, amount,\n  SUM(amount) OVER (\n    ORDER BY CAST(\n      julianday(sale_date) AS INTEGER)\n    {0} BETWEEN {1} PRECEDING\n             AND {2} ROW\n  ) AS last_5_days\nFROM sales WHERE region = 'East'",
+blanks:[{a:"RANGE"},{a:"5"},{a:"CURRENT"}],
+run:"SELECT sale_date, amount, SUM(amount) OVER (ORDER BY CAST(julianday(sale_date) AS INTEGER) RANGE BETWEEN 5 PRECEDING AND CURRENT ROW) AS last_5_days FROM sales WHERE region = 'East'"}},
+
+{n:5,title:"FIRST_VALUE with Frame Boundaries",desc:"FIRST_VALUE returns the first row in the frame. The default frame differs between dialects, which can cause surprises if you don't specify it explicitly.",
+demo:{scenario:"For each West sale, show the <strong>first sale amount in the partition</strong> using an explicit frame.",
+ansi:"SELECT sale_date, amount,\n  FIRST_VALUE(amount) OVER (\n    PARTITION BY region\n    ORDER BY sale_date\n    ROWS BETWEEN UNBOUNDED PRECEDING\n             AND UNBOUNDED FOLLOWING\n  ) AS first_sale\nFROM sales WHERE region = 'West'",
+spark:"SELECT sale_date, amount,\n  FIRST_VALUE(amount) OVER (\n    PARTITION BY region\n    ORDER BY sale_date\n    ROWS BETWEEN UNBOUNDED PRECEDING\n             AND UNBOUNDED FOLLOWING\n  ) AS first_sale\nFROM sales WHERE region = 'West'",
+ansiNote:"SQLite supports FIRST_VALUE with explicit frames per ANSI.",sparkNote:"Spark matches when frame is explicit.",
+diff:"With an <strong>explicit frame</strong>, both dialects behave identically. The danger is the <strong>default frame</strong>: when you omit the frame clause with ORDER BY present, both default to <code>RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW</code> — which means <code>FIRST_VALUE</code> would just return the current row's value, not the partition's first. <strong>Always specify the frame explicitly</strong> when using FIRST_VALUE or LAST_VALUE."},
+practice:{scenario:"For East sales, show each row's amount alongside the <strong>last sale amount in the partition</strong> using an explicit full-partition frame.",
+ansi:"SELECT sale_date, amount,\n  LAST_VALUE(amount) OVER (\n    PARTITION BY region\n    ORDER BY sale_date\n    ROWS BETWEEN UNBOUNDED PRECEDING\n             AND UNBOUNDED FOLLOWING\n  ) AS last_sale\nFROM sales WHERE region = 'East'",
+fill:"SELECT sale_date, amount,\n  {0}(amount) OVER (\n    PARTITION BY region\n    ORDER BY sale_date\n    ROWS BETWEEN {1} PRECEDING\n             AND {2} FOLLOWING\n  ) AS last_sale\nFROM sales\nWHERE region = 'East'",
+blanks:[{a:"LAST_VALUE"},{a:"UNBOUNDED"},{a:"UNBOUNDED"}],
+run:"SELECT sale_date, amount, LAST_VALUE(amount) OVER (PARTITION BY region ORDER BY sale_date ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS last_sale FROM sales WHERE region = 'East'"}}
+];
+
+// ═══════ RENDER ═══════
+function renderTopics(){const c=document.getElementById('topicContainer');
+topics.forEach(t=>{const d=document.createElement('div');d.className='topic';
+// Demo fill with placeholders for inputs
+let fillHtml=t.practice.fill.replace(/\{(\d+)\}/g,(_,i)=>{const b=t.practice.blanks[parseInt(i)];const w=Math.max(b.a.length+2,6);return`<span class="blk"><input data-t="${t.n}" data-b="${i}" style="width:${w}ch" autocomplete="off" spellcheck="false" placeholder="???" /><button class="rv" onclick="rvBlank(${t.n},${i})">◔</button></span>`});
+fillHtml=hl(fillHtml).replace(/&lt;span/g,'<span').replace(/&lt;\/span&gt;/g,'</span>');
+
+d.innerHTML=`<div class="topic-head"><div class="topic-num">Topic ${t.n}</div><div class="topic-title">${t.title}</div><div class="topic-desc">${t.desc}</div></div>
+
+<div class="panel"><div class="panel-head demo">● DEMO — Side-by-Side Comparison</div><div class="panel-body">
+<div class="scenario">${t.demo.scenario}</div>
+<div class="dual">
+<div class="side a"><div class="side-hd">ANSI SQL</div><div class="code">${hl(t.demo.ansi)}</div><div class="sqlnote">${t.demo.ansiNote}</div><div class="rslt"><div class="rslt-lbl">Result</div><div id="r-a-${t.n}"></div></div></div>
+<div class="side s"><div class="side-hd">SparkSQL</div><div class="code">${hl(t.demo.spark)}</div><div class="sqlnote">${t.demo.sparkNote}</div><div class="rslt"><div class="rslt-lbl">Result</div><div id="r-s-${t.n}"></div></div></div>
+</div>
+<div class="diff"><h4>⚡ Difference Explanation</h4><p>${t.demo.diff}</p></div>
+</div></div>
+
+<div class="panel"><div class="panel-head prac">✎ PRACTICE — Rewrite in SparkSQL</div><div class="prac-body">
+<div class="scenario">${t.practice.scenario}</div>
+<div class="prac-ansi"><div class="prac-ansi-hd">ANSI SQL (reference, pre-solved)</div><div class="code">${hl(t.practice.ansi)}</div><div class="rslt"><div class="rslt-lbl">Expected Result</div><div id="p-a-${t.n}"></div></div></div>
+<div style="font-family:var(--mono);font-size:10px;color:var(--spark);letter-spacing:1px;margin-bottom:6px">✎ YOUR SPARKSQL ANSWER:</div>
+<div class="fill">${fillHtml}</div>
+<div class="acts">
+<button class="btn btn-sub" onclick="submit(${t.n})">Submit</button>
+<button class="btn btn-rv" onclick="rvAll(${t.n})">Reveal All</button>
+<button class="btn btn-rs" onclick="reset(${t.n})">Reset</button>
+<span class="stat" id="stat-${t.n}"></span>
+</div>
+<div class="out" id="out-${t.n}"><div class="out-hd">Your Query Result</div><div id="out-body-${t.n}"></div></div>
+</div></div>`;
+c.appendChild(d)})}
+
+function runAllDemos(){topics.forEach(t=>{
+// Need to replace ANSI/Spark demo queries with their ACTUAL runnable SQLite versions
+// since the demos show ANSI/Spark syntax but SQLite can't run all of it
+const ansiRun=getRunnable(t,'ansi');const sparkRun=getRunnable(t,'spark');
+const pracRun=t.practice.run;
+document.getElementById(`r-a-${t.n}`).innerHTML=tbl(run(ansiRun)[0]);
+document.getElementById(`r-s-${t.n}`).innerHTML=tbl(run(sparkRun)[0]);
+document.getElementById(`p-a-${t.n}`).innerHTML=tbl(run(pracRun)[0])})}
+
+function getRunnable(t,side){
+// Map to SQLite-runnable queries (demos show syntax; these compute the same result)
+const map={
+1:{ansi:"SELECT region, sale_date, amount, SUM(amount) OVER (PARTITION BY region ORDER BY sale_date ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS running_total FROM sales WHERE region = 'West'",spark:"SELECT region, sale_date, amount, SUM(amount) OVER (PARTITION BY region ORDER BY sale_date ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS running_total FROM sales WHERE region = 'West'"},
+2:{ansi:"SELECT sale_date, amount, AVG(amount) OVER (ORDER BY sale_date ROWS BETWEEN 1 PRECEDING AND 1 FOLLOWING) AS moving_avg FROM sales WHERE region = 'West'",spark:"SELECT sale_date, amount, AVG(amount) OVER (ORDER BY sale_date ROWS BETWEEN 1 PRECEDING AND 1 FOLLOWING) AS moving_avg FROM sales WHERE region = 'West'"},
+3:{ansi:"SELECT sale_date, amount, LAST_VALUE(amount) OVER (ORDER BY sale_date ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING) AS prev_amount FROM sales WHERE region = 'West'",spark:"SELECT sale_date, amount, LAST_VALUE(amount) OVER (ORDER BY sale_date ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING) AS prev_amount FROM sales WHERE region = 'West'"},
+4:{ansi:"SELECT sale_date, amount, SUM(amount) OVER (ORDER BY CAST(julianday(sale_date) AS INTEGER) RANGE BETWEEN 10 PRECEDING AND CURRENT ROW) AS last_10_days FROM sales WHERE region = 'West'",spark:"SELECT sale_date, amount, SUM(amount) OVER (ORDER BY CAST(julianday(sale_date) AS INTEGER) RANGE BETWEEN 10 PRECEDING AND CURRENT ROW) AS last_10_days FROM sales WHERE region = 'West'"},
+5:{ansi:"SELECT sale_date, amount, FIRST_VALUE(amount) OVER (PARTITION BY region ORDER BY sale_date ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS first_sale FROM sales WHERE region = 'West'",spark:"SELECT sale_date, amount, FIRST_VALUE(amount) OVER (PARTITION BY region ORDER BY sale_date ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS first_sale FROM sales WHERE region = 'West'"}
+};
+return map[t.n][side]}
+
+function getInputs(n){return Array.from(document.querySelectorAll(`input[data-t="${n}"]`))}
+function norm(s){return s.trim().replace(/\s+/g,' ').toUpperCase()}
+function chkBlank(t,i,v){return norm(v)===norm(t.practice.blanks[i].a)}
+
+function submit(n){const t=topics.find(x=>x.n===n);const inputs=getInputs(n);let ok=true;
+inputs.forEach((inp,i)=>{inp.classList.remove('ok','bad');if(chkBlank(t,i,inp.value))inp.classList.add('ok');else{inp.classList.add('bad');ok=false}});
+const st=document.getElementById(`stat-${n}`);
+if(ok){st.className='stat ok';st.textContent='✓ Correct!';const o=document.getElementById(`out-${n}`);o.className='out show';document.getElementById(`out-body-${n}`).innerHTML=tbl(run(t.practice.run)[0])}
+else{st.className='stat bad';st.textContent='✗ Wrong. Try Again'}}
+
+function rvBlank(n,i){const t=topics.find(x=>x.n===n);const inp=document.querySelector(`input[data-t="${n}"][data-b="${i}"]`);inp.value=t.practice.blanks[i].a;inp.classList.remove('bad');inp.classList.add('ok');const btn=inp.nextElementSibling;if(btn)btn.classList.add('used')}
+function rvAll(n){const t=topics.find(x=>x.n===n);getInputs(n).forEach((inp,i)=>{inp.value=t.practice.blanks[i].a;inp.classList.remove('bad');inp.classList.add('ok');const btn=inp.nextElementSibling;if(btn)btn.classList.add('used')});const st=document.getElementById(`stat-${n}`);st.className='stat ok';st.textContent='Revealed';const o=document.getElementById(`out-${n}`);o.className='out show';document.getElementById(`out-body-${n}`).innerHTML=tbl(run(t.practice.run)[0])}
+function reset(n){getInputs(n).forEach(inp=>{inp.value='';inp.classList.remove('ok','bad');const btn=inp.nextElementSibling;if(btn)btn.classList.remove('used')});document.getElementById(`stat-${n}`).className='stat';document.getElementById(`stat-${n}`).textContent='';document.getElementById(`out-${n}`).className='out'}
+
+renderTopics();initDB();
+</script>
+</body>
+</html>

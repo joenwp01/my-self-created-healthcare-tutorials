@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Timezone Sync Lab — SQLite WASM</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* ── Reset & Tokens ─────────────────────────────────────────── */
+:root {
+  --bg:        #090b10;  --ink:       #d8dbe5;
+  --surface:   #11141d;  --surface-hi:#181c28;
+  --border:    #232940;  --border-hi: #333c56;
+  --accent:    #58a6ff;  --accent-dim:#1c3a60;
+  --warn:      #f0883e;  --err:       #f85149;
+  --green:     #3fb950;  --purple:    #bc8cff;
+  --cyan:      #79c0ff;  --gold:      #e3b341;
+  --font-body: 'DM Sans', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body { font-family: var(--font-body); background: var(--bg); color: var(--ink); overflow: hidden; }
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: var(--surface); }
+::-webkit-scrollbar-thumb { background: var(--border-hi); border-radius: 3px; }
+
+/* ── Animations ─────────────────────────────────────────────── */
+@keyframes fadeUp   { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); }}
+@keyframes pulse    { 0%,100% { opacity:.4; } 50% { opacity:1; }}
+@keyframes slideIn  { from { opacity:0; transform:translateX(-12px); } to { opacity:1; transform:translateX(0); }}
+
+/* ── Layout Shell ───────────────────────────────────────────── */
+#app { display: flex; flex-direction: column; height: 100vh; }
+header {
+  padding: 22px 28px 16px;
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(180deg, var(--surface-hi) 0%, var(--bg) 100%);
+  flex-shrink: 0;
+}
+header h1 { font-size: 24px; font-weight: 700; letter-spacing: -.4px; display: flex; align-items: center; gap: 10px; }
+header h1 .badge {
+  font-size: 11px; font-family: var(--font-mono); color: var(--accent);
+  background: var(--accent-dim); padding: 3px 10px; border-radius: 6px; font-weight: 500;
+}
+header p { font-size: 12.5px; opacity: .45; margin-top: 6px; max-width: 680px; line-height: 1.5; }
+
+.workspace { display: flex; flex: 1; min-height: 0; }
+
+/* ── Sidebar ────────────────────────────────────────────────── */
+.sidebar {
+  width: 272px; min-width: 272px; border-right: 1px solid var(--border);
+  background: var(--surface); padding: 18px 16px; overflow-y: auto;
+  display: flex; flex-direction: column; gap: 20px;
+}
+.section-title {
+  font-size: 10px; text-transform: uppercase; letter-spacing: 1.6px;
+  color: var(--accent); font-weight: 700; margin-bottom: 12px;
+}
+.param-row { margin-bottom: 14px; }
+.param-label {
+  font-size: 12px; display: flex; justify-content: space-between; margin-bottom: 4px; opacity: .65;
+}
+.param-label b { color: var(--cyan); font-family: var(--font-mono); opacity: 1; }
+.param-label b.warn { color: var(--warn); }
+input[type=range] {
+  width: 100%; height: 4px; -webkit-appearance: none; appearance: none;
+  background: var(--border); border-radius: 2px; cursor: pointer; outline: none;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%;
+  background: var(--accent); border: 2px solid var(--bg); cursor: grab;
+}
+input[type=range]::-moz-range-thumb {
+  width: 14px; height: 14px; border-radius: 50%;
+  background: var(--accent); border: 2px solid var(--bg); cursor: grab;
+}
+.btn {
+  border: none; border-radius: 8px; padding: 8px 14px; font-size: 13px;
+  font-family: var(--font-body); cursor: pointer; transition: all .15s;
+}
+.btn:hover { filter: brightness(1.15); }
+.btn-primary { background: var(--accent); color: #000; font-weight: 700; }
+.btn-run     { background: var(--green);  color: #000; font-weight: 700; }
+.btn-ghost {
+  background: var(--surface-hi); color: var(--ink); border: 1px solid var(--border);
+  font-size: 12px; width: 100%;
+}
+
+/* Stats */
+.stats-row { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+.stat-pill {
+  display: flex; flex-direction: column; align-items: center;
+  padding: 8px 14px; border-radius: 10px; background: var(--surface-hi);
+  border: 1px solid var(--border); min-width: 78px;
+}
+.stat-pill .stat-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1.1px; opacity: .45; margin-bottom: 3px; }
+.stat-pill .stat-value { font-size: 20px; font-weight: 700; font-family: var(--font-mono); }
+
+/* Template buttons */
+.tpl-list { display: flex; flex-direction: column; gap: 4px; }
+.tpl-btn {
+  text-align: left; font-size: 12px; padding: 7px 10px; border-radius: 6px;
+  background: transparent; color: var(--ink); border: 1px solid var(--border);
+  cursor: pointer; font-family: var(--font-body); transition: all .12s; line-height: 1.35;
+}
+.tpl-btn:hover { border-color: var(--border-hi); background: var(--surface-hi); }
+.tpl-btn.active {
+  background: var(--accent-dim); color: var(--accent);
+  border-color: var(--accent); font-weight: 600;
+}
+.sidebar-footer { margin-top: auto; display: flex; flex-direction: column; gap: 6px; }
+
+/* ── Main Panel ─────────────────────────────────────────────── */
+.main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+.editor-area {
+  padding: 14px 22px 10px; border-bottom: 1px solid var(--border);
+  background: var(--surface); flex-shrink: 0;
+}
+.editor-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.editor-bar .label { font-size: 13px; font-weight: 600; }
+.editor-bar .label span { color: var(--purple); }
+.editor-bar .right { display: flex; gap: 8px; align-items: center; }
+.exec-time { font-size: 11px; font-family: var(--font-mono); color: var(--green); }
+#sql-editor {
+  width: 100%; min-height: 110px; resize: vertical;
+  font-family: var(--font-mono); font-size: 13px; line-height: 1.65;
+  background: var(--bg); color: var(--cyan); border: 1px solid var(--border);
+  border-radius: 8px; padding: 14px; tab-size: 2; outline: none;
+}
+#sql-editor:focus { border-color: var(--accent); }
+.editor-hint { font-size: 11px; opacity: .3; margin-top: 5px; }
+.editor-hint code { color: var(--purple); font-family: var(--font-mono); }
+
+/* Error */
+.error-box {
+  margin: 10px 22px; padding: 10px 14px; border-radius: 8px;
+  background: #2d1215; border: 1px solid var(--err); color: var(--err);
+  font-size: 13px; font-family: var(--font-mono); animation: fadeUp .25s ease;
+}
+
+/* Results */
+.results-area { flex: 1; overflow: auto; padding: 0 22px 22px; }
+.results-meta {
+  font-size: 12px; opacity: .4; padding: 12px 0 8px;
+  font-family: var(--font-mono);
+}
+.results-wrap { overflow-x: auto; border-radius: 10px; border: 1px solid var(--border); }
+table { width: 100%; border-collapse: collapse; font-size: 13px; font-family: var(--font-mono); }
+thead th {
+  padding: 10px 14px; text-align: left; font-weight: 700;
+  background: var(--surface-hi); color: var(--accent); font-size: 11px;
+  text-transform: uppercase; letter-spacing: 1px; white-space: nowrap;
+  border-bottom: 2px solid var(--accent); position: sticky; top: 0; z-index: 1;
+}
+tbody td {
+  padding: 7px 14px; white-space: nowrap;
+  border-bottom: 1px solid var(--border); font-size: 12.5px;
+}
+tbody tr:nth-child(even) { background: var(--surface); }
+tbody tr:nth-child(odd)  { background: var(--bg); }
+tbody tr:hover { background: var(--surface-hi) !important; }
+.cell-null   { opacity: .35; font-style: italic; }
+.cell-user   { color: var(--purple); }
+.cell-tz     { color: var(--warn); }
+.cell-utc    { color: var(--green); }
+.cell-err    { color: var(--err); }
+
+/* Placeholder */
+.placeholder {
+  display: flex; align-items: center; justify-content: center;
+  height: 100%; min-height: 200px; opacity: .25; text-align: center;
+}
+.placeholder .icon { font-size: 42px; margin-bottom: 10px; }
+
+/* Loading overlay */
+#loading-overlay {
+  position: fixed; inset: 0; background: var(--bg);
+  display: flex; align-items: center; justify-content: center;
+  flex-direction: column; z-index: 999; transition: opacity .4s;
+}
+#loading-overlay.hidden { opacity: 0; pointer-events: none; }
+#loading-overlay h2 { font-size: 26px; font-weight: 700; margin-bottom: 10px; }
+#loading-overlay p  { font-size: 13px; color: var(--accent); animation: pulse 1.5s infinite; }
+</style>
+</head>
+<body>
+
+<!-- Loading Screen -->
+<div id="loading-overlay">
+  <h2>Loading SQLite WASM…</h2>
+  <p>Fetching sql.js from CDN</p>
+</div>
+
+<div id="app">
+  <!-- Header -->
+  <header>
+    <h1>
+      <span style="color:var(--cyan)">⏱</span> Timezone Sync Lab
+      <span class="badge">SQLite · WebAssembly · In-Browser</span>
+    </h1>
+    <p>Generate distributed-system ecommerce events with tunable timezone bugs, then detect and correct them with live SQL — all running locally in your browser.</p>
+  </header>
+
+  <div class="workspace">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+
+      <!-- Data Parameters -->
+      <section>
+        <div class="section-title">Data Parameters</div>
+
+        <div class="param-row">
+          <div class="param-label">Users: <b id="lbl-users">50</b></div>
+          <input type="range" id="sl-users" min="5" max="200" step="5" value="50">
+        </div>
+        <div class="param-row">
+          <div class="param-label">Seed: <b id="lbl-seed">42</b></div>
+          <input type="range" id="sl-seed" min="1" max="999" value="42">
+        </div>
+        <div class="param-row">
+          <div class="param-label">Bug Inject Rate: <b id="lbl-rate" class="warn">30%</b></div>
+          <input type="range" id="sl-rate" min="0" max="100" value="30">
+        </div>
+
+        <button class="btn btn-primary" style="width:100%;margin-top:4px" onclick="regenerate()">Regenerate Data</button>
+      </section>
+
+      <!-- Stats -->
+      <section class="stats-row" id="stats-row">
+        <div class="stat-pill"><span class="stat-label">Rows</span><span class="stat-value" id="st-rows" style="color:var(--cyan)">—</span></div>
+        <div class="stat-pill"><span class="stat-label">Missing TZ</span><span class="stat-value" id="st-miss" style="color:var(--warn)">—</span></div>
+        <div class="stat-pill"><span class="stat-label">Users</span><span class="stat-value" id="st-users" style="color:var(--purple)">—</span></div>
+      </section>
+
+      <!-- Query Templates -->
+      <section>
+        <div class="section-title">Query Templates</div>
+        <div class="tpl-list" id="tpl-list"></div>
+      </section>
+
+      <!-- Footer -->
+      <div class="sidebar-footer">
+        <button class="btn btn-ghost" onclick="exportDB()">↓ Export .sqlite file</button>
+        <button class="btn btn-ghost" id="btn-csv" style="display:none" onclick="downloadCsv()">↓ Download results CSV</button>
+      </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="main">
+      <div class="editor-area">
+        <div class="editor-bar">
+          <div class="label">SQL Editor — <span id="query-name">Preview Data</span></div>
+          <div class="right">
+            <span class="exec-time" id="exec-time"></span>
+            <button class="btn btn-run" onclick="runQuery()">▶ Run</button>
+          </div>
+        </div>
+        <textarea id="sql-editor" spellcheck="false"></textarea>
+        <div class="editor-hint">Ctrl+Enter to run · Table: <code>events</code> · Columns: user_id, event_type, timestamp_raw, source_system, original_tz, region, true_utc</div>
+      </div>
+
+      <div id="error-box" class="error-box" style="display:none"></div>
+
+      <div class="results-area" id="results-area">
+        <div class="placeholder" id="placeholder">
+          <div>
+            <div class="icon">⏱</div>
+            <div style="font-size:14px">Select a query template and hit <b>Run</b></div>
+            <div style="font-size:12px;margin-top:4px">or write your own SQL</div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- ─── SQL.js CDN ─────────────────────────────────────────────── -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.3/sql-wasm.min.js"></script>
+
+<script>
+/* ================================================================
+   TIMEZONE SYNC LAB — Vanilla JS + sql.js (SQLite WASM)
+   ================================================================ */
+
+// ── Query Templates ──────────────────────────────────────────────
+const QUERIES = {
+  "Preview Data": `SELECT user_id, event_type, timestamp_raw, original_tz, region, source_system
+FROM events LIMIT 30;`,
+
+  "Missing Timezone Rows": `SELECT COUNT(*) AS total_rows,
+       SUM(CASE WHEN original_tz IS NULL THEN 1 ELSE 0 END) AS missing_tz,
+       ROUND(100.0 * SUM(CASE WHEN original_tz IS NULL THEN 1 ELSE 0 END) / COUNT(*), 1) AS pct_missing
+FROM events;`,
+
+  "Hourly Distribution by Region": `SELECT region,
+       CAST(SUBSTR(timestamp_raw, 12, 2) AS INTEGER) AS hour_of_day,
+       COUNT(*) AS event_count
+FROM events
+GROUP BY region, hour_of_day
+ORDER BY region, hour_of_day;`,
+
+  "Sequence Violations": `WITH ordered AS (
+  SELECT user_id, event_type, timestamp_raw,
+         LAG(event_type) OVER (PARTITION BY user_id ORDER BY timestamp_raw) AS prev_event,
+         LAG(timestamp_raw) OVER (PARTITION BY user_id ORDER BY timestamp_raw) AS prev_ts
+  FROM events
+)
+SELECT user_id, prev_event, event_type AS next_event,
+       prev_ts, timestamp_raw,
+       ROUND((JULIANDAY(timestamp_raw) - JULIANDAY(prev_ts)) * 1440, 1) AS gap_minutes
+FROM ordered
+WHERE (prev_event = 'checkout'          AND event_type = 'add_to_cart')
+   OR (prev_event = 'purchase_confirm'  AND event_type = 'add_to_cart')
+   OR (prev_event = 'purchase_confirm'  AND event_type = 'checkout')
+ORDER BY user_id;`,
+
+  "Session Duration Outliers": `WITH spans AS (
+  SELECT user_id,
+         MIN(timestamp_raw) AS session_start,
+         MAX(timestamp_raw) AS session_end,
+         ROUND((JULIANDAY(MAX(timestamp_raw)) - JULIANDAY(MIN(timestamp_raw))) * 1440, 1) AS duration_min
+  FROM events GROUP BY user_id
+)
+SELECT * FROM spans
+WHERE duration_min < 0 OR duration_min > 1440
+ORDER BY duration_min;`,
+
+  "Offset Detection (vs Ground Truth)": `SELECT
+  ROUND(AVG((JULIANDAY(timestamp_raw) - JULIANDAY(true_utc)) * 24), 2) AS avg_offset_hours,
+  ROUND(MIN((JULIANDAY(timestamp_raw) - JULIANDAY(true_utc)) * 24), 2) AS min_offset,
+  ROUND(MAX((JULIANDAY(timestamp_raw) - JULIANDAY(true_utc)) * 24), 2) AS max_offset,
+  COUNT(*) AS rows_checked
+FROM events
+WHERE original_tz IS NULL;`,
+
+  "Before vs After UTC Fix": `SELECT user_id, event_type, timestamp_raw, original_tz, true_utc,
+       CASE
+         WHEN original_tz IS NOT NULL THEN timestamp_raw
+         ELSE DATETIME(timestamp_raw,
+              '-' || CAST(
+                ROUND((JULIANDAY(timestamp_raw) - JULIANDAY(true_utc)) * 24)
+              AS INTEGER) || ' hours')
+       END AS corrected_utc,
+       CASE
+         WHEN original_tz IS NOT NULL THEN '✓ had tz'
+         ELSE '⚠ inferred'
+       END AS method
+FROM events
+WHERE user_id IN (SELECT DISTINCT user_id FROM events WHERE original_tz IS NULL LIMIT 3)
+ORDER BY user_id, true_utc;`,
+
+  "Custom Query": `-- Write your own SQL here.
+-- Table: events
+-- Columns: user_id, event_type, timestamp_raw,
+--          source_system, original_tz, region, true_utc
+SELECT * FROM events LIMIT 10;`,
+};
+
+// ── State ────────────────────────────────────────────────────────
+let db = null;
+let currentResults = null;
+let selectedTemplate = "Preview Data";
+
+// ── DOM refs ─────────────────────────────────────────────────────
+const $ = id => document.getElementById(id);
+
+// ── Seedable PRNG (xoshiro128**) ─────────────────────────────────
+function makeRng(seed) {
+  let s = [seed ^ 0xdead, seed ^ 0xbeef, seed ^ 0xcafe, seed ^ 0xbabe];
+  const rot = (x, k) => ((x << k) | (x >>> (32 - k))) >>> 0;
+  return () => {
+    const r = (rot((s[1] * 5) >>> 0, 7) * 9) >>> 0;
+    const t = (s[1] << 9) >>> 0;
+    s[2] ^= s[0]; s[3] ^= s[1]; s[1] ^= s[2]; s[0] ^= s[3];
+    s[2] ^= t; s[3] = rot(s[3], 11);
+    return (r >>> 0) / 4294967296;
+  };
+}
+
+// ── Data Generator ───────────────────────────────────────────────
+const REGIONS = {
+  "US-East":    { tz: "America/New_York",    offset: -5 },
+  "US-West":    { tz: "America/Los_Angeles", offset: -8 },
+  "EU-London":  { tz: "Europe/London",       offset:  0 },
+  "Asia-Tokyo": { tz: "Asia/Tokyo",          offset:  9 },
+};
+const EVENT_FLOW = ["page_view", "add_to_cart", "checkout", "purchase_confirm"];
+const SOURCES   = ["web_app", "mobile_ios", "mobile_android", "api_partner"];
+const REGION_KEYS = Object.keys(REGIONS);
+
+function generateEvents(nUsers, seed, injectRate) {
+  const rng = makeRng(seed);
+  const pick = arr => arr[Math.floor(rng() * arr.length)];
+  const randInt = (lo, hi) => lo + Math.floor(rng() * (hi - lo));
+  const base = new Date("2025-03-09T00:00:00Z").getTime();
+  const rows = [];
+
+  for (let uid = 1; uid <= nUsers; uid++) {
+    const region = pick(REGION_KEYS);
+    const { offset } = REGIONS[region];
+    const source = pick(SOURCES);
+    const sessStart = base + randInt(0, 72) * 3600000 + randInt(0, 60) * 60000;
+    let cum = 0;
+
+    for (const evt of EVENT_FLOW) {
+      cum += randInt(1, 45) * 60000;
+      const trueUtc = new Date(sessStart + cum);
+      let storedTs, storedTz;
+
+      if (rng() < injectRate) {
+        const buggy = new Date(trueUtc.getTime() + offset * 3600000);
+        storedTs = fmtDt(buggy);
+        storedTz = null;
+      } else {
+        storedTs = fmtDt(trueUtc);
+        storedTz = "UTC";
+      }
+
+      rows.push([
+        `U${String(uid).padStart(4, "0")}`,
+        evt, storedTs, source, storedTz, region, fmtDt(trueUtc)
+      ]);
+    }
+  }
+  return rows;
+}
+
+function fmtDt(d) {
+  return d.toISOString().replace("T", " ").slice(0, 19);
+}
+
+// ── Database ─────────────────────────────────────────────────────
+function seedDatabase() {
+  if (!db) return;
+  const nUsers = +$("sl-users").value;
+  const seed   = +$("sl-seed").value;
+  const rate   = +$("sl-rate").value / 100;
+
+  db.run("DROP TABLE IF EXISTS events;");
+  db.run(`CREATE TABLE events (
+    user_id TEXT, event_type TEXT, timestamp_raw TEXT,
+    source_system TEXT, original_tz TEXT, region TEXT, true_utc TEXT
+  );`);
+
+  const rows = generateEvents(nUsers, seed, rate);
+  const stmt = db.prepare("INSERT INTO events VALUES (?,?,?,?,?,?,?)");
+  for (const r of rows) { stmt.run(r); }
+  stmt.free();
+
+  const missing = rows.filter(r => r[4] === null).length;
+  $("st-rows").textContent  = rows.length;
+  $("st-miss").textContent  = missing;
+  $("st-miss").style.color  = missing > 0 ? "var(--warn)" : "var(--green)";
+  $("st-users").textContent = nUsers;
+
+  currentResults = null;
+  renderResults();
+  $("error-box").style.display = "none";
+  $("btn-csv").style.display   = "none";
+}
+
+function regenerate() { seedDatabase(); }
+
+// ── Run Query ────────────────────────────────────────────────────
+function runQuery() {
+  const sql = $("sql-editor").value.trim();
+  if (!sql || !db) return;
+  $("error-box").style.display = "none";
+
+  const t0 = performance.now();
+  try {
+    const res = db.exec(sql);
+    const ms = Math.round(performance.now() - t0);
+    $("exec-time").textContent = ms + "ms";
+    currentResults = res.length ? res[0] : { columns: [], values: [] };
+    renderResults();
+    $("btn-csv").style.display = currentResults.values.length ? "block" : "none";
+  } catch (e) {
+    $("error-box").textContent = e.message;
+    $("error-box").style.display = "block";
+    currentResults = null;
+    renderResults();
+    $("btn-csv").style.display = "none";
+  }
+}
+
+// ── Render Results ───────────────────────────────────────────────
+function renderResults() {
+  const area = $("results-area");
+
+  if (!currentResults || !currentResults.columns || !currentResults.columns.length) {
+    area.innerHTML = `<div class="placeholder" id="placeholder">
+      <div><div class="icon">⏱</div>
+      <div style="font-size:14px">Select a query template and hit <b>Run</b></div>
+      <div style="font-size:12px;margin-top:4px">or write your own SQL</div></div></div>`;
+    return;
+  }
+
+  const cols = currentResults.columns;
+  const vals = currentResults.values;
+
+  let html = `<div class="results-meta">${vals.length} row${vals.length !== 1 ? "s" : ""} returned</div>`;
+  html += `<div class="results-wrap"><table><thead><tr>`;
+  for (const c of cols) html += `<th>${esc(c)}</th>`;
+  html += `</tr></thead><tbody>`;
+
+  for (const row of vals) {
+    html += `<tr>`;
+    for (let i = 0; i < row.length; i++) {
+      const v = row[i];
+      const cn = cols[i].toLowerCase();
+      let cls = "";
+      if (v === null) cls = "cell-null";
+      else if (cn.includes("user")) cls = "cell-user";
+      else if (cn.includes("tz") || cn.includes("timezone") || cn.includes("original")) cls = "cell-tz";
+      else if (cn.includes("utc") || cn.includes("corrected") || cn.includes("method")) cls = "cell-utc";
+      else if (cn.includes("violation") || cn.includes("error")) cls = "cell-err";
+      html += `<td class="${cls}">${v === null ? "<i>NULL</i>" : esc(String(v))}</td>`;
+    }
+    html += `</tr>`;
+  }
+  html += `</tbody></table></div>`;
+  area.innerHTML = html;
+  area.querySelector(".results-wrap").style.animation = "fadeUp .3s ease";
+}
+
+function esc(s) {
+  return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
+
+// ── CSV Download ─────────────────────────────────────────────────
+function downloadCsv() {
+  if (!currentResults || !currentResults.values.length) return;
+  const header = currentResults.columns.join(",");
+  const body = currentResults.values.map(r =>
+    r.map(v => v === null ? "" : `"${String(v).replace(/"/g,'""')}"`).join(",")
+  ).join("\n");
+  const blob = new Blob([header + "\n" + body], { type: "text/csv" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a"); a.href = url;
+  a.download = `tz_query_${Date.now()}.csv`; a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ── SQLite Export ────────────────────────────────────────────────
+function exportDB() {
+  if (!db) return;
+  const data = db.export();
+  const blob = new Blob([data], { type: "application/octet-stream" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a"); a.href = url;
+  a.download = `tz_sync_lab.sqlite`; a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ── Build Template List ──────────────────────────────────────────
+function buildTemplateList() {
+  const list = $("tpl-list");
+  list.innerHTML = "";
+  for (const name of Object.keys(QUERIES)) {
+    const btn = document.createElement("button");
+    btn.className = "tpl-btn" + (name === selectedTemplate ? " active" : "");
+    btn.textContent = name;
+    btn.onclick = () => selectTemplate(name);
+    list.appendChild(btn);
+  }
+}
+
+function selectTemplate(name) {
+  selectedTemplate = name;
+  $("sql-editor").value = QUERIES[name];
+  $("query-name").textContent = name;
+  $("error-box").style.display = "none";
+  currentResults = null;
+  renderResults();
+  buildTemplateList();
+}
+
+// ── Slider live labels ───────────────────────────────────────────
+$("sl-users").oninput = function() { $("lbl-users").textContent = this.value; };
+$("sl-seed").oninput  = function() { $("lbl-seed").textContent  = this.value; };
+$("sl-rate").oninput  = function() { $("lbl-rate").textContent   = this.value + "%"; };
+
+// ── Ctrl+Enter binding ──────────────────────────────────────────
+$("sql-editor").addEventListener("keydown", e => {
+  if ((e.metaKey || e.ctrlKey) && e.key === "Enter") { e.preventDefault(); runQuery(); }
+});
+
+// ── Init ─────────────────────────────────────────────────────────
+(async function init() {
+  try {
+    const SQL = await initSqlJs({
+      locateFile: f => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.3/${f}`
+    });
+    db = new SQL.Database();
+
+    $("sql-editor").value = QUERIES["Preview Data"];
+    buildTemplateList();
+    seedDatabase();
+
+    // hide loading
+    $("loading-overlay").classList.add("hidden");
+    setTimeout(() => $("loading-overlay").remove(), 500);
+  } catch (e) {
+    $("loading-overlay").innerHTML = `
+      <h2 style="color:var(--err)">Failed to load SQLite</h2>
+      <p style="color:var(--err);animation:none">${esc(e.message)}</p>`;
+  }
+})();
+</script>
+</body>
+</html>

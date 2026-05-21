@@ -1,0 +1,19 @@
+Create pseudo-data pipeline (which details the order and software products use in my data pipeline)
+1 -accepts EHR patient records from FHIR or in HL7 format (discuss this one with Claude.AI)
+2 - Record set should have a couple of records which fall into the categories:
+	missing data
+	incorrect match between codes and description, or other identifying code. (discuss with Claude)
+	reversed date & time  (start & finish)
+	Out of range	
+   Other of the records should be without errors
+3 - Perform sorting, filtering, flagging operations on the stream
+4 - Stream into a pseudo-datalake, represented by SQL-lite
+5 - Cleansing operations
+6 - De-identification operations
+7 - Data Quality check with GX
+8 - data transformations and aggregating with dbt  (or should this come before GX?  Ask Claude.AI)(What types of aggregations appropriate?)
+9 - materializations into pseudo-data mart, represented by SQL-lite (or should come before data transf.? Ask Claude)
+10- Re-identification analysis
+
+X?  Where do dashboard fit in?  Ask Claude.AI
+XX? Refine through discussion only, before any code generation.

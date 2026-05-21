@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TZ Sync Lab v2 — Timezone Correction Workshop</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Nunito+Sans:ital,wght@0,400;0,600;0,700;0,800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#060810;--bg2:#0a0d14;--surface:#0f1219;--surface-hi:#151a24;--surface-top:#1a2030;
+  --ink:#c8cdd8;--ink-dim:#6a7188;--ink-bright:#eaecf2;
+  --border:#1e2535;--border-hi:#2c3548;
+  --amber:#e8a832;--amber-dim:#3d2e10;--amber-glow:#f5c55220;
+  --blue:#4d9cf8;--blue-dim:#162a4a;--green:#34d399;--green-dim:#0d2e22;
+  --red:#ef4444;--red-dim:#2d1215;--purple:#a78bfa;--purple-dim:#1e1640;
+  --cyan:#67e8f9;--cyan-dim:#0c2a30;--orange:#fb923c;
+  --fm:'IBM Plex Mono','Fira Code',monospace;--fb:'Nunito Sans','Segoe UI',sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:var(--fb);background:var(--bg);color:var(--ink);overflow:hidden;font-size:14px;line-height:1.5}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:var(--surface)}
+::-webkit-scrollbar-thumb{background:var(--border-hi);border-radius:3px}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pulse{0%,100%{opacity:.35}50%{opacity:1}}
+#app{display:flex;flex-direction:column;height:100vh}
+header{padding:18px 26px 14px;border-bottom:1px solid var(--border);background:linear-gradient(180deg,var(--surface-hi) 0%,var(--bg) 100%);flex-shrink:0;position:relative;overflow:hidden}
+header::after{content:'';position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(255,255,255,.008) 3px,rgba(255,255,255,.008) 4px)}
+header h1{font-size:21px;font-weight:800;letter-spacing:-.3px;display:flex;align-items:center;gap:10px;position:relative;z-index:1}
+header h1 .v{font-size:11px;font-family:var(--fm);color:var(--amber);background:var(--amber-dim);padding:2px 9px;border-radius:5px;font-weight:600}
+header .sub{font-size:12.5px;opacity:.4;margin-top:5px;max-width:720px;line-height:1.45;position:relative;z-index:1}
+.workspace{display:flex;flex:1;min-height:0}
+.sidebar{width:290px;min-width:290px;border-right:1px solid var(--border);background:var(--surface);padding:0;overflow-y:auto;display:flex;flex-direction:column}
+.sb-section{padding:16px 16px 14px;border-bottom:1px solid var(--border)}
+.sb-section:last-child{border-bottom:none}
+.sb-title{font-size:9.5px;text-transform:uppercase;letter-spacing:2px;color:var(--amber);font-weight:700;margin-bottom:12px}
+.prob-tabs{display:flex;gap:4px}
+.prob-tab{flex:1;padding:9px 6px;border-radius:7px;border:1px solid var(--border);background:transparent;color:var(--ink-dim);cursor:pointer;font-family:var(--fb);font-size:11.5px;font-weight:600;text-align:center;transition:all .15s;line-height:1.3}
+.prob-tab:hover{border-color:var(--border-hi);color:var(--ink)}
+.prob-tab.active{background:var(--amber-dim);color:var(--amber);border-color:var(--amber);font-weight:700}
+.param{margin-bottom:12px}
+.param-lbl{font-size:11.5px;display:flex;justify-content:space-between;margin-bottom:3px;opacity:.6}
+.param-lbl b{font-family:var(--fm);opacity:1}
+.param-lbl .vb{color:var(--blue)}.param-lbl .vr{color:var(--red)}
+input[type=range]{width:100%;height:4px;-webkit-appearance:none;appearance:none;background:var(--border);border-radius:2px;cursor:pointer;outline:none}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--amber);border:2px solid var(--bg);cursor:grab}
+input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:var(--amber);border:2px solid var(--bg);cursor:grab}
+.btn{border:none;border-radius:7px;padding:8px 14px;font-size:12.5px;font-family:var(--fb);cursor:pointer;transition:all .12s;font-weight:600}
+.btn:hover{filter:brightness(1.12)}
+.btn-amber{background:var(--amber);color:#000;width:100%}
+.btn-run{background:var(--green);color:#000;padding:6px 18px}
+.btn-ghost{background:var(--surface-hi);color:var(--ink);border:1px solid var(--border);font-size:11.5px;width:100%}
+.btn-ghost:hover{border-color:var(--border-hi)}
+.stats{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+.stat{display:flex;flex-direction:column;align-items:center;padding:7px 12px;border-radius:8px;background:var(--bg2);border:1px solid var(--border);min-width:72px}
+.stat .s-label{font-size:9px;text-transform:uppercase;letter-spacing:1.2px;opacity:.4;margin-bottom:2px}
+.stat .s-val{font-size:17px;font-weight:700;font-family:var(--fm)}
+.q-group{margin-bottom:14px}
+.q-group-title{font-size:10px;text-transform:uppercase;letter-spacing:1.4px;color:var(--ink-dim);font-weight:700;margin-bottom:6px;padding-left:2px}
+.q-list{display:flex;flex-direction:column;gap:3px}
+.q-btn{text-align:left;font-size:11.5px;padding:6px 9px;border-radius:5px;background:transparent;color:var(--ink);border:1px solid var(--border);cursor:pointer;font-family:var(--fb);transition:all .1s;line-height:1.3}
+.q-btn:hover{border-color:var(--border-hi);background:var(--surface-hi)}
+.q-btn.active{background:var(--amber-dim);color:var(--amber);border-color:var(--amber);font-weight:700}
+.q-btn .q-step{display:inline-block;font-family:var(--fm);font-size:9px;font-weight:700;background:var(--border);color:var(--ink-dim);padding:1px 5px;border-radius:3px;margin-right:5px;min-width:16px;text-align:center}
+.q-btn.active .q-step{background:var(--amber);color:#000}
+.sb-footer{margin-top:auto;padding:12px 16px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:5px}
+.main{flex:1;display:flex;flex-direction:column;min-width:0}
+.editor-area{padding:12px 22px 10px;border-bottom:1px solid var(--border);background:var(--surface);flex-shrink:0}
+.editor-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.editor-bar .lbl{font-size:12.5px;font-weight:700}
+.editor-bar .lbl span{color:var(--purple)}
+.editor-bar .rt{display:flex;gap:8px;align-items:center}
+.exec-time{font-size:11px;font-family:var(--fm);color:var(--green)}
+#sql-editor{width:100%;min-height:105px;max-height:260px;resize:vertical;font-family:var(--fm);font-size:12.5px;line-height:1.6;background:var(--bg);color:var(--cyan);border:1px solid var(--border);border-radius:7px;padding:12px 14px;tab-size:2;outline:none}
+#sql-editor:focus{border-color:var(--amber);box-shadow:0 0 0 2px var(--amber-glow)}
+.editor-hint{font-size:10.5px;opacity:.28;margin-top:4px}
+.editor-hint code{color:var(--purple);font-family:var(--fm)}
+.narrative{padding:10px 22px;border-bottom:1px solid var(--border);background:var(--surface-hi);flex-shrink:0;animation:fadeUp .3s ease}
+.narr-title{font-size:13px;font-weight:700;color:var(--amber);margin-bottom:4px}
+.narr-body{font-size:12px;opacity:.6;line-height:1.55;max-width:800px}
+.narr-body b{color:var(--ink-bright);opacity:1}
+.error-box{margin:8px 22px;padding:9px 14px;border-radius:7px;background:var(--red-dim);border:1px solid var(--red);color:var(--red);font-size:12.5px;font-family:var(--fm);animation:fadeUp .2s ease}
+.results-area{flex:1;overflow:auto;padding:0 22px 22px}
+.results-meta{font-size:11px;opacity:.35;padding:10px 0 6px;font-family:var(--fm)}
+.results-wrap{overflow-x:auto;border-radius:8px;border:1px solid var(--border)}
+table{width:100%;border-collapse:collapse;font-size:12.5px;font-family:var(--fm)}
+thead th{padding:9px 12px;text-align:left;font-weight:700;background:var(--surface-top);color:var(--amber);font-size:10px;text-transform:uppercase;letter-spacing:1.2px;white-space:nowrap;border-bottom:2px solid var(--amber-dim);position:sticky;top:0;z-index:1}
+tbody td{padding:6px 12px;white-space:nowrap;border-bottom:1px solid var(--border);font-size:12px}
+tbody tr:nth-child(even){background:var(--surface)}
+tbody tr:nth-child(odd){background:var(--bg)}
+tbody tr:hover{background:var(--surface-hi)!important}
+.c-null{opacity:.3;font-style:italic;color:var(--ink-dim)}
+.c-user{color:var(--purple)}.c-raw{color:var(--orange)}.c-tz{color:var(--amber);font-weight:600}
+.c-utc{color:var(--green)}.c-fix{color:var(--cyan)}.c-err{color:var(--red)}
+.c-region{color:var(--blue)}.c-date{color:var(--ink-bright)}.c-time{color:var(--cyan)}
+.c-zone{color:var(--amber);font-weight:600}
+.c-status-ok{color:var(--green);font-weight:700}.c-status-bad{color:var(--red);font-weight:700}
+.c-method{color:var(--purple);font-weight:600}
+.placeholder{display:flex;align-items:center;justify-content:center;height:100%;min-height:200px;opacity:.2;text-align:center}
+.placeholder .icon{font-size:44px;margin-bottom:10px}
+#loading-overlay{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;flex-direction:column;z-index:999;transition:opacity .4s}
+#loading-overlay.hidden{opacity:0;pointer-events:none}
+#loading-overlay h2{font-size:24px;font-weight:800;margin-bottom:10px}
+#loading-overlay p{font-size:13px;color:var(--amber);animation:pulse 1.4s infinite}
+</style>
+</head>
+<body>
+<div id="loading-overlay"><h2>⏱ Initializing SQLite WASM…</h2><p>Compiling timezone correction engine</p></div>
+<div id="app">
+<header>
+<h1><span style="color:var(--amber)">⏱</span> Timezone Sync Lab <span class="v">v2.0</span></h1>
+<p class="sub">Two real-world scenarios with mixed timestamp formats (Z, UTC, EST/EDT, PST/PDT, ISO offsets, naïve, 12h/24h) — detect the chaos, then fix it step by step with live SQL.</p>
+</header>
+<div class="workspace">
+<aside class="sidebar">
+<div class="sb-section"><div class="sb-title">Scenario</div><div class="prob-tabs"><button class="prob-tab active" id="tab-p1" onclick="switchProblem(1)">① Ecommerce<br>Multi-Source</button><button class="prob-tab" id="tab-p2" onclick="switchProblem(2)">② Clinical<br>DST Handoff</button></div></div>
+<div class="sb-section"><div class="sb-title">Data Parameters</div>
+<div class="param"><div class="param-lbl">Users / Patients: <b class="vb" id="lbl-n">40</b></div><input type="range" id="sl-n" min="10" max="150" step="5" value="40"></div>
+<div class="param"><div class="param-lbl">Seed: <b class="vb" id="lbl-seed">42</b></div><input type="range" id="sl-seed" min="1" max="999" value="42"></div>
+<div class="param"><div class="param-lbl">Bug Rate: <b class="vr" id="lbl-rate">100%</b></div><input type="range" id="sl-rate" min="0" max="100" value="100"></div>
+<button class="btn btn-amber" onclick="regenerate()">Regenerate Data</button></div>
+<div class="sb-section"><div class="stats"><div class="stat"><span class="s-label">Rows</span><span class="s-val" id="st-rows" style="color:var(--cyan)">—</span></div><div class="stat"><span class="s-label">Formats</span><span class="s-val" id="st-fmts" style="color:var(--amber)">—</span></div><div class="stat"><span class="s-label">TZ Labels</span><span class="s-val" id="st-tzs" style="color:var(--purple)">—</span></div></div></div>
+<div class="sb-section" style="flex:1;overflow-y:auto" id="queries-section"></div>
+<div class="sb-footer"><button class="btn btn-ghost" onclick="exportDB()">↓ Export .sqlite</button><button class="btn btn-ghost" id="btn-csv" style="display:none" onclick="downloadCsv()">↓ Download CSV</button></div>
+</aside>
+<main class="main">
+<div class="editor-area"><div class="editor-bar"><div class="lbl">SQL Editor — <span id="q-name">…</span></div><div class="rt"><span class="exec-time" id="exec-time"></span><button class="btn btn-run" onclick="runQuery()">▶ Run</button></div></div><textarea id="sql-editor" spellcheck="false"></textarea><div class="editor-hint">Ctrl+Enter to run · Tables: <code>ecom_events</code> <code>clinical_vitals</code></div></div>
+<div id="narrative" class="narrative" style="display:none"></div>
+<div id="error-box" class="error-box" style="display:none"></div>
+<div class="results-area" id="results-area"><div class="placeholder"><div><div class="icon">⏱</div><div style="font-size:14px">Pick a scenario and step to begin</div></div></div></div>
+</main>
+</div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.3/sql-wasm.min.js"></script>
+<script>
+let db=null,currentResults=null,activeProblem=1,activeQueryKey=null;
+const $=id=>document.getElementById(id);
+function esc(s){return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+function pad(n,w){return String(n).padStart(w||2,'0');}
+function fmtISO(d){return d.toISOString().replace("T"," ").slice(0,19);}
+function makeRng(s){let a=[s^0xdead,s^0xbeef,s^0xcafe,s^0xbabe];const rot=(x,k)=>((x<<k)|(x>>>(32-k)))>>>0;return()=>{const r=(rot((a[1]*5)>>>0,7)*9)>>>0;const t=(a[1]<<9)>>>0;a[2]^=a[0];a[3]^=a[1];a[1]^=a[2];a[0]^=a[3];a[2]^=t;a[3]=rot(a[3],11);return(r>>>0)/4294967296;};}
+
+/* ═══ PROBLEM 1 — Multi-Source Ecommerce ═══ */
+const P1R={"US-East":{tz:"EST",tzdst:"EDT",off:-5,offdst:-4,iso:"-05:00",isodst:"-04:00"},"US-West":{tz:"PST",tzdst:"PDT",off:-8,offdst:-7,iso:"-08:00",isodst:"-07:00"},"US-Central":{tz:"CST",tzdst:"CDT",off:-6,offdst:-5,iso:"-06:00",isodst:"-05:00"},"EU-London":{tz:"GMT",tzdst:"BST",off:0,offdst:1,iso:"+00:00",isodst:"+01:00"}};
+const P1E=["page_view","search","add_to_cart","begin_checkout","purchase"];
+const P1S=["web_frontend","mobile_ios","mobile_android","api_partner"];
+function isDST(d){const m=d.getUTCMonth(),dy=d.getUTCDate();if(m>2&&m<10)return true;if(m===2)return dy>=9;if(m===10)return dy<2;return false;}
+function genP1(nU,seed,br){
+const rng=makeRng(seed),pick=a=>a[Math.floor(rng()*a.length)],ri=(l,h)=>l+Math.floor(rng()*(h-l));
+const base=new Date("2025-03-08T10:00:00Z").getTime(),rows=[];
+for(let u=1;u<=nU;u++){const rk=pick(Object.keys(P1R)),reg=P1R[rk],src=pick(P1S),ss=base+ri(0,96)*36e5+ri(0,60)*6e4;let cum=0;
+for(const ev of P1E){cum+=ri(2,55)*6e4;const tMs=ss+cum,tU=new Date(tMs),dst=isDST(tU),lo=dst?reg.offdst:reg.off,lMs=tMs+lo*36e5,lD=new Date(lMs),tzA=dst?reg.tzdst:reg.tz,isoO=dst?reg.isodst:reg.iso;
+let tr,tl,tf;
+if(rng()<br){switch(src){
+case"web_frontend":tr=tU.toISOString().slice(0,19)+"Z";tl="Z";tf="ISO-Z";break;
+case"mobile_ios":tr=fmtISO(lD)+" "+tzA;tl=tzA;tf="Local+Abbr";break;
+case"mobile_android":tr=fmtISO(lD);tl=null;tf="Naive";break;
+case"api_partner":tr=fmtISO(lD).replace(" ","T")+isoO;tl=isoO;tf="ISO-Offset";break;
+}}else{tr=fmtISO(tU);tl="UTC";tf="UTC-Clean";}
+rows.push(["U"+pad(u,4),ev,tr,src,tl,tf,rk,fmtISO(tU)]);}}return rows;}
+
+/* ═══ PROBLEM 2 — Clinical DST Handoff ═══ */
+const P2V=["heart_rate","blood_pressure","spo2","temperature","respiration"];
+const P2U=["bpm","mmHg","%","°F","br/min"];
+const P2N=["N.Chen","M.Okafor","S.Petrov","J.Garcia","A.Tanaka"];
+function genP2(nP,seed,br){
+const rng=makeRng(seed),pick=a=>a[Math.floor(rng()*a.length)],ri=(l,h)=>l+Math.floor(rng()*(h-l)),rows=[];
+for(let p=1;p<=nP;p++){const nurse=pick(P2N);
+/* Spring-forward Mar 9 */
+const sB=new Date("2025-03-09T03:00:00Z").getTime();
+for(let v=0;v<3;v++){const vi=ri(0,5),tMs=sB+v*36e5+ri(0,50)*6e4,tU=new Date(tMs),eMs=tMs-5*36e5,eD=new Date(eMs),dMs=tMs-4*36e5,dD=new Date(dMs);
+let tr,tl,tf,sc;
+if(rng()<br){const f=ri(0,5);switch(f){
+case 0:{const h=eD.getUTCHours(),ap=h>=12?"PM":"AM",h12=h%12||12;tr=`${pad(eD.getUTCMonth()+1)}/${pad(eD.getUTCDate())}/${eD.getUTCFullYear()} ${h12}:${pad(eD.getUTCMinutes())}:${pad(eD.getUTCSeconds())} ${ap} EST`;tl="EST";tf="12h-EST";sc="spring-forward";}break;
+case 1:{const h=dD.getUTCHours(),ap=h>=12?"PM":"AM",h12=h%12||12;tr=`${pad(dD.getUTCMonth()+1)}/${pad(dD.getUTCDate())}/${dD.getUTCFullYear()} ${h12}:${pad(dD.getUTCMinutes())}:${pad(dD.getUTCSeconds())} ${ap} EDT`;tl="EDT";tf="12h-EDT";sc="spring-forward";}break;
+case 2:tr=tU.toISOString().slice(0,19)+"Z";tl="Z";tf="ISO-Z";sc="spring-forward";break;
+case 3:{const gm=ri(1,59);tr=`${pad(eD.getUTCMonth()+1)}/${pad(eD.getUTCDate())}/${eD.getUTCFullYear()} 2:${pad(gm)}:00 AM EST`;tl="EST";tf="12h-EST-GAP";sc="spring-gap";}break;
+default:tr=fmtISO(eD);tl=null;tf="Naive-24h";sc="spring-forward";}}
+else{tr=fmtISO(tU);tl="UTC";tf="UTC-Clean";sc="spring-forward";}
+const val=vi===0?ri(55,110):vi===1?`${ri(90,180)}/${ri(50,100)}`:vi===2?ri(88,100):vi===3?(96+rng()*4).toFixed(1):ri(10,28);
+rows.push(["P"+pad(p,4),P2V[vi],String(val),P2U[vi],nurse,tr,tl,tf,sc,fmtISO(tU)]);}
+/* Fall-back Nov 2 */
+const fB=new Date("2025-11-02T04:30:00Z").getTime();
+for(let v=0;v<2;v++){const vi=ri(0,5),tMs=fB+v*36e5+ri(0,50)*6e4,tU=new Date(tMs),dMs=tMs-4*36e5,dD=new Date(dMs),eMs=tMs-5*36e5,eD=new Date(eMs);
+let tr,tl,tf,sc;
+if(rng()<br){const f=ri(0,4);switch(f){
+case 0:{const h=dD.getUTCHours(),ap=h>=12?"PM":"AM",h12=h%12||12;tr=`${pad(dD.getUTCMonth()+1)}/${pad(dD.getUTCDate())}/${dD.getUTCFullYear()} ${h12}:${pad(dD.getUTCMinutes())}:${pad(dD.getUTCSeconds())} ${ap} EDT`;tl="EDT";tf="12h-EDT";sc="fall-overlap";}break;
+case 1:{const h=eD.getUTCHours(),ap=h>=12?"PM":"AM",h12=h%12||12;tr=`${pad(eD.getUTCMonth()+1)}/${pad(eD.getUTCDate())}/${eD.getUTCFullYear()} ${h12}:${pad(eD.getUTCMinutes())}:${pad(eD.getUTCSeconds())} ${ap} EST`;tl="EST";tf="12h-EST";sc="fall-overlap";}break;
+case 2:tr=fmtISO(dD);tl=null;tf="Naive-24h";sc="fall-ambiguous";break;
+default:tr=tU.toISOString().slice(0,19)+"Z";tl="Z";tf="ISO-Z";sc="fall-overlap";}}
+else{tr=fmtISO(tU);tl="UTC";tf="UTC-Clean";sc="fall-overlap";}
+const val=vi===0?ri(55,110):vi===1?`${ri(90,180)}/${ri(50,100)}`:vi===2?ri(88,100):vi===3?(96+rng()*4).toFixed(1):ri(10,28);
+rows.push(["P"+pad(p,4),P2V[vi],String(val),P2U[vi],nurse,tr,tl,tf,sc,fmtISO(tU)]);}}return rows;}
+
+/* ═══ QUERY LIBRARIES ═══ */
+const P1Q={
+"Explore":{items:[
+{key:"p1_raw",label:"Raw data — see the format chaos",narrative:"Every row shows the <b>raw timestamp exactly as stored</b>, plus the <b>tz_label</b> and <b>ts_format</b> columns revealing what each source system did. Notice how the same moment in time is recorded four completely different ways.",
+sql:`SELECT user_id, event_type, timestamp_raw, tz_label, ts_format, source_system, region FROM ecom_events ORDER BY user_id, true_utc LIMIT 40;`},
+{key:"p1_fmts",label:"Count rows per format type",narrative:"This query groups every row by its <b>ts_format</b> — the way the timestamp was encoded. In real pipelines you'd see exactly this: a mix of ISO-Z, abbreviation-tagged, naïve, and offset-tagged timestamps all landing in one table.",
+sql:`SELECT ts_format, tz_label, source_system, COUNT(*) AS row_count, MIN(timestamp_raw) AS example_min, MAX(timestamp_raw) AS example_max FROM ecom_events GROUP BY ts_format, tz_label, source_system ORDER BY row_count DESC;`},
+{key:"p1_parsed",label:"Parse date / time / zone components",narrative:"Decompose each raw timestamp into <b>date</b>, <b>time</b>, and <b>zone</b> parts. Naïve formats show <b>⚠ MISSING</b> for the zone — these are the most dangerous rows in any pipeline.",
+sql:`SELECT user_id, event_type, timestamp_raw,
+  SUBSTR(REPLACE(REPLACE(timestamp_raw,'T',' '),'Z',''), 1, 10) AS date_part,
+  SUBSTR(REPLACE(REPLACE(timestamp_raw,'T',' '),'Z',''), 12, 8) AS time_part,
+  COALESCE(tz_label, '⚠ MISSING') AS zone_part,
+  ts_format
+FROM ecom_events ORDER BY user_id, true_utc LIMIT 40;`}]},
+"Detect":{items:[
+{key:"p1_seq",label:"① Sequence violations",narrative:"Sort each user's events by <b>raw timestamp</b> and use LAG to find any row where a later business-logic step appears <b>before</b> an earlier one. These violations are caused purely by mixed timezones.",
+sql:`WITH ordered AS (
+  SELECT user_id, event_type, timestamp_raw, ts_format, tz_label,
+    LAG(event_type) OVER w AS prev_event, LAG(timestamp_raw) OVER w AS prev_ts, LAG(ts_format) OVER w AS prev_fmt
+  FROM ecom_events WINDOW w AS (PARTITION BY user_id ORDER BY timestamp_raw)
+)
+SELECT user_id, prev_event, prev_ts, prev_fmt AS prev_format,
+  event_type AS next_event, timestamp_raw AS next_ts, ts_format AS next_format
+FROM ordered
+WHERE (prev_event='begin_checkout' AND event_type='add_to_cart')
+  OR (prev_event='purchase' AND event_type IN ('add_to_cart','begin_checkout','search'))
+  OR (prev_event='add_to_cart' AND event_type='search')
+ORDER BY user_id;`},
+{key:"p1_drift",label:"② Offset drift per format",narrative:"Comparing each <b>raw timestamp against ground truth (true_utc)</b> reveals the systematic offset each format introduces. ISO-Z and UTC-Clean should show ~0; naïve and abbreviation formats show the region's UTC offset.",
+sql:`SELECT ts_format, tz_label, region, COUNT(*) AS n,
+  ROUND(AVG((JULIANDAY(
+    CASE WHEN ts_format='ISO-Z' THEN REPLACE(REPLACE(timestamp_raw,'T',' '),'Z','')
+         WHEN ts_format='ISO-Offset' THEN SUBSTR(REPLACE(timestamp_raw,'T',' '),1,19)
+         WHEN ts_format='Local+Abbr' THEN SUBSTR(timestamp_raw,1,19)
+         ELSE timestamp_raw END
+  ) - JULIANDAY(true_utc))*24), 2) AS avg_offset_hours
+FROM ecom_events GROUP BY ts_format, tz_label, region ORDER BY avg_offset_hours;`}]},
+"Fix":{items:[
+{key:"p1_norm",label:"③ Normalize every format → UTC",narrative:"The core correction: a <b>CASE expression per ts_format</b>. ISO-Z strips the Z. ISO-Offset strips the suffix and subtracts the embedded offset. Local+Abbr subtracts the abbreviation's known offset. Naïve timestamps use the region's offset. Every result becomes clean UTC.",
+sql:`SELECT user_id, event_type, timestamp_raw, ts_format, tz_label, region,
+  CASE
+    WHEN ts_format='ISO-Z' THEN REPLACE(REPLACE(timestamp_raw,'T',' '),'Z','')
+    WHEN ts_format='ISO-Offset' THEN DATETIME(
+      SUBSTR(REPLACE(timestamp_raw,'T',' '),1,19),
+      CASE SUBSTR(timestamp_raw,20,1) WHEN '+' THEN '-'||SUBSTR(timestamp_raw,21,2)||' hours'
+           WHEN '-' THEN '+'||SUBSTR(timestamp_raw,21,2)||' hours' END)
+    WHEN ts_format='Local+Abbr' THEN DATETIME(SUBSTR(timestamp_raw,1,19),
+      CASE tz_label WHEN 'EST' THEN '+5 hours' WHEN 'EDT' THEN '+4 hours'
+        WHEN 'CST' THEN '+6 hours' WHEN 'CDT' THEN '+5 hours'
+        WHEN 'PST' THEN '+8 hours' WHEN 'PDT' THEN '+7 hours'
+        WHEN 'GMT' THEN '+0 hours' WHEN 'BST' THEN '-1 hours' ELSE '+0 hours' END)
+    WHEN ts_format='Naive' THEN DATETIME(timestamp_raw,
+      CASE region WHEN 'US-East' THEN '+5 hours' WHEN 'US-West' THEN '+8 hours'
+        WHEN 'US-Central' THEN '+6 hours' WHEN 'EU-London' THEN '+0 hours' ELSE '+0 hours' END)
+    ELSE timestamp_raw
+  END AS corrected_utc,
+  true_utc AS ground_truth,
+  CASE WHEN ts_format='Naive' THEN '⚠ inferred from region' ELSE '✓ deterministic' END AS method
+FROM ecom_events ORDER BY user_id, true_utc LIMIT 50;`},
+{key:"p1_verify",label:"④ Verify — corrected vs truth",narrative:"The acid test: compute <b>error in seconds</b> between corrected UTC and ground truth. Deterministic formats should be exact. Naïve timestamps may have DST-related residual error.",
+sql:`WITH corrected AS (
+  SELECT *, CASE
+    WHEN ts_format='ISO-Z' THEN REPLACE(REPLACE(timestamp_raw,'T',' '),'Z','')
+    WHEN ts_format='ISO-Offset' THEN DATETIME(SUBSTR(REPLACE(timestamp_raw,'T',' '),1,19),
+      CASE SUBSTR(timestamp_raw,20,1) WHEN '+' THEN '-'||SUBSTR(timestamp_raw,21,2)||' hours'
+           WHEN '-' THEN '+'||SUBSTR(timestamp_raw,21,2)||' hours' END)
+    WHEN ts_format='Local+Abbr' THEN DATETIME(SUBSTR(timestamp_raw,1,19),
+      CASE tz_label WHEN 'EST' THEN '+5 hours' WHEN 'EDT' THEN '+4 hours' WHEN 'CST' THEN '+6 hours' WHEN 'CDT' THEN '+5 hours' WHEN 'PST' THEN '+8 hours' WHEN 'PDT' THEN '+7 hours' WHEN 'GMT' THEN '+0 hours' WHEN 'BST' THEN '-1 hours' ELSE '+0 hours' END)
+    WHEN ts_format='Naive' THEN DATETIME(timestamp_raw, CASE region WHEN 'US-East' THEN '+5 hours' WHEN 'US-West' THEN '+8 hours' WHEN 'US-Central' THEN '+6 hours' WHEN 'EU-London' THEN '+0 hours' ELSE '+0 hours' END)
+    ELSE timestamp_raw END AS fixed_utc FROM ecom_events)
+SELECT ts_format, tz_label, region, COUNT(*) AS n,
+  ROUND(AVG(ABS((JULIANDAY(fixed_utc)-JULIANDAY(true_utc))*86400)),1) AS avg_error_sec,
+  ROUND(MAX(ABS((JULIANDAY(fixed_utc)-JULIANDAY(true_utc))*86400)),1) AS max_error_sec,
+  CASE WHEN MAX(ABS((JULIANDAY(fixed_utc)-JULIANDAY(true_utc))*86400))<2 THEN '✓ EXACT' ELSE '⚠ RESIDUAL' END AS status
+FROM corrected GROUP BY ts_format, tz_label, region ORDER BY avg_error_sec DESC;`},
+{key:"p1_final",label:"⑤ Final clean — date | time | zone",narrative:"The finished product: every event with separate <b>date_utc</b>, <b>time_utc</b>, and <b>zone</b> columns. The corrected_utc is authoritative. Original raw timestamp and format kept for audit.",
+sql:`WITH corrected AS (
+  SELECT *, CASE
+    WHEN ts_format='ISO-Z' THEN REPLACE(REPLACE(timestamp_raw,'T',' '),'Z','')
+    WHEN ts_format='ISO-Offset' THEN DATETIME(SUBSTR(REPLACE(timestamp_raw,'T',' '),1,19),
+      CASE SUBSTR(timestamp_raw,20,1) WHEN '+' THEN '-'||SUBSTR(timestamp_raw,21,2)||' hours' WHEN '-' THEN '+'||SUBSTR(timestamp_raw,21,2)||' hours' END)
+    WHEN ts_format='Local+Abbr' THEN DATETIME(SUBSTR(timestamp_raw,1,19),
+      CASE tz_label WHEN 'EST' THEN '+5 hours' WHEN 'EDT' THEN '+4 hours' WHEN 'CST' THEN '+6 hours' WHEN 'CDT' THEN '+5 hours' WHEN 'PST' THEN '+8 hours' WHEN 'PDT' THEN '+7 hours' WHEN 'GMT' THEN '+0 hours' WHEN 'BST' THEN '-1 hours' ELSE '+0 hours' END)
+    WHEN ts_format='Naive' THEN DATETIME(timestamp_raw, CASE region WHEN 'US-East' THEN '+5 hours' WHEN 'US-West' THEN '+8 hours' WHEN 'US-Central' THEN '+6 hours' WHEN 'EU-London' THEN '+0 hours' ELSE '+0 hours' END)
+    ELSE timestamp_raw END AS corrected_utc FROM ecom_events)
+SELECT user_id, event_type,
+  SUBSTR(corrected_utc,1,10) AS date_utc,
+  SUBSTR(corrected_utc,12,8) AS time_utc,
+  'UTC' AS zone,
+  timestamp_raw AS original_raw, ts_format AS orig_format, source_system, region
+FROM corrected ORDER BY user_id, corrected_utc LIMIT 50;`}]},
+"Custom":{items:[{key:"p1_cust",label:"✎ Custom SQL",narrative:"Write any SQL against <b>ecom_events</b>. Columns: user_id, event_type, timestamp_raw, source_system, tz_label, ts_format, region, true_utc.",
+sql:`SELECT * FROM ecom_events LIMIT 20;`}]}
+};
+
+const P2Q={
+"Explore":{items:[
+{key:"p2_raw",label:"Raw vitals — mixed clock formats",narrative:"Clinical vitals across the <b>March 9 spring-forward</b> and <b>November 2 fall-back</b> DST transitions. Note the mix: 12-hour EST, 12-hour EDT, ISO-Z, naïve 24h, and timestamps in the <b>nonexistent 2:00–3:00 AM gap</b>.",
+sql:`SELECT patient_id, vital_type, reading, unit, nurse, timestamp_raw, tz_label, ts_format, scenario FROM clinical_vitals ORDER BY patient_id, true_utc LIMIT 40;`},
+{key:"p2_fmts",label:"Format & scenario breakdown",narrative:"How many rows per format and DST scenario. The <b>spring-gap</b> rows are timestamps that literally don't exist in Eastern time.",
+sql:`SELECT scenario, ts_format, tz_label, COUNT(*) AS rows, MIN(timestamp_raw) AS example FROM clinical_vitals GROUP BY scenario, ts_format, tz_label ORDER BY scenario, rows DESC;`},
+{key:"p2_parsed",label:"Parse date / time / zone fields",narrative:"Decompose each raw timestamp into <b>date</b>, <b>time</b>, and <b>zone</b>. Naïve rows show <b>⚠ MISSING</b> zone — the most dangerous in clinical settings.",
+sql:`SELECT patient_id, vital_type, reading, timestamp_raw,
+  CASE WHEN ts_format LIKE '12h%' THEN SUBSTR(timestamp_raw,1,10) ELSE SUBSTR(timestamp_raw,1,10) END AS date_part,
+  CASE WHEN ts_format LIKE '12h%' THEN SUBSTR(timestamp_raw,12,11) ELSE SUBSTR(timestamp_raw,12,8) END AS time_part,
+  COALESCE(tz_label,'⚠ MISSING') AS zone_part, scenario
+FROM clinical_vitals ORDER BY patient_id, true_utc LIMIT 40;`}]},
+"Detect":{items:[
+{key:"p2_gap",label:"① Spring-forward gap timestamps",narrative:"Any timestamp claiming 2:00–3:00 AM EST on March 9 is <b>impossible</b> — that hour was skipped. These need special handling.",
+sql:`SELECT patient_id, vital_type, reading, nurse, timestamp_raw, tz_label, ts_format,
+  '2:00-3:00 AM EST does not exist on Mar 9' AS problem
+FROM clinical_vitals WHERE scenario='spring-gap' ORDER BY patient_id;`},
+{key:"p2_ambig",label:"② Fall-back ambiguous timestamps",narrative:"During the November fall-back, <b>1:00–2:00 AM occurs twice</b>. Without tz_label, a naïve '1:30 AM' is genuinely ambiguous — which 1:30 AM?",
+sql:`SELECT patient_id, vital_type, reading, nurse, timestamp_raw, tz_label, ts_format, scenario,
+  CASE WHEN tz_label IS NULL THEN '⚠ AMBIGUOUS — which 1AM?'
+    WHEN tz_label='EDT' THEN 'First pass (EDT, UTC-4)'
+    WHEN tz_label='EST' THEN 'Second pass (EST, UTC-5)'
+    ELSE '✓ Unambiguous ('||tz_label||')' END AS disambiguation
+FROM clinical_vitals WHERE scenario IN ('fall-overlap','fall-ambiguous') ORDER BY patient_id, true_utc;`},
+{key:"p2_drift",label:"③ Offset drift by format",narrative:"Measure the systematic offset each format introduces vs ground truth. The 12h-EST-GAP format will show erratic offsets because the times are nonexistent.",
+sql:`SELECT ts_format, scenario, tz_label, COUNT(*) AS n,
+  ROUND(AVG((JULIANDAY(
+    CASE WHEN ts_format='ISO-Z' THEN REPLACE(REPLACE(timestamp_raw,'T',' '),'Z','')
+         WHEN ts_format LIKE '12h%' THEN SUBSTR(timestamp_raw,1,10)||' '||SUBSTR(timestamp_raw,12,8)
+         ELSE timestamp_raw END
+  ) - JULIANDAY(true_utc))*24), 2) AS avg_offset_h
+FROM clinical_vitals GROUP BY ts_format, scenario, tz_label ORDER BY avg_offset_h;`}]},
+"Fix":{items:[
+{key:"p2_norm",label:"④ Normalize clinical → UTC",narrative:"Clinical correction handles <b>12-hour formats, DST gaps, and fall-back ambiguity</b>. Gap timestamps push to 3:00 AM EDT. Naïve fall-back rows are flagged as unresolvable without more context.",
+sql:`SELECT patient_id, vital_type, reading, nurse, timestamp_raw, tz_label, ts_format, scenario,
+  CASE
+    WHEN ts_format='UTC-Clean' THEN timestamp_raw
+    WHEN ts_format='ISO-Z' THEN REPLACE(REPLACE(timestamp_raw,'T',' '),'Z','')
+    WHEN ts_format='12h-EST-GAP' THEN DATETIME(
+      SUBSTR(timestamp_raw,7,4)||'-'||SUBSTR(timestamp_raw,1,2)||'-'||SUBSTR(timestamp_raw,4,2)||' 03:00:00','+4 hours')
+    WHEN ts_format='12h-EST' THEN DATETIME(
+      SUBSTR(timestamp_raw,7,4)||'-'||SUBSTR(timestamp_raw,1,2)||'-'||SUBSTR(timestamp_raw,4,2)||' '||
+      printf('%02d',CASE WHEN INSTR(timestamp_raw,' PM')>0 AND CAST(SUBSTR(timestamp_raw,12,INSTR(SUBSTR(timestamp_raw,12),':')-1) AS INT)<12 THEN CAST(SUBSTR(timestamp_raw,12,INSTR(SUBSTR(timestamp_raw,12),':')-1) AS INT)+12 WHEN INSTR(timestamp_raw,' AM')>0 AND CAST(SUBSTR(timestamp_raw,12,INSTR(SUBSTR(timestamp_raw,12),':')-1) AS INT)=12 THEN 0 ELSE CAST(SUBSTR(timestamp_raw,12,INSTR(SUBSTR(timestamp_raw,12),':')-1) AS INT) END)||':'||SUBSTR(timestamp_raw,INSTR(timestamp_raw,':')+1,2)||':'||SUBSTR(timestamp_raw,INSTR(timestamp_raw,':')+4,2),'+5 hours')
+    WHEN ts_format='12h-EDT' THEN DATETIME(
+      SUBSTR(timestamp_raw,7,4)||'-'||SUBSTR(timestamp_raw,1,2)||'-'||SUBSTR(timestamp_raw,4,2)||' '||
+      printf('%02d',CASE WHEN INSTR(timestamp_raw,' PM')>0 AND CAST(SUBSTR(timestamp_raw,12,INSTR(SUBSTR(timestamp_raw,12),':')-1) AS INT)<12 THEN CAST(SUBSTR(timestamp_raw,12,INSTR(SUBSTR(timestamp_raw,12),':')-1) AS INT)+12 WHEN INSTR(timestamp_raw,' AM')>0 AND CAST(SUBSTR(timestamp_raw,12,INSTR(SUBSTR(timestamp_raw,12),':')-1) AS INT)=12 THEN 0 ELSE CAST(SUBSTR(timestamp_raw,12,INSTR(SUBSTR(timestamp_raw,12),':')-1) AS INT) END)||':'||SUBSTR(timestamp_raw,INSTR(timestamp_raw,':')+1,2)||':'||SUBSTR(timestamp_raw,INSTR(timestamp_raw,':')+4,2),'+4 hours')
+    WHEN ts_format='Naive-24h' THEN DATETIME(timestamp_raw,'+5 hours')
+    ELSE timestamp_raw
+  END AS corrected_utc,
+  true_utc AS ground_truth,
+  CASE WHEN ts_format='12h-EST-GAP' THEN '⚠ gap→pushed 3AM EDT'
+    WHEN ts_format='Naive-24h' AND scenario LIKE 'fall%' THEN '⚠ ambiguous fall-back'
+    WHEN ts_format='Naive-24h' THEN '⚠ assumed EST' ELSE '✓ deterministic' END AS method
+FROM clinical_vitals ORDER BY patient_id, true_utc LIMIT 50;`},
+{key:"p2_verify",label:"⑤ Verify correction accuracy",narrative:"Measure error per format and scenario. Deterministic formats near-zero. Gap timestamps approximate. Naïve fall-back ±1h due to unresolvable ambiguity.",
+sql:`WITH fixed AS (SELECT *, CASE
+  WHEN ts_format='UTC-Clean' THEN timestamp_raw
+  WHEN ts_format='ISO-Z' THEN REPLACE(REPLACE(timestamp_raw,'T',' '),'Z','')
+  WHEN ts_format='12h-EST-GAP' THEN DATETIME(SUBSTR(timestamp_raw,7,4)||'-'||SUBSTR(timestamp_raw,1,2)||'-'||SUBSTR(timestamp_raw,4,2)||' 03:00:00','+4 hours')
+  WHEN ts_format='12h-EST' THEN DATETIME(SUBSTR(timestamp_raw,7,4)||'-'||SUBSTR(timestamp_raw,1,2)||'-'||SUBSTR(timestamp_raw,4,2)||' '||printf('%02d',CASE WHEN INSTR(timestamp_raw,' PM')>0 AND CAST(SUBSTR(timestamp_raw,12,INSTR(SUBSTR(timestamp_raw,12),':')-1)AS INT)<12 THEN CAST(SUBSTR(timestamp_raw,12,INSTR(SUBSTR(timestamp_raw,12),':')-1)AS INT)+12 WHEN INSTR(timestamp_raw,' AM')>0 AND CAST(SUBSTR(timestamp_raw,12,INSTR(SUBSTR(timestamp_raw,12),':')-1)AS INT)=12 THEN 0 ELSE CAST(SUBSTR(timestamp_raw,12,INSTR(SUBSTR(timestamp_raw,12),':')-1)AS INT)END)||':'||SUBSTR(timestamp_raw,INSTR(timestamp_raw,':')+1,2)||':'||SUBSTR(timestamp_raw,INSTR(timestamp_raw,':')+4,2),'+5 hours')
+  WHEN ts_format='12h-EDT' THEN DATETIME(SUBSTR(timestamp_raw,7,4)||'-'||SUBSTR(timestamp_raw,1,2)||'-'||SUBSTR(timestamp_raw,4,2)||' '||printf('%02d',CASE WHEN INSTR(timestamp_raw,' PM')>0 AND CAST(SUBSTR(timestamp_raw,12,INSTR(SUBSTR(timestamp_raw,12),':')-1)AS INT)<12 THEN CAST(SUBSTR(timestamp_raw,12,INSTR(SUBSTR(timestamp_raw,12),':')-1)AS INT)+12 WHEN INSTR(timestamp_raw,' AM')>0 AND CAST(SUBSTR(timestamp_raw,12,INSTR(SUBSTR(timestamp_raw,12),':')-1)AS INT)=12 THEN 0 ELSE CAST(SUBSTR(timestamp_raw,12,INSTR(SUBSTR(timestamp_raw,12),':')-1)AS INT)END)||':'||SUBSTR(timestamp_raw,INSTR(timestamp_raw,':')+1,2)||':'||SUBSTR(timestamp_raw,INSTR(timestamp_raw,':')+4,2),'+4 hours')
+  WHEN ts_format='Naive-24h' THEN DATETIME(timestamp_raw,'+5 hours')
+  ELSE timestamp_raw END AS fixed_utc FROM clinical_vitals)
+SELECT ts_format, scenario, COUNT(*) AS n,
+  ROUND(AVG(ABS((JULIANDAY(fixed_utc)-JULIANDAY(true_utc))*86400)),1) AS avg_err_sec,
+  ROUND(MAX(ABS((JULIANDAY(fixed_utc)-JULIANDAY(true_utc))*86400)),1) AS max_err_sec,
+  CASE WHEN MAX(ABS((JULIANDAY(fixed_utc)-JULIANDAY(true_utc))*86400))<2 THEN '✓ EXACT'
+    WHEN MAX(ABS((JULIANDAY(fixed_utc)-JULIANDAY(true_utc))*86400))<3700 THEN '⚠ ±1h DST'
+    ELSE '✗ ERROR' END AS status
+FROM fixed GROUP BY ts_format, scenario ORDER BY avg_err_sec DESC;`},
+{key:"p2_final",label:"⑥ Final clean — date | time | zone",narrative:"Production output: every vital with <b>date_utc</b>, <b>time_utc</b>, <b>zone</b>. Original raw + method retained for clinical audit.",
+sql:`WITH fixed AS (SELECT *, CASE
+  WHEN ts_format='UTC-Clean' THEN timestamp_raw
+  WHEN ts_format='ISO-Z' THEN REPLACE(REPLACE(timestamp_raw,'T',' '),'Z','')
+  WHEN ts_format='12h-EST-GAP' THEN DATETIME(SUBSTR(timestamp_raw,7,4)||'-'||SUBSTR(timestamp_raw,1,2)||'-'||SUBSTR(timestamp_raw,4,2)||' 03:00:00','+4 hours')
+  WHEN ts_format='12h-EST' THEN DATETIME(SUBSTR(timestamp_raw,7,4)||'-'||SUBSTR(timestamp_raw,1,2)||'-'||SUBSTR(timestamp_raw,4,2)||' '||printf('%02d',CASE WHEN INSTR(timestamp_raw,' PM')>0 AND CAST(SUBSTR(timestamp_raw,12,INSTR(SUBSTR(timestamp_raw,12),':')-1)AS INT)<12 THEN CAST(SUBSTR(timestamp_raw,12,INSTR(SUBSTR(timestamp_raw,12),':')-1)AS INT)+12 WHEN INSTR(timestamp_raw,' AM')>0 AND CAST(SUBSTR(timestamp_raw,12,INSTR(SUBSTR(timestamp_raw,12),':')-1)AS INT)=12 THEN 0 ELSE CAST(SUBSTR(timestamp_raw,12,INSTR(SUBSTR(timestamp_raw,12),':')-1)AS INT)END)||':'||SUBSTR(timestamp_raw,INSTR(timestamp_raw,':')+1,2)||':'||SUBSTR(timestamp_raw,INSTR(timestamp_raw,':')+4,2),'+5 hours')
+  WHEN ts_format='12h-EDT' THEN DATETIME(SUBSTR(timestamp_raw,7,4)||'-'||SUBSTR(timestamp_raw,1,2)||'-'||SUBSTR(timestamp_raw,4,2)||' '||printf('%02d',CASE WHEN INSTR(timestamp_raw,' PM')>0 AND CAST(SUBSTR(timestamp_raw,12,INSTR(SUBSTR(timestamp_raw,12),':')-1)AS INT)<12 THEN CAST(SUBSTR(timestamp_raw,12,INSTR(SUBSTR(timestamp_raw,12),':')-1)AS INT)+12 WHEN INSTR(timestamp_raw,' AM')>0 AND CAST(SUBSTR(timestamp_raw,12,INSTR(SUBSTR(timestamp_raw,12),':')-1)AS INT)=12 THEN 0 ELSE CAST(SUBSTR(timestamp_raw,12,INSTR(SUBSTR(timestamp_raw,12),':')-1)AS INT)END)||':'||SUBSTR(timestamp_raw,INSTR(timestamp_raw,':')+1,2)||':'||SUBSTR(timestamp_raw,INSTR(timestamp_raw,':')+4,2),'+4 hours')
+  WHEN ts_format='Naive-24h' THEN DATETIME(timestamp_raw,'+5 hours')
+  ELSE timestamp_raw END AS corrected_utc FROM clinical_vitals)
+SELECT patient_id, vital_type, reading, unit, nurse,
+  SUBSTR(corrected_utc,1,10) AS date_utc,
+  SUBSTR(corrected_utc,12,8) AS time_utc,
+  'UTC' AS zone,
+  timestamp_raw AS original_raw, ts_format AS orig_format, scenario
+FROM fixed ORDER BY patient_id, corrected_utc LIMIT 50;`}]},
+"Custom":{items:[{key:"p2_cust",label:"✎ Custom SQL",narrative:"Write any SQL against <b>clinical_vitals</b>. Columns: patient_id, vital_type, reading, unit, nurse, timestamp_raw, tz_label, ts_format, scenario, true_utc.",
+sql:`SELECT * FROM clinical_vitals LIMIT 20;`}]}
+};
+
+/* ═══ DB SEEDING ═══ */
+function seedDatabase(){if(!db)return;
+const n=+$("sl-n").value,seed=+$("sl-seed").value,rate=+$("sl-rate").value/100;
+db.run("DROP TABLE IF EXISTS ecom_events");
+db.run("CREATE TABLE ecom_events(user_id TEXT,event_type TEXT,timestamp_raw TEXT,source_system TEXT,tz_label TEXT,ts_format TEXT,region TEXT,true_utc TEXT)");
+const p1=genP1(n,seed,rate);const s1=db.prepare("INSERT INTO ecom_events VALUES(?,?,?,?,?,?,?,?)");for(const r of p1)s1.run(r);s1.free();
+db.run("DROP TABLE IF EXISTS clinical_vitals");
+db.run("CREATE TABLE clinical_vitals(patient_id TEXT,vital_type TEXT,reading TEXT,unit TEXT,nurse TEXT,timestamp_raw TEXT,tz_label TEXT,ts_format TEXT,scenario TEXT,true_utc TEXT)");
+const p2=genP2(n,seed,rate);const s2=db.prepare("INSERT INTO clinical_vitals VALUES(?,?,?,?,?,?,?,?,?,?)");for(const r of p2)s2.run(r);s2.free();
+const total=p1.length+p2.length;
+$("st-rows").textContent=total;
+$("st-fmts").textContent=new Set([...p1.map(r=>r[5]),...p2.map(r=>r[7])]).size;
+$("st-tzs").textContent=new Set([...p1.map(r=>r[4]),...p2.map(r=>r[6])].filter(Boolean)).size;
+currentResults=null;renderResults();$("error-box").style.display="none";$("btn-csv").style.display="none";}
+function regenerate(){seedDatabase();}
+
+/* ═══ QUERY UI ═══ */
+function getQL(){return activeProblem===1?P1Q:P2Q;}
+function buildQueryList(){const sec=$("queries-section"),lib=getQL();sec.innerHTML='<div class="sb-title">Query Steps</div>';
+for(const[gn,g] of Object.entries(lib)){const gd=document.createElement("div");gd.className="q-group";gd.innerHTML='<div class="q-group-title">'+esc(gn)+'</div>';
+const list=document.createElement("div");list.className="q-list";
+for(const item of g.items){const sm=item.label.match(/^([①②③④⑤⑥⑦✎])/);
+const sb=sm?'<span class="q-step">'+sm[1]+'</span>':'';const lt=sm?item.label.slice(sm[0].length+1):item.label;
+const btn=document.createElement("button");btn.className="q-btn"+(activeQueryKey===item.key?" active":"");btn.innerHTML=sb+esc(lt);btn.onclick=()=>selectQuery(item);list.appendChild(btn);}
+gd.appendChild(list);sec.appendChild(gd);}}
+function selectQuery(item){activeQueryKey=item.key;$("sql-editor").value=item.sql;$("q-name").textContent=item.label;
+if(item.narrative){$("narrative").style.display="block";$("narrative").innerHTML='<div class="narr-title">'+esc(item.label)+'</div><div class="narr-body">'+item.narrative+'</div>';}
+else{$("narrative").style.display="none";}
+$("error-box").style.display="none";currentResults=null;renderResults();buildQueryList();}
+function switchProblem(p){activeProblem=p;activeQueryKey=null;
+$("tab-p1").className="prob-tab"+(p===1?" active":"");$("tab-p2").className="prob-tab"+(p===2?" active":"");
+buildQueryList();selectQuery(Object.values(getQL())[0].items[0]);}
+
+/* ═══ RUN / RENDER ═══ */
+function runQuery(){const sql=$("sql-editor").value.trim();if(!sql||!db)return;$("error-box").style.display="none";const t0=performance.now();
+try{const res=db.exec(sql);$("exec-time").textContent=Math.round(performance.now()-t0)+"ms";currentResults=res.length?res[0]:{columns:[],values:[]};renderResults();$("btn-csv").style.display=currentResults.values.length?"block":"none";}
+catch(e){$("error-box").textContent=e.message;$("error-box").style.display="block";currentResults=null;renderResults();$("btn-csv").style.display="none";}}
+
+function renderResults(){const area=$("results-area");
+if(!currentResults||!currentResults.columns||!currentResults.columns.length){area.innerHTML='<div class="placeholder"><div><div class="icon">⏱</div><div style="font-size:14px">Pick a query step and hit <b>Run</b></div></div></div>';return;}
+const cols=currentResults.columns,vals=currentResults.values;
+let h='<div class="results-meta">'+vals.length+' row'+(vals.length!==1?'s':'')+' returned</div><div class="results-wrap"><table><thead><tr>';
+for(const c of cols)h+='<th>'+esc(c)+'</th>';h+='</tr></thead><tbody>';
+for(const row of vals){h+='<tr>';for(let i=0;i<row.length;i++){const v=row[i],cn=cols[i].toLowerCase();let cls="";
+if(v===null)cls="c-null";
+else if(cn.includes("status")||cn==="disambiguation"||cn==="method"){cls=String(v).includes("✓")?"c-status-ok":String(v).includes("⚠")?"c-status-bad c-method":String(v).includes("✗")?"c-err":"c-method";}
+else if(cn==="date_utc"||cn==="date_part")cls="c-date";
+else if(cn==="time_utc"||cn==="time_part")cls="c-time";
+else if(cn==="zone"||cn==="zone_part")cls="c-zone";
+else if(cn.includes("user")||cn.includes("patient"))cls="c-user";
+else if(cn.includes("corrected")||cn.includes("fixed")||cn.includes("ground")||cn.includes("true"))cls="c-utc";
+else if(cn==="tz_label"||cn.includes("format"))cls="c-tz";
+else if(cn.includes("_raw")||cn.includes("original")||cn.includes("prev_ts")||cn.includes("next_ts")||cn==="example"||cn==="example_min"||cn==="example_max")cls="c-raw";
+else if(cn.includes("region")||cn.includes("source")||cn.includes("scenario"))cls="c-region";
+else if(cn.includes("error")||cn.includes("problem"))cls="c-err";
+h+='<td class="'+cls+'">'+(v===null?'<i>NULL</i>':esc(String(v)))+'</td>';}h+='</tr>';}
+h+='</tbody></table></div>';area.innerHTML=h;
+const w=area.querySelector(".results-wrap");if(w)w.style.animation="fadeUp .3s ease";}
+
+/* ═══ EXPORT ═══ */
+function downloadCsv(){if(!currentResults||!currentResults.values.length)return;const h=currentResults.columns.join(","),b=currentResults.values.map(r=>r.map(v=>v===null?"":('"'+String(v).replace(/"/g,'""')+'"')).join(",")).join("\n");dl(h+"\n"+b,"text/csv","tz_query_"+Date.now()+".csv");}
+function exportDB(){if(!db)return;dl(db.export(),"application/octet-stream","tz_sync_lab_v2.sqlite");}
+function dl(d,t,n){const b=new Blob([d],{type:t}),u=URL.createObjectURL(b),a=document.createElement("a");a.href=u;a.download=n;a.click();URL.revokeObjectURL(u);}
+
+/* ═══ CONTROLS ═══ */
+$("sl-n").oninput=function(){$("lbl-n").textContent=this.value;};
+$("sl-seed").oninput=function(){$("lbl-seed").textContent=this.value;};
+$("sl-rate").oninput=function(){$("lbl-rate").textContent=this.value+"%";};
+$("sql-editor").addEventListener("keydown",e=>{if((e.metaKey||e.ctrlKey)&&e.key==="Enter"){e.preventDefault();runQuery();}});
+
+/* ═══ INIT ═══ */
+(async()=>{try{
+const SQL=await initSqlJs({locateFile:f=>"https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.3/"+f});
+db=new SQL.Database();seedDatabase();switchProblem(1);
+$("loading-overlay").classList.add("hidden");setTimeout(()=>$("loading-overlay").remove(),500);
+}catch(e){$("loading-overlay").innerHTML='<h2 style="color:var(--red)">Failed to load SQLite</h2><p style="color:var(--red);animation:none">'+esc(e.message)+'</p>';}})();
+</script>
+</body>
+</html>

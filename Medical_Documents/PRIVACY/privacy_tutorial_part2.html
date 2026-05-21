@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Healthcare Privacy Tutorial &#8212; Part 2: Stations 06&#8211;11</title>
+<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&family=JetBrains+Mono:wght@400;500;600&family=Source+Sans+3:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0d1219;--bg2:#121c28;--bgc:#15202e;--bga:#1c2d40;--bgi:#0a1520;
+--bc:#1e3045;--ba:#2a4a6b;--tp:#dde8f0;--ts:#7fa8c4;--tm:#4a6d8a;
+--tl:#2eb8b0;--tld:#1a7a74;--gn:#6db87a;--gnd:#3a6b45;
+--am:#e8a838;--amd:#a87820;--co:#d9604e;--cod:#8a3020;
+--bl:#4a9fd4;--bld:#2a6090;--pu:#9b7fe8;--cy:#48c8e8;
+--sh:0 4px 28px rgba(0,0,0,.45);--si:inset 0 2px 6px rgba(0,0,0,.35);
+--r:8px;--rl:14px;
+--ff:'Crimson Pro',Georgia,serif;--fn:'Source Sans 3',system-ui,sans-serif;--fm:'JetBrains Mono','Consolas',monospace;}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{font-family:var(--fn);background:var(--bg);color:var(--tp);line-height:1.72;font-size:17px;min-height:100vh;}
+.pw{max-width:940px;margin:0 auto;padding:40px 28px 120px;}
+.pgb{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,var(--tl),var(--cy));z-index:200;transition:width .25s ease;}
+.hero{text-align:center;padding:68px 20px 48px;position:relative;}
+.hero::before{content:'';position:absolute;top:-60px;left:50%;transform:translateX(-50%);width:700px;height:500px;background:radial-gradient(ellipse,rgba(46,184,176,.07) 0%,transparent 68%);pointer-events:none;}
+.hlb{font-family:var(--fm);font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--tl);margin-bottom:18px;}
+.hero h1{font-family:var(--ff);font-size:clamp(2rem,5vw,3rem);font-weight:700;line-height:1.18;margin-bottom:16px;}
+.hero h1 span{color:var(--tl);}
+.hsub{font-size:18px;color:var(--ts);max-width:660px;margin:0 auto;font-weight:300;line-height:1.65;}
+.hmt{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin-top:20px;}
+.hbg{display:inline-block;font-family:var(--fm);font-size:11px;letter-spacing:1.8px;padding:4px 14px;border-radius:4px;}
+.hbp{color:var(--co);background:rgba(217,96,78,.08);border:1px solid rgba(217,96,78,.2);}
+.hbj{color:var(--am);background:rgba(232,168,56,.08);border:1px solid rgba(232,168,56,.18);}
+.hbc{color:var(--tl);background:rgba(46,184,176,.07);border:1px solid rgba(46,184,176,.15);}
+.hbd{color:var(--tm);background:rgba(255,255,255,.03);border:1px solid var(--bc);}
+.pnv{background:var(--bgc);border:1px solid var(--bc);border-radius:var(--rl);padding:18px 26px;margin:18px 0;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;}
+.pnl{font-family:var(--fm);font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--tm);}
+.pnv a{font-family:var(--fm);font-size:12px;color:var(--tl);text-decoration:none;padding:6px 16px;border:1px solid var(--tld);border-radius:5px;transition:background .2s;}
+.pnv a:hover{background:rgba(46,184,176,.08);}
+.pnc{font-family:var(--fm);font-size:12px;color:var(--tl);padding:6px 16px;background:rgba(46,184,176,.08);border:1px solid var(--tld);border-radius:5px;}
+.toc{background:var(--bgc);border:1px solid var(--bc);border-radius:var(--rl);padding:28px 34px;margin:20px 0 48px;}
+.toc h2{font-family:var(--ff);font-size:21px;margin-bottom:18px;color:var(--am);}
+.toc a{color:var(--ts);text-decoration:none;font-size:14.5px;display:flex;align-items:baseline;gap:10px;padding:5px 0;transition:color .2s;}
+.toc a:hover{color:var(--tl);}
+.tn{font-family:var(--fm);font-size:11px;color:var(--tld);min-width:22px;}
+hr.dv{border:none;height:1px;background:var(--bc);margin:50px 0;}
+.sta{margin-bottom:68px;animation:fu .5s ease both;}
+@keyframes fu{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.shd{display:flex;align-items:center;gap:14px;margin-bottom:8px;}
+.sn{font-family:var(--fm);font-size:11px;letter-spacing:2.5px;text-transform:uppercase;color:var(--tld);}
+.stg{font-family:var(--fm);font-size:10px;letter-spacing:1.5px;text-transform:uppercase;padding:3px 10px;border-radius:4px;border:1px solid;margin-left:auto;}
+.tga{color:var(--tm);border-color:var(--bc);background:rgba(255,255,255,.02);}
+.sta h2{font-family:var(--ff);font-size:27px;font-weight:700;margin-bottom:18px;color:var(--tp);border-bottom:1px solid var(--bc);padding-bottom:11px;}
+.sta h3{font-family:var(--ff);font-size:20px;font-weight:600;margin:28px 0 11px;color:var(--am);}
+.sta p{margin-bottom:13px;}
+.kt{color:var(--tl);font-weight:600;}
+.cn{background:linear-gradient(135deg,rgba(46,184,176,.06),rgba(74,159,212,.04));border:1px solid rgba(46,184,176,.15);border-radius:var(--rl);padding:20px 24px;margin:20px 0;}
+.cnt{font-family:var(--fm);font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--tl);margin-bottom:9px;}
+.fb{background:var(--bg2);border-left:3px solid var(--tl);border-radius:0 var(--r) var(--r) 0;padding:16px 24px;margin:16px 0;font-family:var(--fm);font-size:14px;line-height:2;overflow-x:auto;color:var(--am);}
+.fb .lb{display:block;font-family:var(--fn);font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:var(--tm);margin-bottom:5px;}
+.nt{width:100%;border-collapse:collapse;margin:14px 0 20px;font-size:15px;}
+.nt th{text-align:left;padding:9px 14px;background:var(--bg2);color:var(--tl);font-family:var(--fm);font-size:11px;letter-spacing:1.5px;text-transform:uppercase;border-bottom:2px solid var(--ba);}
+.nt td{padding:9px 14px;border-bottom:1px solid var(--bc);vertical-align:top;}
+.nt td:first-child{font-family:var(--fm);color:var(--am);white-space:nowrap;width:155px;}
+.nt tr:last-child td{border-bottom:none;}
+.ctw{overflow-x:auto;margin:12px 0;}
+.ct{width:100%;border-collapse:collapse;font-size:13px;font-family:var(--fm);}
+.ct th{padding:7px 11px;background:var(--bg2);color:var(--tl);font-size:10px;letter-spacing:1px;text-transform:uppercase;border-bottom:2px solid var(--ba);white-space:nowrap;}
+.ct td{padding:6px 11px;border-bottom:1px solid var(--bc);color:var(--ts);white-space:nowrap;}
+.ct tr:last-child td{border-bottom:none;}
+.cd{background:rgba(217,96,78,.12);color:var(--co);}
+.cq{background:rgba(232,168,56,.10);color:var(--am);}
+.cs{background:rgba(155,127,232,.10);color:var(--pu);}
+.ck{color:var(--gn);}
+.cx{color:var(--tm);text-decoration:line-through;}
+.cg{color:var(--cy);}
+.ck2{background:rgba(109,184,122,.10);color:var(--gn);font-weight:600;}
+.dt{display:flex;align-items:center;gap:10px;width:100%;background:var(--bg2);border:1px solid var(--ba);border-radius:var(--rl);padding:13px 18px;cursor:pointer;text-align:left;transition:background .2s,border-color .2s;margin-bottom:5px;}
+.dt:hover{background:var(--bga);border-color:var(--tld);}
+.dt .di{font-size:17px;flex-shrink:0;}
+.dt .dl{font-family:var(--fm);font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--tl);}
+.dt .tt{font-family:var(--ff);font-size:15px;color:var(--ts);flex:1;}
+.dt .da{font-family:var(--fm);font-size:12px;color:var(--tm);transition:transform .2s;margin-left:auto;}
+.dt.op .da{transform:rotate(90deg);}
+.dt.op{border-color:var(--tld);background:rgba(46,184,176,.04);}
+.dc{display:none;background:var(--bgc);border:1px solid var(--tld);border-top:none;border-radius:0 0 var(--rl) var(--rl);padding:22px 24px;margin-bottom:16px;}
+.dc.op{display:block;}
+.sl{font-family:var(--fm);font-size:10px;letter-spacing:2px;text-transform:uppercase;margin-bottom:7px;padding:3px 9px;border-radius:4px;display:inline-block;}
+.slb{color:var(--co);background:rgba(217,96,78,.08);border:1px solid rgba(217,96,78,.2);}
+.slo{color:var(--am);background:rgba(232,168,56,.08);border:1px solid rgba(232,168,56,.2);}
+.sla{color:var(--gn);background:rgba(109,184,122,.08);border:1px solid rgba(109,184,122,.2);}
+.dp{background:var(--bg2);border-radius:var(--r);padding:14px 16px;margin:9px 0;}
+.dot{font-family:var(--fm);font-size:12.5px;color:var(--am);line-height:1.9;padding:8px 0;}
+.dn{font-size:14px;color:var(--ts);margin-top:12px;line-height:1.65;padding:11px 15px;background:rgba(46,184,176,.04);border-left:2px solid var(--tld);border-radius:0 var(--r) var(--r) 0;}
+.ex{background:var(--bgc);border:1px solid var(--bld);border-radius:var(--rl);padding:26px 28px;margin:8px 0 30px;position:relative;box-shadow:var(--sh);}
+.ex::before{content:'&#10000;';position:absolute;top:-13px;left:18px;background:var(--tl);color:#fff;width:27px;height:27px;display:flex;align-items:center;justify-content:center;border-radius:50%;font-size:13px;}
+.ext{font-family:var(--ff);font-size:18px;font-weight:600;margin-bottom:5px;color:var(--tp);}
+.exd{font-family:var(--fm);font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--gn);margin-bottom:15px;}
+.pb{margin:14px 0;}.pa{display:none;margin:14px 0;}.pa.vs{display:block;}
+.pl{font-family:var(--fm);font-size:10px;letter-spacing:2px;text-transform:uppercase;margin-bottom:7px;display:inline-block;padding:3px 9px;border-radius:4px;}
+.plb{color:var(--co);background:rgba(217,96,78,.08);border:1px solid rgba(217,96,78,.2);}
+.pla{color:var(--gn);background:rgba(109,184,122,.08);border:1px solid rgba(109,184,122,.2);}
+.pbx{background:var(--bg2);border-radius:var(--r);padding:13px 15px;}
+.hb{background:transparent;border:1px solid var(--amd);color:var(--am);font-family:var(--fm);font-size:11px;letter-spacing:1px;text-transform:uppercase;padding:6px 15px;border-radius:5px;cursor:pointer;margin:9px 0;transition:background .2s;}
+.hb:hover{background:rgba(232,168,56,.08);}
+.hbx{display:none;background:rgba(232,168,56,.05);border:1px solid rgba(232,168,56,.15);border-radius:var(--r);padding:13px 17px;margin:9px 0 14px;color:var(--am);font-size:15px;line-height:1.65;}
+.hbx.vs{display:block;}
+.fl{font-weight:600;margin:16px 0 7px;font-size:15px;}
+.fi{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px;margin:9px 0;line-height:2.6;font-size:15px;}
+.fi .ts{white-space:nowrap;}
+.bw{display:inline-flex;flex-direction:column;align-items:center;}
+.bi{background:var(--bgi);border:1px solid var(--ba);border-bottom:2px solid var(--tl);color:var(--tp);font-family:var(--fm);font-size:14px;padding:4px 9px;border-radius:4px 4px 0 0;text-align:center;transition:border-color .25s;box-shadow:var(--si);}
+.bi:focus{outline:none;border-color:var(--tl);box-shadow:var(--si),0 0 0 2px rgba(46,184,176,.18);}
+.bi.ok{border-color:var(--gn);border-bottom-color:var(--gn);background:rgba(109,184,122,.07);color:var(--gn);}
+.bi.no{border-color:var(--co);border-bottom-color:var(--co);background:rgba(217,96,78,.06);}
+.rb{background:none;border:none;color:var(--tm);font-size:10px;font-family:var(--fm);cursor:pointer;margin-top:2px;padding:2px 4px;transition:color .2s;}
+.rb:hover{color:var(--tl);}
+.bg{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:15px;}
+.cb{background:var(--tl);color:#0d1219;border:none;font-family:var(--fm);font-size:12px;letter-spacing:1px;text-transform:uppercase;padding:10px 26px;border-radius:6px;cursor:pointer;font-weight:600;transition:background .2s,transform .1s;}
+.cb:hover{background:var(--cy);}
+.cb:active{transform:scale(.97);}
+.rab{background:transparent;color:var(--am);border:1px solid var(--amd);font-family:var(--fm);font-size:12px;letter-spacing:1px;text-transform:uppercase;padding:10px 26px;border-radius:6px;cursor:pointer;transition:background .2s;}
+.rab:hover{background:rgba(232,168,56,.08);}
+.res{display:none;margin-top:15px;padding:15px 20px;border-radius:var(--r);font-size:15px;line-height:1.65;}
+.res.vs{display:block;}
+.res.ok{background:rgba(109,184,122,.07);border:1px solid rgba(109,184,122,.2);color:var(--gn);}
+.res.no{background:rgba(217,96,78,.05);border:1px solid rgba(217,96,78,.18);color:var(--co);}
+.res.sl{background:rgba(232,168,56,.05);border:1px solid rgba(232,168,56,.18);color:var(--am);}
+.od{display:none;background:var(--bg2);border:1px solid var(--gnd);border-radius:var(--r);padding:18px 22px;margin-top:12px;font-family:var(--fm);font-size:13px;line-height:1.9;color:var(--tl);}
+.od.vs{display:block;}
+.ol{font-family:var(--fn);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--tm);margin-bottom:9px;}
+.sg{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px;margin:24px 0;}
+.sc{background:var(--bg2);border-radius:var(--r);padding:16px 18px;border-top:2px solid var(--tld);}
+.ss{font-family:var(--fm);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--tld);margin-bottom:4px;}
+.sm{font-family:var(--ff);font-size:16px;font-weight:600;margin-bottom:6px;color:var(--tp);}
+.sp{font-size:13px;color:var(--ts);}
+.sl2{font-size:12px;color:var(--tm);margin-top:4px;font-style:italic;}
+em{color:var(--tl);font-style:italic;font-family:var(--ff);}
+strong{color:var(--tp);font-weight:600;}
+code{font-family:var(--fm);font-size:.88em;background:var(--bg2);padding:2px 6px;border-radius:4px;color:var(--pu);}
+@media(max-width:680px){.pw{padding:18px 13px 80px;}.ex,.dc{padding:18px 14px;}.fi{font-size:14px;}.sg{grid-template-columns:1fr;}}
+</style></head>
+<body>
+<div class="pgb" id="pgb"></div>
+<div class="pw">
+<header class="hero">
+  <div class="hlb">Interactive Tutorial &#8212; Healthcare Privacy Series</div>
+  <h1>Healthcare Data <span>Privacy &amp; De-Identification</span></h1>
+  <p class="hsub">Stations 06-11: Conditional Probability, Unicity, Bayes' Theorem, Fellegi-Sunter, Bloom Filter PPRL, and Differential Privacy &#8212; plus the Journey Summary.</p>
+  <div class="hmt">
+    <span class="hbg hbp">PART 2 OF 2</span>
+    <span class="hbg hbj">JOURNEY: REALISTIC</span>
+    <span class="hbg hbc">THE MERIDIAN COHORT</span>
+    <span class="hbg hbd">DEVELOPED BY: JOE WILLIAMS</span>
+  </div>
+</header>
+<div class="pnv">
+  <span class="pnl">Tutorial Navigation</span>
+  <div style="display:flex;gap:10px;flex-wrap:wrap;">
+    <a href="privacy_tutorial_part1.html">&#9664; Part 1 &#8212; Stations 01&#8211;05</a>
+    <span class="pnc">Part 2 &#8212; Stations 06&#8211;11 + Summary (current)</span>
+  </div>
+</div>
+<nav class="toc">
+  <h2>Part 2 Contents</h2>
+  <a href="#s06"><span class="tn">06</span>Conditional Probability &amp; QI Re-ID Risk</a>
+  <a href="#s07"><span class="tn">07</span>Unicity &amp; Re-Identification Risk</a>
+  <a href="#s08"><span class="tn">08</span>Bayes' Theorem Applied to Re-ID</a>
+  <a href="#s09"><span class="tn">09</span>Fellegi&#8211;Sunter Probabilistic Record Linkage</a>
+  <a href="#s10"><span class="tn">10</span>Bloom Filter &#8212; Privacy-Preserving Record Linkage</a>
+  <a href="#s11"><span class="tn">11</span>Differential Privacy</a>
+  <a href="#sum"><span class="tn">&#9733;</span>Journey Summary &#8212; Meridian Cohort Final State</a>
+</nav>
+
+<section class="sta" id="s06">
+  <div class="shd"><div class="sn">Station 06</div><span class="stg tga">ADAPTED</span></div>
+  <h2>Conditional Probability &amp; Quasi-Identifier Re-ID Risk</h2>
+  <p>In healthcare privacy, an attacker asks: <em>"Given these observable data fields, which specific patient does this record belong to?"</em> Observable fields &#8212; ZIP code, age, sex &#8212; are <span class="kt">quasi-identifiers (QIs)</span>. They don't individually identify a person, but their intersection can collapse the candidate set to a handful or even one individual.</p>
+  <div class="cn"><div class="cnt">The Re-Identification Probability</div><p>An attacker computes <strong>P(record = person X | quasi-identifiers)</strong>. Using Bayes' Theorem, this equals 1 divided by the size of the population sharing those same QI values. The smaller the <em>anonymity set</em>, the higher the re-identification probability.</p></div>
+  <div class="fb"><span class="lb">QI Re-ID Probability</span>P(re-id) = (# records in dataset matching QI) / (# people in population with same QI)<br>Simplified: P(re-id) &#8776; 1 / |anonymity set|</div>
+  <button class="dt" onclick="toggleDemo('d06')"><span class="di">&#128218;</span><span class="dl">Focused Tutorial</span><span class="tt">Computing Re-ID Probability for Priya (P5) Using QI Intersection</span><span class="da">&#9658;</span></button>
+  <div class="dc" id="d06">
+    <p style="color:var(--ts);font-size:15px;margin-bottom:14px;">P5 Priya Subramanian has QI = {Female, born 1972, ZIP 98055 &#8594; prefix 980}. How many women born in 1972 live in ZIP area 980? That is her anonymity set.</p>
+    <div class="sl slb">BEFORE &#8212; Known QI Values for P5</div>
+    <div class="dp"><div class="dot">Population in 3-digit ZIP area 980: ~420,000 residents<br>Female: ~52% &#8594; 420,000 &#215; 0.52 = 218,400<br>Born in 1972 (age ~52): roughly 1 of 70 birth-year cohorts &#8594; 218,400 / 70 &#8776; 3,120<br>Anonymity set size &#8776; 3,120 women born in 1972 in this ZIP area</div></div>
+    <div class="sl slo">OPERATION &#8212; P(re-id) Calculation</div>
+    <div class="dot">P(record is Priya | QI = {F, 1972, 980**}) = 1 / 3,120 &#8776; 0.000321 (&#8776;0.032%)</div>
+    <div class="sl sla">AFTER &#8212; Risk Assessment</div>
+    <div class="dp"><div class="dot">Re-id probability: 1/3,120 &#8776; 0.032% &#8594; VERY LOW with 3-digit ZIP + birth year<br>BUT: if attacker adds a 4th field (e.g., "diagnosed with Bipolar Disorder, age 51-52"),<br>and that diagnosis is rare (1 in 200 women aged 52):<br>Set shrinks: 3,120 / 200 = 15.6 &#8594; P(re-id) &#8776; 1/16 = 6.25%<br>One additional QI multiplies risk by 200&#215;.</div></div>
+    <div class="dn">This illustrates why Safe Harbor removes so many fields. Each additional quasi-identifier an attacker possesses multiplies their re-id probability, often dramatically. Diagnosis codes themselves can be highly specific auxiliary information.</div>
+  </div>
+  <div class="ex" id="ex06">
+    <div class="ext">Exercise 6 &#8212; Pediatric Clinic QI Re-ID Risk</div>
+    <div class="exd">&#9679; Difficulty: Beginner</div>
+    <p>A pediatric clinic releases de-identified vaccination records. Quasi-identifiers: <strong>County</strong>, <strong>Sex</strong>, and <strong>Birth Month/Year</strong>. In King County, WA: approximately <strong>28,000 births per year</strong>, about <strong>49%</strong> female. Each birth-month cohort is roughly 1/12 of annual female births.</p>
+    <button class="hb" onclick="toggleHint('h06')">Show Hint</button>
+    <div class="hbx" id="h06">Start with total births (28,000), take the female fraction (&#215;0.49), then divide by 12 months. That number is the anonymity set size. Re-id probability = 1 / anonymity set size.</div>
+    <div class="fl">Fill in:</div>
+    <div class="fi"><span class="ts">Female births per year = 28,000 &#215;</span><span class="bw"><input class="bi" id="e06a" style="width:70px" data-answer="0.49" placeholder="?"><button class="rb" onclick="revealAnswer('e06a')">reveal</button></span><span class="ts">=</span><span class="bw"><input class="bi" id="e06b" style="width:88px" data-answer="13720" data-tolerance="10" placeholder="?"><button class="rb" onclick="revealAnswer('e06b')">reveal</button></span></div>
+    <div class="fi"><span class="ts">Females born in one specific month =</span><span class="bw"><input class="bi" id="e06c" style="width:88px" data-answer="13720" data-tolerance="10" placeholder="?"><button class="rb" onclick="revealAnswer('e06c')">reveal</button></span><span class="ts">/ 12 &#8776;</span><span class="bw"><input class="bi" id="e06d" style="width:80px" data-answer="1143" data-tolerance="10" placeholder="?"><button class="rb" onclick="revealAnswer('e06d')">reveal</button></span></div>
+    <div class="fi"><span class="ts">P(re-id for one record) &#8776; 1 /</span><span class="bw"><input class="bi" id="e06e" style="width:80px" data-answer="1143" data-tolerance="10" placeholder="?"><button class="rb" onclick="revealAnswer('e06e')">reveal</button></span><span class="ts">&#8776;</span><span class="bw"><input class="bi" id="e06f" style="width:110px" data-answer="0.000875" data-tolerance="0.0001" placeholder="?"><button class="rb" onclick="revealAnswer('e06f')">reveal</button></span></div>
+    <div class="bg">
+      <button class="cb" onclick="subEx('ex06',['e06a','e06b','e06c','e06d','e06e','e06f'])">Submit</button>
+      <button class="rab" onclick="revAll('ex06',['e06a','e06b','e06c','e06d','e06e','e06f'])">Reveal All</button>
+    </div>
+    <div class="res" id="ex06r"></div>
+    <div class="pa" id="ex06a">
+      <div class="od vs"><div class="ol">Computed Result</div>Anonymity set &#8776; <strong>1,143 females</strong> born that month in King County.<br>P(re-id) &#8776; 1/1,143 &#8776; <strong>0.000875 (&#8776;0.09%)</strong> &#8212; very low with these 3 QIs.<br><br>But if the attacker adds a 4th field (specific clinic, or a rare vaccine reaction), the set of 1,143 can shrink to a handful. In rural counties with far fewer births, even these 3 QIs can produce unique records. This is why HIPAA Safe Harbor removes so many fields.</div>
+    </div>
+  </div>
+</section><hr class="dv">
+
+<section class="sta" id="s07">
+  <div class="shd"><div class="sn">Station 07</div><span class="stg tga">ADAPTED</span></div>
+  <h2>Unicity &amp; Re&#8209;Identification Risk</h2>
+  <p><span class="kt">Unicity</span> answers a simple but alarming question: <em>"What fraction of people in a dataset can be uniquely identified by just a few data fields?"</em> The answer is often: almost everyone.</p>
+  <p>If you have enough categorical attributes, the number of possible <em>combinations</em> grows multiplicatively. Once the number of possible combinations exceeds the number of people, most people end up alone in their cell &#8212; perfectly re-identifiable.</p>
+  <div class="fb"><span class="lb">Unicity &#8212; Key Relationships</span>Total possible QI cells = (values of field 1) &#215; (values of field 2) &#215; &#8230; &#215; (values of field k)<br>Average people per cell = N / (total cells)<br>If avg &#8810; 1 &#8594; most cells have 0 or 1 person &#8594; high unicity &#8594; high risk</div>
+  <button class="dt" onclick="toggleDemo('d07')"><span class="di">&#128218;</span><span class="dl">Focused Tutorial</span><span class="tt">Unicity Explosion in a Small Rural Clinic Dataset</span><span class="da">&#9658;</span></button>
+  <div class="dc" id="d07">
+    <div class="sl slb">BEFORE &#8212; Dataset Description</div>
+    <div class="dp"><div class="dot">Dataset: 500 patient records<br>QIs: Sex (2 values) &#215; Age Decade (7 values) &#215; Diagnosis Category (20 ICD chapters)<br>Total cells = 2 &#215; 7 &#215; 20 = 280<br>Average occupancy = 500 / 280 &#8776; 1.79 patients per cell</div></div>
+    <div class="sl slo">ANALYSIS &#8212; Unicity With 3 Fields</div>
+    <div class="dot">With avg 1.79 per cell, ~37% of cells have exactly 1 person (Poisson model).<br>These ~140 patients are uniquely identifiable &#8212; unicity is MODERATE to HIGH.</div>
+    <div class="sl sla">AFTER &#8212; Adding 1 More QI Field Multiplies Risk</div>
+    <div class="dp"><table class="ct"><thead><tr><th>QI Fields Used</th><th>Total Cells</th><th>Avg per Cell</th><th>Unicity Level</th></tr></thead><tbody>
+      <tr><td>Sex + Age + Dx (3 fields)</td><td>280</td><td>1.79</td><td class="cq">Moderate</td></tr>
+      <tr><td>Sex + Age + Dx + ZIP-3 prefix (4 fields)</td><td>1,400</td><td>0.36</td><td class="cd">HIGH &#10060;</td></tr>
+    </tbody></table></div>
+    <div class="dn">Each additional QI field is a multiplier on the number of cells. The N stays constant while cells multiply. Adding a seemingly harmless field &#8212; a timestamp, a clinic ID, a visit count &#8212; can dramatically increase re-identification risk.</div>
+  </div>
+  <div class="ex" id="ex07">
+    <div class="ext">Exercise 7 &#8212; Unicity in a Hospital Discharge Dataset</div>
+    <div class="exd">&#9679; Difficulty: Beginner</div>
+    <p>A hospital publishes discharge data for <strong>3,000 patients</strong>. The data includes 3 quasi-identifiers: <strong>Age group</strong> (8 groups), <strong>Sex</strong> (2 values), and <strong>Primary diagnosis chapter</strong> (22 ICD-10 chapters). Estimate the total QI cells, average occupancy, and whether unicity is a concern.</p>
+    <button class="hb" onclick="toggleHint('h07')">Show Hint</button>
+    <div class="hbx" id="h07">Multiply the distinct values of each field. Then divide N (3,000) by total cells. Average &gt;1 means most cells have multiple patients &#8594; low unicity. Average &lt;1 means most cells have 0 or 1 person &#8594; high unicity. "Not unique" and "low" are the correct descriptors for average &gt;1.</div>
+    <div class="fl">Fill in:</div>
+    <div class="fi"><span class="ts">Total QI cells = 8 &#215; 2 &#215;</span><span class="bw"><input class="bi" id="e07a" style="width:60px" data-answer="22" placeholder="?"><button class="rb" onclick="revealAnswer('e07a')">reveal</button></span><span class="ts">=</span><span class="bw"><input class="bi" id="e07b" style="width:70px" data-answer="352" placeholder="?"><button class="rb" onclick="revealAnswer('e07b')">reveal</button></span></div>
+    <div class="fi"><span class="ts">Avg patients per cell = 3,000 /</span><span class="bw"><input class="bi" id="e07c" style="width:70px" data-answer="352" placeholder="?"><button class="rb" onclick="revealAnswer('e07c')">reveal</button></span><span class="ts">&#8776;</span><span class="bw"><input class="bi" id="e07d" style="width:70px" data-answer="8.52" data-tolerance="0.1" placeholder="?"><button class="rb" onclick="revealAnswer('e07d')">reveal</button></span></div>
+    <div class="fi"><span class="ts">Is unicity high or low with 3 fields?</span><span class="bw"><input class="bi" id="e07e" style="width:70px" data-answer="low" data-type="text" placeholder="?"><button class="rb" onclick="revealAnswer('e07e')">reveal</button></span><span class="ts">&#8212; most patients are</span><span class="bw"><input class="bi" id="e07f" style="width:110px" data-answer="not unique" data-type="text" placeholder="?"><button class="rb" onclick="revealAnswer('e07f')">reveal</button></span></div>
+    <div class="bg">
+      <button class="cb" onclick="subEx('ex07',['e07a','e07b','e07c','e07d','e07e','e07f'])">Submit</button>
+      <button class="rab" onclick="revAll('ex07',['e07a','e07b','e07c','e07d','e07e','e07f'])">Reveal All</button>
+    </div>
+    <div class="res" id="ex07r"></div>
+    <div class="pa" id="ex07a">
+      <div class="od vs"><div class="ol">Computed Result</div>352 cells for 3,000 patients &#8594; avg <strong>8.52</strong> patients per cell.<br>With ~8.5 people per cell, unicity is <strong>low</strong> &#8212; most patients are <strong>not unique</strong>. But add a 4th field like 5-digit ZIP (25 distinct ZIPs): 8&#215;2&#215;22&#215;25 = 8,800 cells &#8594; avg = 3,000/8,800 &#8776; 0.34. Now most patients ARE unique. Each additional QI field multiplies risk.</div>
+    </div>
+  </div>
+</section><hr class="dv">
+
+<section class="sta" id="s08">
+  <div class="shd"><div class="sn">Station 08</div><span class="stg tga">ADAPTED</span></div>
+  <h2>Bayes' Theorem &#8212; Applied to Re-Identification</h2>
+  <p><span class="kt">Bayes' Theorem</span> is the mathematical engine behind re-identification probability. When an attacker has a hypothesis ("this record belongs to Priya Subramanian") and observes evidence (QI values that match), Bayes' Theorem tells them how much to update their confidence.</p>
+  <div class="fb"><span class="lb">Bayes' Theorem</span>P(H | E) = [ P(E | H) &#215; P(H) ] / P(E)<br>where P(E) = P(E|H)&#215;P(H) + P(E|&#172;H)&#215;P(&#172;H)</div>
+  <div class="cn"><div class="cnt">The Four Terms &#8212; In Re-ID Context</div><p>
+    <strong>P(H)</strong> &#8212; Prior: fraction of the population that could plausibly be the target. If 3,000 women aged 50-59 share a QI profile, P(H) = 1/3,000.<br>
+    <strong>P(E|H)</strong> &#8212; Likelihood: probability the auxiliary evidence matches, given the hypothesis is correct.<br>
+    <strong>P(E|&#172;H)</strong> &#8212; False positive rate: how often auxiliary evidence matches a random non-target.<br>
+    <strong>P(H|E)</strong> &#8212; Posterior: the updated probability after seeing the evidence. What the attacker is computing.
+  </p></div>
+  <button class="dt" onclick="toggleDemo('d08')"><span class="di">&#128218;</span><span class="dl">Focused Tutorial</span><span class="tt">Sepsis Screening &#8212; Bayes' in Plain Steps</span><span class="da">&#9658;</span></button>
+  <div class="dc" id="d08">
+    <p style="color:var(--ts);font-size:15px;margin-bottom:14px;">A clinical context to verify the theorem intuitively before applying it to re-identification.</p>
+    <div class="sl slb">SCENARIO</div>
+    <div class="dp"><div class="dot">ED sees 500 patients/day. 5% have sepsis. Rapid test: sensitivity 90%, FP rate 8%.<br>A patient tests positive. What is the probability they truly have sepsis?</div></div>
+    <div class="sl slo">STEPS</div>
+    <div class="dot">P(H) = 0.05 &nbsp;|&nbsp; P(E|H) = 0.90 &nbsp;|&nbsp; P(E|&#172;H) = 0.08<br>P(E) = 0.90&#215;0.05 + 0.08&#215;0.95 = 0.045 + 0.076 = 0.121<br>P(H|E) = 0.045 / 0.121 &#8776; 0.372 (37.2%)</div>
+    <div class="sl sla">RESULT</div>
+    <div class="dp"><div class="dot">Even with a positive test, only ~37% chance of sepsis.<br>The low prior (5%) pulls the posterior down. Same dynamic governs re-id:<br>when the target is 1 person in 3,000, even strong auxiliary evidence<br>may yield a modest posterior probability.</div></div>
+  </div>
+  <div class="ex" id="ex08">
+    <div class="ext">Exercise 8 &#8212; Flu Screening: Applying Bayes' Theorem</div>
+    <div class="exd">&#9679; Difficulty: Beginner</div>
+    <p>A walk-in clinic sees <strong>800 patients</strong> this week. During flu season, <strong>12%</strong> actually have influenza. A rapid flu test has sensitivity <strong>85%</strong> and false-positive rate <strong>6%</strong>. A patient tests positive. What is the probability they actually have the flu?</p>
+    <button class="hb" onclick="toggleHint('h08')">Show Hint</button>
+    <div class="hbx" id="h08">P(Flu)=0.12, P(+|Flu)=0.85, P(+|&#172;Flu)=0.06. First find P(+) using the Law of Total Probability: P(+) = P(+|Flu)&#215;P(Flu) + P(+|&#172;Flu)&#215;P(&#172;Flu). Then P(Flu|+) = (P(+|Flu)&#215;P(Flu)) / P(+).</div>
+    <div class="fl">Fill in:</div>
+    <div class="fi"><span class="ts">P(Flu) =</span><span class="bw"><input class="bi" id="e08a" style="width:80px" data-answer="0.12" placeholder="?"><button class="rb" onclick="revealAnswer('e08a')">reveal</button></span><span class="ts">P(&#172;Flu) = 1 &#8722; 0.12 =</span><span class="bw"><input class="bi" id="e08b" style="width:80px" data-answer="0.88" placeholder="?"><button class="rb" onclick="revealAnswer('e08b')">reveal</button></span></div>
+    <div class="fi"><span class="ts">P(+) = 0.85 &#215;</span><span class="bw"><input class="bi" id="e08c" style="width:70px" data-answer="0.12" placeholder="?"><button class="rb" onclick="revealAnswer('e08c')">reveal</button></span><span class="ts">+ 0.06 &#215;</span><span class="bw"><input class="bi" id="e08d" style="width:70px" data-answer="0.88" placeholder="?"><button class="rb" onclick="revealAnswer('e08d')">reveal</button></span><span class="ts">=</span><span class="bw"><input class="bi" id="e08e" style="width:90px" data-answer="0.1548" data-tolerance="0.002" placeholder="?"><button class="rb" onclick="revealAnswer('e08e')">reveal</button></span></div>
+    <div class="fi"><span class="ts">P(Flu | +) = (0.85 &#215; 0.12) /</span><span class="bw"><input class="bi" id="e08f" style="width:90px" data-answer="0.1548" data-tolerance="0.002" placeholder="?"><button class="rb" onclick="revealAnswer('e08f')">reveal</button></span><span class="ts">&#8776;</span><span class="bw"><input class="bi" id="e08g" style="width:80px" data-answer="0.659" data-tolerance="0.01" placeholder="?"><button class="rb" onclick="revealAnswer('e08g')">reveal</button></span></div>
+    <div class="bg">
+      <button class="cb" onclick="subEx('ex08',['e08a','e08b','e08c','e08d','e08e','e08f','e08g'])">Submit</button>
+      <button class="rab" onclick="revAll('ex08',['e08a','e08b','e08c','e08d','e08e','e08f','e08g'])">Reveal All</button>
+    </div>
+    <div class="res" id="ex08r"></div>
+    <div class="pa" id="ex08a">
+      <div class="od vs"><div class="ol">Computed Result</div>P(Flu | +) = 0.102 / 0.1548 &#8776; <strong>0.659 (&#8776;65.9%)</strong><br><br>With a 12% base rate (higher than the 5% sepsis rate in the demo), a positive test gives ~66% posterior &#8212; more clinically actionable. Notice how the <em>prior</em> directly controls how convincing the test result is. This dynamic applies to re-identification: when your target is 1 person out of 100,000, even strong auxiliary evidence yields a modest posterior.</div>
+    </div>
+  </div>
+</section><hr class="dv">
+
+<section class="sta" id="s09">
+  <div class="shd"><div class="sn">Station 09</div><span class="stg tga">ADAPTED</span></div>
+  <h2>Fellegi&#8211;Sunter Probabilistic Record Linkage</h2>
+  <p>Two healthcare systems &#8212; a hospital and a pharmacy &#8212; each have David Okafor's records but no shared patient ID. To combine them for research, we need to determine whether two records belong to the same patient. This is <span class="kt">record linkage</span>.</p>
+  <p>The <strong>Fellegi&#8211;Sunter (1969)</strong> model compares records field-by-field and computes a weight measuring how likely two records are to be a true match vs. a coincidence. Weights are in "bits" of evidence &#8212; analogous to log-likelihood ratios.</p>
+  <div class="fb"><span class="lb">Fellegi&#8211;Sunter Weight for Field i</span>If AGREE:    w&#7522; = log&#8322;( m&#7522; / u&#7522; )<br>If DISAGREE: w&#7522; = log&#8322;( (1 &#8722; m&#7522;) / (1 &#8722; u&#7522;) )<br>Total weight W = &#931; w&#7522; across all compared fields</div>
+  <div class="cn"><div class="cnt">m-probability and u-probability</div><p>
+    <strong>m&#7522;</strong> = P(field agrees | records are a TRUE match). High m means true matches usually agree on this field (e.g., DOB matches 95% of the time, despite occasional data-entry errors).<br>
+    <strong>u&#7522;</strong> = P(field agrees | records are NOT a match). Low u means agreement is very unlikely by chance alone (e.g., full DOB randomly agrees ~0.003% of the time across 50 years of dates).
+  </p></div>
+  <button class="dt" onclick="toggleDemo('d09')"><span class="di">&#128218;</span><span class="dl">Focused Tutorial</span><span class="tt">Linking David Okafor &#8212; Hospital vs. Pharmacy Record</span><span class="da">&#9658;</span></button>
+  <div class="dc" id="d09">
+    <div class="sl slb">BEFORE &#8212; Two Records Being Compared</div>
+    <div class="dp"><table class="ct"><thead><tr><th>Field</th><th>Hospital Record</th><th>Pharmacy Record</th><th>Agreement</th></tr></thead><tbody>
+      <tr><td>Last Name</td><td>Okafor</td><td>Okafor</td><td class="ck">&#10003; AGREE</td></tr>
+      <tr><td>Date of Birth</td><td>07/22/1978</td><td>07/22/1978</td><td class="ck">&#10003; AGREE</td></tr>
+    </tbody></table></div>
+    <div class="sl slo">COMPUTATION &#8212; m=0.92, u=0.005 (name); m=0.95, u=0.01 (DOB)</div>
+    <div class="dot">w_name = log&#8322;(0.92/0.005) = log&#8322;(184) &#8776; 7.52 (strong positive evidence)<br>w_dob  = log&#8322;(0.95/0.01)  = log&#8322;(95)  &#8776; 6.57 (strong positive evidence)<br>Total W = 7.52 + 6.57 = 14.09</div>
+    <div class="sl sla">AFTER &#8212; Linkage Decision</div>
+    <div class="dp"><div class="dot">Total weight 14.09 &#8594; exceeds typical linkage threshold of 8-12 &#8594; LINK CONFIDENTLY<br>Name contributed slightly more weight than DOB because u_name (0.5%) is lower than u_dob (1%)<br>&#8594; name agreement is more "surprising" by chance, so it carries more information.</div></div>
+    <div class="dn">In a real PPRL scenario, these weights would be computed on Bloom filter encodings of the name and DOB &#8212; never on the raw text. See Station 10 for how Bloom filters enable this without exposing the actual values.</div>
+  </div>
+  <div class="ex" id="ex09">
+    <div class="ext">Exercise 9 &#8212; Linking a Clinic to a Lab System</div>
+    <div class="exd">&#9679; Difficulty: Beginner</div>
+    <p>A community health clinic links its records to an outside lab. They compare on two fields: <strong>Last Name</strong> and <strong>Date of Birth</strong>. A pair of records <strong>agrees on both fields</strong>. Compute each weight and the total. Use: m_name=0.92, u_name=0.005, m_dob=0.95, u_dob=0.01.</p>
+    <button class="hb" onclick="toggleHint('h09')">Show Hint</button>
+    <div class="hbx" id="h09">Since both fields agree, use w&#7522; = log&#8322;(m&#7522; / u&#7522;) for each. Helpful values: log&#8322;(184) &#8776; 7.52 and log&#8322;(95) &#8776; 6.57. Sum both weights for the total linkage score.</div>
+    <div class="fl">Fill in:</div>
+    <div class="fi"><span class="ts">w_name = log&#8322;(0.92 /</span><span class="bw"><input class="bi" id="e09a" style="width:80px" data-answer="0.005" placeholder="?"><button class="rb" onclick="revealAnswer('e09a')">reveal</button></span><span class="ts">) = log&#8322;(</span><span class="bw"><input class="bi" id="e09b" style="width:68px" data-answer="184" placeholder="?"><button class="rb" onclick="revealAnswer('e09b')">reveal</button></span><span class="ts">) &#8776;</span><span class="bw"><input class="bi" id="e09c" style="width:68px" data-answer="7.52" data-tolerance="0.1" placeholder="?"><button class="rb" onclick="revealAnswer('e09c')">reveal</button></span></div>
+    <div class="fi"><span class="ts">w_dob = log&#8322;(0.95 /</span><span class="bw"><input class="bi" id="e09d" style="width:80px" data-answer="0.01" placeholder="?"><button class="rb" onclick="revealAnswer('e09d')">reveal</button></span><span class="ts">) = log&#8322;(</span><span class="bw"><input class="bi" id="e09e" style="width:68px" data-answer="95" placeholder="?"><button class="rb" onclick="revealAnswer('e09e')">reveal</button></span><span class="ts">) &#8776;</span><span class="bw"><input class="bi" id="e09f" style="width:68px" data-answer="6.57" data-tolerance="0.1" placeholder="?"><button class="rb" onclick="revealAnswer('e09f')">reveal</button></span></div>
+    <div class="fi"><span class="ts">Total weight =</span><span class="bw"><input class="bi" id="e09g" style="width:68px" data-answer="7.52" data-tolerance="0.1" placeholder="?"><button class="rb" onclick="revealAnswer('e09g')">reveal</button></span><span class="ts">+</span><span class="bw"><input class="bi" id="e09h" style="width:68px" data-answer="6.57" data-tolerance="0.1" placeholder="?"><button class="rb" onclick="revealAnswer('e09h')">reveal</button></span><span class="ts">=</span><span class="bw"><input class="bi" id="e09i" style="width:78px" data-answer="14.09" data-tolerance="0.2" placeholder="?"><button class="rb" onclick="revealAnswer('e09i')">reveal</button></span></div>
+    <div class="bg">
+      <button class="cb" onclick="subEx('ex09',['e09a','e09b','e09c','e09d','e09e','e09f','e09g','e09h','e09i'])">Submit</button>
+      <button class="rab" onclick="revAll('ex09',['e09a','e09b','e09c','e09d','e09e','e09f','e09g','e09h','e09i'])">Reveal All</button>
+    </div>
+    <div class="res" id="ex09r"></div>
+    <div class="pa" id="ex09a">
+      <div class="od vs"><div class="ol">Computed Result</div>Total weight &#8776; <strong>14.09</strong> &#8212; very strong evidence of a match (typical threshold: 8-12). This pair would be confidently linked. Name contributes slightly more weight than DOB because u_name (0.5%) is lower than u_dob (1%), making name agreement more "surprising" by chance and thus more informative.</div>
+    </div>
+  </div>
+</section><hr class="dv">
+
+<section class="sta" id="s10">
+  <div class="shd"><div class="sn">Station 10</div><span class="stg tga">ADAPTED</span></div>
+  <h2>Privacy-Preserving Record Linkage &#8212; Bloom Filters</h2>
+  <p>Station 09 showed Fellegi-Sunter weights require comparing field values. But sharing raw names and DOBs across organizations creates obvious privacy risk. <span class="kt">Privacy-Preserving Record Linkage (PPRL)</span> with <em>Bloom filter encoding</em> allows matching <strong>without ever exchanging plaintext identifiers</strong>.</p>
+  <div class="cn"><div class="cnt">Bloom Filter Encoding &#8212; 4 Steps</div><p>
+    &#9312; Take a patient name (e.g., "CHEN") and break it into overlapping character bigrams: CH, HE, EN.<br>
+    &#9313; Hash each bigram to one or more positions in a fixed-length bit array (e.g., 20 bits).<br>
+    &#9314; Set those bit positions to 1. All others stay 0. This bit array is the Bloom filter.<br>
+    &#9315; Two organizations compare their Bloom filters using a similarity measure &#8212; without sharing raw names.
+  </p></div>
+  <div class="fb"><span class="lb">Dice Coefficient &#8212; Measuring Bloom Filter Similarity</span>Dice(BF&#8321;, BF&#8322;) = 2 &#215; |BF&#8321; &#8745; BF&#8322;| / (|BF&#8321;| + |BF&#8322;|)<br>Where |BF| = count of 1-bits in the filter, |BF&#8321; &#8745; BF&#8322;| = positions that are 1 in BOTH</div>
+  <button class="dt" onclick="toggleDemo('d10')"><span class="di">&#128218;</span><span class="dl">Focused Tutorial</span><span class="tt">Bloom Filter Encoding for Margaret Chen's Last Name "CHEN"</span><span class="da">&#9658;</span></button>
+  <div class="dc" id="d10">
+    <div class="sl slb">BEFORE &#8212; Raw Name</div>
+    <div class="dp"><div class="dot">Name: "CHEN" (uppercase)<br>Bigrams: CH, HE, EN</div></div>
+    <div class="sl slo">OPERATION &#8212; Hash to 20-bit filter (simplified, 1 hash per bigram)</div>
+    <div class="dot">Hash(CH) &#8594; position 3 &#8594; set bit 3 to 1<br>Hash(HE) &#8594; position 7 &#8594; set bit 7 to 1<br>Hash(EN) &#8594; position 12 &#8594; set bit 12 to 1<br><br>BF(CHEN) = 00100010000010000000 (bits 3,7,12 set)<br>|BF(CHEN)| = 3 (three 1-bits)</div>
+    <div class="sl sla">AFTER &#8212; Bloom Filter Comparison</div>
+    <div class="dp"><div class="dot">Compare BF(CHEN) with BF(CHAN):<br>CHAN bigrams: CH, HA, AN &#8594; positions 3, 9, 15 &#8594; |BF(CHAN)| = 3<br>|BF(CHEN) &#8745; BF(CHAN)| = 1 (only bit 3 shared: the CH bigram)<br>Dice = 2&#215;1 / (3+3) = 2/6 &#8776; 0.333<br><br>Compare BF(CHEN) with BF(CHEN) [exact match]:<br>|intersection| = 3, Dice = 2&#215;3 / (3+3) = 1.0 &#8594; perfect match</div></div>
+    <div class="dn">Raw names "CHEN" and "CHAN" are never shared &#8212; only the Bloom filters. In practice, larger bit arrays (1,000-2,000 bits) and multiple hash functions (k=3-5) are used, making it computationally infeasible to reverse-engineer the original name from the filter.</div>
+  </div>
+  <div class="ex" id="ex10">
+    <div class="ext">Exercise 10 &#8212; Dice Coefficient for Bloom Filter Comparison</div>
+    <div class="exd">&#9679; Difficulty: Beginner</div>
+    <p>Organization A holds a Bloom filter for patient name "JONES" with <strong>5 bits set</strong>. Organization B holds a Bloom filter for the same field with <strong>6 bits set</strong>. They share <strong>4 bits in common</strong>. Compute the Dice coefficient.</p>
+    <button class="hb" onclick="toggleHint('h10')">Show Hint</button>
+    <div class="hbx" id="h10">Dice = 2 &#215; (bits in common) / (bits in filter A + bits in filter B). Plug in: |BF_A|=5, |BF_B|=6, intersection=4. Dice ranges from 0 (no overlap) to 1.0 (identical filters).</div>
+    <div class="fl">Fill in:</div>
+    <div class="fi"><span class="ts">|BF_A| =</span><span class="bw"><input class="bi" id="e10a" style="width:50px" data-answer="5" placeholder="?"><button class="rb" onclick="revealAnswer('e10a')">reveal</button></span><span class="ts">|BF_B| =</span><span class="bw"><input class="bi" id="e10b" style="width:50px" data-answer="6" placeholder="?"><button class="rb" onclick="revealAnswer('e10b')">reveal</button></span><span class="ts">|BF_A &#8745; BF_B| =</span><span class="bw"><input class="bi" id="e10c" style="width:50px" data-answer="4" placeholder="?"><button class="rb" onclick="revealAnswer('e10c')">reveal</button></span></div>
+    <div class="fi"><span class="ts">Dice = 2 &#215;</span><span class="bw"><input class="bi" id="e10d" style="width:50px" data-answer="4" placeholder="?"><button class="rb" onclick="revealAnswer('e10d')">reveal</button></span><span class="ts">/ (</span><span class="bw"><input class="bi" id="e10e" style="width:50px" data-answer="5" placeholder="?"><button class="rb" onclick="revealAnswer('e10e')">reveal</button></span><span class="ts">+</span><span class="bw"><input class="bi" id="e10f" style="width:50px" data-answer="6" placeholder="?"><button class="rb" onclick="revealAnswer('e10f')">reveal</button></span><span class="ts">) = 8 /</span><span class="bw"><input class="bi" id="e10g" style="width:50px" data-answer="11" placeholder="?"><button class="rb" onclick="revealAnswer('e10g')">reveal</button></span><span class="ts">&#8776;</span><span class="bw"><input class="bi" id="e10h" style="width:78px" data-answer="0.727" data-tolerance="0.01" placeholder="?"><button class="rb" onclick="revealAnswer('e10h')">reveal</button></span></div>
+    <div class="bg">
+      <button class="cb" onclick="subEx('ex10',['e10a','e10b','e10c','e10d','e10e','e10f','e10g','e10h'])">Submit</button>
+      <button class="rab" onclick="revAll('ex10',['e10a','e10b','e10c','e10d','e10e','e10f','e10g','e10h'])">Reveal All</button>
+    </div>
+    <div class="res" id="ex10r"></div>
+    <div class="pa" id="ex10a">
+      <div class="od vs"><div class="ol">Computed Result</div>Dice = 8 / 11 &#8776; <strong>0.727</strong> &#8212; a high similarity score, suggesting these two Bloom filters likely represent the same or a very similar name. In practice, a threshold of ~0.75-0.85 is used as the linkage cutoff. A Dice score of 0.727 would typically be flagged as a probable match requiring clerical review.</div>
+    </div>
+  </div>
+</section><hr class="dv">
+
+<section class="sta" id="s11">
+  <div class="shd"><div class="sn">Station 11</div><span class="stg tga">ADAPTED</span></div>
+  <h2>Differential Privacy &#8212; Formal Disclosure Avoidance</h2>
+  <p><span class="kt">Differential Privacy (DP)</span> is the gold standard for aggregate query protection. It provides a <em>mathematical guarantee</em>: adding or removing any one individual's record changes the output distribution by at most a factor of e<sup>&#949;</sup>, where &#949; is the privacy budget. An attacker who sees the output cannot determine whether any specific individual was in the dataset.</p>
+  <div class="fb"><span class="lb">Laplace Mechanism &#8212; The Most Common DP Tool</span>To answer a query f on dataset D with privacy guarantee &#949;:<br>Release: f(D) + Laplace(b) &nbsp; where b = &#916;f / &#949;<br>&#916;f = sensitivity (max change in f from adding/removing one person)<br>E[|noise|] = b &nbsp; &nbsp; Std dev of noise = &#8730;2 &#215; b</div>
+  <div class="cn"><div class="cnt">Sensitivity and the Privacy-Utility Tradeoff</div><p>
+    <strong>Sensitivity &#916;f</strong> &#8212; For a counting query ("how many patients have diabetes?"), &#916;f = 1, since one person can change the count by at most 1.<br><br>
+    <strong>Privacy budget &#949; (epsilon)</strong> &#8212; Smaller &#949; = stronger privacy guarantee but more noise added. &#949; = 0.1 is very strong (very noisy). &#949; = 10 is weak (minimal noise). Values of &#949; = 0.5 to 2.0 are common in research.<br><br>
+    <strong>The tradeoff:</strong> more privacy (smaller &#949;) always means less utility (more noise). There is no free lunch in differential privacy.
+  </p></div>
+  <button class="dt" onclick="toggleDemo('d11')"><span class="di">&#128218;</span><span class="dl">Focused Tutorial</span><span class="tt">Counting Mental Health Diagnoses in the Meridian Cohort</span><span class="da">&#9658;</span></button>
+  <div class="dc" id="d11">
+    <p style="color:var(--ts);font-size:15px;margin-bottom:14px;">Query: "How many Meridian patients have a mental health diagnosis?" True answer: 2 (Priya=Bipolar, David=OUD). We add Laplace noise to protect individual membership.</p>
+    <div class="sl slb">BEFORE &#8212; Query and True Answer</div>
+    <div class="dp"><div class="dot">Query: COUNT(patients WHERE dx IN mental health codes)<br>True answer: 2 patients (P5 Priya: Bipolar F31.9; P2 David: OUD F11.20)<br>Sensitivity &#916;f = 1 (adding/removing one patient changes count by 1)<br>Privacy budget: &#949; = 0.5 (moderately strong protection)</div></div>
+    <div class="sl slo">OPERATION &#8212; Laplace Mechanism</div>
+    <div class="dot">b = &#916;f / &#949; = 1 / 0.5 = 2.0<br>E[|noise|] = b = 2.0<br>Std dev of noise = &#8730;2 &#215; 2.0 &#8776; 2.83<br><br>Released answer = 2 + Laplace(2.0)<br>Example outcome: could release "3.4" or "0.2" or "-0.8" (rounded or clipped to non-negative)</div>
+    <div class="sl sla">AFTER &#8212; Differential Privacy Guarantee</div>
+    <div class="dp"><div class="dot">The released noisy count protects individual membership.<br>An attacker cannot determine whether Priya (or David) specifically is in the dataset.<br>The true count 2 is obscured by noise with std dev &#8776;2.83 &#8212; a large relative perturbation for such a small number.<br>With larger counts (e.g., 5,000 diabetic patients), the same noise (std dev 2.83) is negligible.</div></div>
+    <div class="dn">DP is powerful for aggregate statistics but cannot protect individual records directly. It is typically applied at the output layer &#8212; when releasing summaries, counts, or model parameters &#8212; not during the data storage phase. The Meridian Cohort (only 6 patients) shows the noise clearly; real datasets with thousands of patients absorb it much better.</div>
+  </div>
+  <div class="ex" id="ex11">
+    <div class="ext">Exercise 11 &#8212; Applying the Laplace Mechanism</div>
+    <div class="exd">&#9679; Difficulty: Beginner</div>
+    <p>A hospital wants to publish a count of patients with HIV diagnoses (ICD-10 code Z21). The true count is 47. Sensitivity &#916;f = 1 (counting query). Privacy budget &#949; = 1.0. Compute the noise scale and expected noise magnitude.</p>
+    <button class="hb" onclick="toggleHint('h11')">Show Hint</button>
+    <div class="hbx" id="h11">b = &#916;f / &#949;. For a counting query, &#916;f = 1 always. E[|noise|] = b. Std dev of Laplace noise = &#8730;2 &#215; b &#8776; 1.414 &#215; b. The released count = true count + Laplace(b).</div>
+    <div class="fl">Fill in:</div>
+    <div class="fi"><span class="ts">Sensitivity &#916;f for a counting query =</span><span class="bw"><input class="bi" id="e11a" style="width:50px" data-answer="1" placeholder="?"><button class="rb" onclick="revealAnswer('e11a')">reveal</button></span></div>
+    <div class="fi"><span class="ts">Noise scale b = &#916;f / &#949; = 1 /</span><span class="bw"><input class="bi" id="e11b" style="width:60px" data-answer="1.0" data-tolerance="0.01" placeholder="?"><button class="rb" onclick="revealAnswer('e11b')">reveal</button></span><span class="ts">=</span><span class="bw"><input class="bi" id="e11c" style="width:60px" data-answer="1" data-tolerance="0.01" placeholder="?"><button class="rb" onclick="revealAnswer('e11c')">reveal</button></span></div>
+    <div class="fi"><span class="ts">Expected absolute noise E[|noise|] =</span><span class="bw"><input class="bi" id="e11d" style="width:60px" data-answer="1" data-tolerance="0.01" placeholder="?"><button class="rb" onclick="revealAnswer('e11d')">reveal</button></span></div>
+    <div class="fi"><span class="ts">Noise std dev = &#8730;2 &#215;</span><span class="bw"><input class="bi" id="e11e" style="width:50px" data-answer="1" placeholder="?"><button class="rb" onclick="revealAnswer('e11e')">reveal</button></span><span class="ts">&#8776;</span><span class="bw"><input class="bi" id="e11f" style="width:70px" data-answer="1.41" data-tolerance="0.03" placeholder="?"><button class="rb" onclick="revealAnswer('e11f')">reveal</button></span></div>
+    <div class="fi"><span class="ts">Released count = 47 + Laplace(</span><span class="bw"><input class="bi" id="e11g" style="width:50px" data-answer="1" placeholder="?"><button class="rb" onclick="revealAnswer('e11g')">reveal</button></span><span class="ts">). For this dataset (true count=47), is the noise proportionally large or small?</span><span class="bw"><input class="bi" id="e11h" style="width:78px" data-answer="small" data-type="text" placeholder="?"><button class="rb" onclick="revealAnswer('e11h')">reveal</button></span></div>
+    <div class="bg">
+      <button class="cb" onclick="subEx('ex11',['e11a','e11b','e11c','e11d','e11e','e11f','e11g','e11h'])">Submit</button>
+      <button class="rab" onclick="revAll('ex11',['e11a','e11b','e11c','e11d','e11e','e11f','e11g','e11h'])">Reveal All</button>
+    </div>
+    <div class="res" id="ex11r"></div>
+    <div class="pa" id="ex11a">
+      <div class="od vs"><div class="ol">Computed Result</div>b = 1.0, E[|noise|] = 1.0, std dev &#8776; 1.41.<br><br>For a true count of 47, noise with std dev &#8776;1.41 changes the answer by ~3% on average &#8212; <strong>small</strong> relative error. The data remains analytically useful. Compare: if the true count were 2 (like in the Meridian Cohort demo), noise std dev &#8776;1.41 changes the answer by ~70% &#8212; a large relative error that substantially obscures the true value. This is why differential privacy works well for aggregate statistics with large counts, but poorly for small cells.</div>
+    </div>
+  </div>
+</section><hr class="dv">
+
+<!-- JOURNEY SUMMARY -->
+<section class="sta" id="sum">
+  <div class="shd"><div class="sn">JOURNEY SUMMARY</div></div>
+  <h2>Journey Complete &#8212; The Meridian Cohort, Protected</h2>
+  <p>You have now applied all 11 privacy and de-identification techniques to the Meridian Cohort. Below is a summary of what each station accomplished, what it protects against, and &#8212; critically &#8212; what it <em>does not</em> protect against. <strong>No single technique is sufficient.</strong> Defense-in-depth is the standard.</p>
+
+  <div class="sg">
+    <div class="sc"><div class="ss">Station 01</div><div class="sm">De-Identification</div><div class="sp">&#10003; Removes direct identifiers, generalizes QIs</div><div class="sl2">&#10007; Does not quantify residual risk</div></div>
+    <div class="sc"><div class="ss">Station 02</div><div class="sm">HIPAA Safe Harbor</div><div class="sp">&#10003; Rule-based compliance (18 identifier categories)</div><div class="sl2">&#10007; Binary &#8212; no risk measurement; QIs may still expose</div></div>
+    <div class="sc"><div class="ss">Station 03</div><div class="sm">Re-ID Risk Quantification</div><div class="sp">&#10003; Measures risk under 3 attacker models; proves compliance</div><div class="sl2">&#10007; Requires expert analysis; threshold is not legally mandated</div></div>
+    <div class="sc"><div class="ss">Station 04</div><div class="sm">k-Anonymity</div><div class="sp">&#10003; Prevents singling out any individual from QIs alone</div><div class="sl2">&#10007; Does not protect sensitive attribute inference (homogeneity attack)</div></div>
+    <div class="sc"><div class="ss">Station 05</div><div class="sm">l-Diversity</div><div class="sp">&#10003; Prevents sensitive attribute inference within equivalence classes</div><div class="sl2">&#10007; Susceptible to skewness attack if one value is extremely common</div></div>
+    <div class="sc"><div class="ss">Station 06</div><div class="sm">Conditional Probability</div><div class="sp">&#10003; Quantifies anonymity set size; measures per-record re-id risk</div><div class="sl2">&#10007; Assumes attacker has only the modeled auxiliary data</div></div>
+    <div class="sc"><div class="ss">Station 07</div><div class="sm">Unicity Analysis</div><div class="sp">&#10003; Reveals how quickly uniqueness grows with QI field count</div><div class="sl2">&#10007; Does not prescribe remediation &#8212; only diagnosis</div></div>
+    <div class="sc"><div class="ss">Station 08</div><div class="sm">Bayes' Theorem</div><div class="sp">&#10003; Computes honest posterior re-id probability given auxiliary evidence</div><div class="sl2">&#10007; Assumes attacker's auxiliary data quality and false positive rate are known</div></div>
+    <div class="sc"><div class="ss">Station 09</div><div class="sm">Fellegi&#8211;Sunter Linkage</div><div class="sp">&#10003; Probabilistic record linkage across institutions without a shared ID</div><div class="sl2">&#10007; Requires raw identifiers &#8212; privacy risk unless combined with PPRL</div></div>
+    <div class="sc"><div class="ss">Station 10</div><div class="sm">Bloom Filter PPRL</div><div class="sp">&#10003; Cross-institutional linkage with no raw identifier exposure</div><div class="sl2">&#10007; Bloom filter encodings can be reverse-engineered with enough queries</div></div>
+    <div class="sc"><div class="ss">Station 11</div><div class="sm">Differential Privacy</div><div class="sp">&#10003; Formal mathematical guarantee; membership inference protection</div><div class="sl2">&#10007; Utility degrades for small counts; does not protect individual records</div></div>
+  </div>
+
+  <h3>The Meridian Cohort &#8212; Final Protected State</h3>
+  <p>After applying de-identification (S01), Safe Harbor rules (S02), k=2 generalization with suppression of P1 and P6 (S04), l=2 diversity validation (S05), and differential privacy on aggregate outputs (S11), the retained Meridian records look like this:</p>
+  <div class="ctw"><table class="ct">
+    <thead><tr><th>#</th><th>Name</th><th>Sex</th><th>Year</th><th>Age Dec.</th><th>ZIP-3</th><th>Primary Dx</th><th>k</th><th>l</th></tr></thead>
+    <tbody>
+      <tr><td>P1</td><td class="cx">[SUPPRESSED]</td><td class="cx">&#8212;</td><td class="cx">&#8212;</td><td class="cx">&#8212;</td><td class="cx">&#8212;</td><td class="cx">Z21 &#8212; HIV/AIDS (suppressed)</td><td class="cx">&#8212;</td><td class="cx">&#8212;</td></tr>
+      <tr><td>P2</td><td class="cx">[REMOVED]</td><td>M</td><td class="cg">1978</td><td class="cg">40s</td><td class="cg">981**</td><td class="cs">F11.20 &#8212; OUD</td><td class="ck2">2</td><td class="ck2">2</td></tr>
+      <tr><td>P3</td><td class="cx">[REMOVED]</td><td>F</td><td class="cg">1965</td><td class="cg">50s</td><td class="cg">980**</td><td class="cs">E11.9 &#8212; T2DM</td><td class="ck2">2</td><td class="ck2">2</td></tr>
+      <tr><td>P4</td><td class="cx">[REMOVED]</td><td>M</td><td class="cg">1981</td><td class="cg">40s</td><td class="cg">981**</td><td class="cs">I10 &#8212; HTN</td><td class="ck2">2</td><td class="ck2">2</td></tr>
+      <tr><td>P5</td><td class="cx">[REMOVED]</td><td>F</td><td class="cg">1972</td><td class="cg">50s</td><td class="cg">980**</td><td class="cs">F31.9 &#8212; Bipolar</td><td class="ck2">2</td><td class="ck2">2</td></tr>
+      <tr><td>P6</td><td class="cx">[SUPPRESSED]</td><td class="cx">&#8212;</td><td class="cx">&#8212;</td><td class="cx">&#8212;</td><td class="cx">&#8212;</td><td class="cx">I25.10 &#8212; CAD (suppressed)</td><td class="cx">&#8212;</td><td class="cx">&#8212;</td></tr>
+    </tbody>
+  </table></div>
+  <div class="cn" style="margin-top:24px;"><div class="cnt">The Defense-in-Depth Principle</div><p>No single technique in this tutorial is sufficient on its own. Safe Harbor removes identifiers but doesn't measure risk. k-Anonymity prevents singling out but not inference. l-Diversity prevents inference but not skewness attacks. Differential privacy protects aggregates but not individual records. <strong>Real-world healthcare data protection requires layering multiple techniques</strong>, aligned to the specific data type, release mechanism, and anticipated attacker model.</p></div>
+
+  <div style="text-align:center;padding:40px 0 20px;">
+    <div style="font-family:var(--fm);font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--tm);margin-bottom:16px;">JOURNEY COMPLETE &#8212; STATIONS 01&#8211;11</div>
+    <a href="privacy_tutorial_part1.html" style="font-family:var(--fm);font-size:13px;color:var(--tl);text-decoration:none;padding:11px 26px;border:1px solid var(--tld);border-radius:6px;background:rgba(46,184,176,.06);">&#9664; Return to Part 1: Stations 01&#8211;05</a>
+    <div style="margin-top:24px;font-family:var(--fm);font-size:11px;color:var(--tm);letter-spacing:1.5px;">HEALTHCARE PRIVACY EDUCATION SERIES &#8212; JOE WILLIAMS</div>
+  </div>
+</section>
+
+</div>
+<script>
+window.addEventListener('scroll',()=>{
+  const h=document.documentElement;
+  const p=(h.scrollTop/(h.scrollHeight-h.clientHeight))*100;
+  document.getElementById('pgb').style.width=p+'%';
+});
+function toggleDemo(id){
+  const c=document.getElementById(id);
+  const b=c.previousElementSibling;
+  c.classList.toggle('op');
+  b.classList.toggle('op');
+}
+function toggleHint(id){
+  document.getElementById(id).classList.toggle('vs');
+}
+function revealAnswer(id){
+  const el=document.getElementById(id);
+  el.value=el.getAttribute('data-answer');
+  el.classList.remove('no');
+  el.classList.add('ok');
+}
+function evalBlank(el){
+  const ans=el.getAttribute('data-answer');
+  const tol=parseFloat(el.getAttribute('data-tolerance')||'0');
+  const typ=el.getAttribute('data-type')||'number';
+  const val=el.value.trim();
+  if(!val)return'empty';
+  if(typ==='text')return val.toLowerCase().trim()===ans.toLowerCase().trim()?'ok':'no';
+  const nu=parseFloat(val),na=parseFloat(ans);
+  if(isNaN(nu))return'no';
+  const t=tol>0?tol:Math.max(Math.abs(na*0.05),0.005);
+  return Math.abs(nu-na)<=t?'ok':'no';
+}
+function subEx(id,ids){
+  let empty=0,wrong=0;
+  ids.forEach(i=>{
+    const el=document.getElementById(i);
+    const s=evalBlank(el);
+    if(s==='empty'){empty++;el.classList.remove('ok','no');}
+    else if(s==='ok'){el.classList.remove('no');el.classList.add('ok');}
+    else{el.classList.remove('ok');el.classList.add('no');wrong++;}
+  });
+  const rb=document.getElementById(id+'r');
+  const ap=document.getElementById(id+'a');
+  if(ap)ap.classList.remove('vs');
+  const tot=ids.length;
+  if(empty===tot){rb.className='res vs no';rb.innerHTML='All blanks are empty. Enter your answers then click Submit.';return;}
+  if(empty>0){rb.className='res vs no';rb.innerHTML='<strong>'+empty+'</strong> blank(s) still empty'+(wrong>0?' and <strong>'+wrong+'</strong> incorrect':'')+'. Complete all fields before submitting.';return;}
+  if(wrong===0){rb.className='res vs ok';rb.innerHTML='&#10003; Correct! All answers are right &#8212; well done.';if(ap)ap.classList.add('vs');}
+  else{rb.className='res vs no';rb.innerHTML='<strong>'+wrong+'</strong> of <strong>'+tot+'</strong> wrong (highlighted in red). Adjust and resubmit, or use <em>reveal</em> for individual blanks.';}
+}
+function revAll(id,ids){
+  ids.forEach(i=>{
+    const el=document.getElementById(i);
+    el.value=el.getAttribute('data-answer');
+    el.classList.remove('no');
+    el.classList.add('ok');
+  });
+  const rb=document.getElementById(id+'r');
+  const ap=document.getElementById(id+'a');
+  rb.className='res vs sl';
+  rb.innerHTML='<strong>Solution revealed</strong> &#8212; all blanks filled. See the result panel below.';
+  if(ap)ap.classList.add('vs');
+}
+</script>
+</body></html>

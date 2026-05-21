@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>dbt Healthcare Billing Audit Tutorial</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: linear-gradient(170deg, #0c1929 0%, #1a2740 40%, #1c2e45 100%);
+    color: #ecf0f1;
+    min-height: 100vh;
+  }
+  .header {
+    text-align: center;
+    padding: 48px 24px 36px;
+    border-bottom: 1px solid rgba(127,179,216,.1);
+    background: radial-gradient(ellipse at 50% 0%, rgba(52,152,219,.08), transparent 70%);
+  }
+  .logo-row { display: flex; align-items: center; justify-content: center; gap: 14px; margin-bottom: 20px; }
+  .dbt-logo {
+    background: linear-gradient(135deg, #ff694a, #e6522c);
+    color: #fff; font-weight: 700; font-size: 18px; padding: 6px 16px;
+    border-radius: 8px; font-family: 'IBM Plex Mono', monospace; letter-spacing: 1px;
+  }
+  .h1 {
+    font-size: 30px; font-weight: 700; line-height: 1.2; margin-bottom: 14px;
+    background: linear-gradient(135deg, #ecf0f1, #7fb3d8);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .subtitle { color: #8899aa; font-size: 15px; max-width: 600px; margin: 0 auto; line-height: 1.6; }
+  .tab-row { display: flex; justify-content: center; gap: 8px; padding: 24px 16px 0; }
+  .tab-btn {
+    background: rgba(44,62,80,.5); border: 1px solid rgba(127,179,216,.12);
+    border-radius: 8px 8px 0 0; padding: 12px 28px; color: #7f8c8d;
+    font-size: 14px; font-weight: 600; cursor: pointer; transition: all .2s;
+  }
+  .tab-btn.active {
+    background: rgba(52,152,219,.12); border-color: rgba(52,152,219,.3);
+    border-bottom: 2px solid #3498db; color: #ecf0f1;
+  }
+  .content { max-width: 960px; margin: 0 auto; padding: 32px 24px; }
+  .section { display: none; }
+  .section.visible { display: block; }
+  .section-title { font-size: 22px; font-weight: 700; margin-bottom: 12px; }
+  .badge {
+    background: linear-gradient(135deg, #ff694a, #e6522c);
+    color: #fff; font-size: 11px; font-weight: 700; padding: 3px 10px;
+    border-radius: 4px; margin-right: 10px; letter-spacing: 1px; vertical-align: middle;
+  }
+  .body-text { color: #aab2bd; font-size: 14px; line-height: 1.7; margin-bottom: 24px; }
+  .sub-title { font-size: 15px; font-weight: 600; color: #7fb3d8; margin-bottom: 10px; font-family: 'IBM Plex Mono', monospace; }
+  .table-wrap {
+    overflow-x: auto; border-radius: 10px; border: 1px solid rgba(127,179,216,.12);
+    background: rgba(12,25,41,.6); margin-bottom: 16px;
+  }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th {
+    text-align: left; padding: 10px 14px; font-weight: 600; font-size: 11px;
+    letter-spacing: .8px; text-transform: uppercase; color: #7fb3d8;
+    border-bottom: 1px solid rgba(127,179,216,.15); background: rgba(44,62,80,.4);
+  }
+  td { padding: 10px 14px; border-bottom: 1px solid rgba(127,179,216,.06); color: #c5ccd3; }
+  .mono { font-family: 'IBM Plex Mono', monospace; }
+  .pill {
+    display: inline-block; padding: 2px 8px; border-radius: 4px;
+    color: #fff; font-size: 11px; font-weight: 600; letter-spacing: .5px;
+  }
+  .pill-icd { background: #1a5276; }
+  .pill-cpt { background: #7d3c98; }
+  .err-badge {
+    display: inline-block; margin-left: 8px; padding: 1px 7px; border-radius: 4px;
+    background: rgba(231,76,60,.2); color: #e74c3c; font-size: 10px; font-weight: 700;
+  }
+  .mismatch-row { background: rgba(231,76,60,.08) !important; }
+  .run-btn {
+    margin-top: 16px; padding: 12px 32px;
+    background: linear-gradient(135deg, #e6522c, #ff694a);
+    border: none; border-radius: 8px; color: #fff; font-weight: 700; font-size: 14px;
+    cursor: pointer; box-shadow: 0 2px 12px rgba(230,82,44,.3); transition: all .15s;
+  }
+  .run-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(230,82,44,.4); }
+  .result-box {
+    margin-top: 20px; padding: 20px; background: rgba(231,76,60,.06);
+    border: 1px solid rgba(231,76,60,.2); border-radius: 10px; display: none;
+  }
+  .result-box.visible { display: block; }
+  .result-box h4 { margin-bottom: 8px; color: #e74c3c; }
+  .result-box li { color: #ddd; line-height: 1.7; }
+  .code-block {
+    background: rgba(12,25,41,.8); border: 1px solid rgba(127,179,216,.12);
+    border-radius: 10px; padding: 20px; font-size: 13px; line-height: 1.6;
+    color: #85c1e9; font-family: 'IBM Plex Mono', monospace; overflow-x: auto; white-space: pre;
+  }
+  .inline-code {
+    font-family: 'IBM Plex Mono', monospace; background: rgba(52,152,219,.15);
+    padding: 2px 6px; border-radius: 4px; font-size: 13px; color: #85c1e9;
+  }
+  /* Quiz styles */
+  .quiz-card {
+    background: rgba(44,62,80,.3); border: 1px solid rgba(127,179,216,.12);
+    border-radius: 14px; padding: 28px;
+  }
+  .progress-bar { height: 4px; background: #2c3e50; border-radius: 2px; margin-bottom: 24px; }
+  .progress-fill { height: 4px; background: linear-gradient(90deg, #3498db, #1abc9c); border-radius: 2px; transition: width .5s; }
+  .q-prompt {
+    white-space: pre-wrap; color: #ecf0f1; font-size: 15px; line-height: 1.6;
+    margin-bottom: 20px; font-family: 'IBM Plex Mono', monospace;
+  }
+  .choice-btn {
+    display: block; width: 100%; text-align: left; margin-bottom: 10px;
+    background: rgba(52,73,94,.5); border: 1px solid rgba(127,179,216,.15);
+    border-radius: 8px; padding: 12px 16px; color: #ecf0f1; font-size: 14px;
+    cursor: pointer; transition: all .2s; font-family: 'DM Sans', sans-serif;
+  }
+  .choice-btn:hover { background: rgba(52,152,219,.15); }
+  .choice-btn.selected { background: rgba(52,152,219,.2); border-color: #3498db; }
+  .choice-btn.correct { background: rgba(88,214,141,.15); border-color: #58d68d; }
+  .choice-btn.incorrect { background: rgba(231,76,60,.15); border-color: #e74c3c; }
+  .fill-input {
+    width: 100%; padding: 12px 16px; background: rgba(52,73,94,.5);
+    border: 1px solid rgba(127,179,216,.2); border-radius: 8px; color: #ecf0f1;
+    font-size: 15px; font-family: 'IBM Plex Mono', monospace; outline: none;
+  }
+  .feedback {
+    margin-top: 16px; padding: 14px; border-radius: 8px; display: none;
+  }
+  .feedback.visible { display: block; }
+  .feedback.pass { background: rgba(88,214,141,.08); border-left: 3px solid #58d68d; }
+  .feedback.fail { background: rgba(231,76,60,.08); border-left: 3px solid #e74c3c; }
+  .hint-box {
+    margin-top: 14px; padding: 12px; background: rgba(52,152,219,.08);
+    border-radius: 8px; border-left: 3px solid #3498db; display: none;
+  }
+  .hint-box.visible { display: block; }
+  .btn-row { display: flex; gap: 12px; margin-top: 20px; justify-content: space-between; align-items: center; }
+  .hint-btn {
+    background: none; border: 1px solid rgba(127,179,216,.25); border-radius: 6px;
+    padding: 8px 16px; color: #7fb3d8; font-size: 13px; cursor: pointer;
+  }
+  .submit-btn {
+    padding: 10px 28px; background: linear-gradient(135deg, #e6522c, #ff694a);
+    border: none; border-radius: 8px; color: #fff; font-weight: 700; font-size: 14px;
+    cursor: pointer; box-shadow: 0 2px 12px rgba(230,82,44,.3);
+  }
+  .submit-btn:disabled { opacity: .4; cursor: default; }
+  .footer {
+    text-align: center; padding: 32px 16px; border-top: 1px solid rgba(127,179,216,.08);
+    color: #566573; font-size: 12px;
+  }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="logo-row">
+    <div class="dbt-logo">dbt</div>
+    <span style="color:rgba(255,255,255,.25);font-size:24px;font-weight:300">×</span>
+    <span style="color:#ecf0f1;font-size:18px;font-weight:600;font-family:'DM Sans',sans-serif">Healthcare Billing Audit</span>
+  </div>
+  <div class="h1">Medical Code ↔ Description<br/>Mismatch Detection</div>
+  <p class="subtitle">A hands-on dbt tutorial: write SQL-based data tests that catch billing mismatches between CPT/ICD-10 codes and their descriptions in your EHR staging tables.</p>
+</header>
+
+<div class="tab-row">
+  <button class="tab-btn active" onclick="switchTab('demo')">📖 Demo Walkthrough</button>
+  <button class="tab-btn" onclick="switchTab('quiz')">✏️ Interactive Quiz</button>
+</div>
+
+<div class="content">
+  <!-- ─── DEMO ─── -->
+  <div id="demo-section" class="section visible">
+    <h2 class="section-title"><span class="badge">DEMO</span> Walkthrough</h2>
+    <p class="body-text">Below are two tables: the <strong>reference terminology</strong> (trusted codes) and the <strong>encounter staging table</strong> (data from the EHR). Some encounters have a description that does <em>not</em> match the reference for the given code. The dbt test will join these tables and surface only the mismatches.</p>
+
+    <h3 class="sub-title">ref_medical_codes (reference / seed)</h3>
+    <div class="table-wrap">
+      <table><thead><tr><th>code_system</th><th>code</th><th>description</th></tr></thead>
+      <tbody id="ref-table-body"></tbody></table>
+    </div>
+
+    <h3 class="sub-title" style="margin-top:24px">stg_encounters (staging model)</h3>
+    <div class="table-wrap">
+      <table><thead><tr><th>encounter_id</th><th>code_system</th><th>code</th><th>description (from EHR)</th><th>expected description</th></tr></thead>
+      <tbody id="enc-table-body"></tbody></table>
+    </div>
+
+    <button class="run-btn" id="run-btn" onclick="toggleMismatches()">▶ Run dbt test (reveal mismatches)</button>
+
+    <div class="result-box" id="result-box">
+      <h4 id="result-heading"></h4>
+      <ul id="result-list"></ul>
+    </div>
+
+    <h3 class="sub-title" style="margin-top:30px">The dbt Singular Test SQL</h3>
+    <div class="code-block">-- tests/assert_encounter_description_matches_reference.sql
+--
+-- This dbt test returns rows where the encounter description
+-- does NOT match the reference terminology table.
+-- If any rows are returned, the test FAILS.
+
+SELECT
+    e.encounter_id,
+    e.code_system,
+    e.code,
+    e.description   AS encounter_description,
+    r.description   AS expected_description
+FROM {{ ref('stg_encounters') }} AS e
+LEFT JOIN {{ ref('ref_medical_codes') }} AS r
+    ON  e.code_system = r.code_system
+    AND e.code        = r.code
+WHERE
+    r.description IS NULL                -- code not in reference at all
+    OR e.description &lt;&gt; r.description    -- description mismatch</div>
+  </div>
+
+  <!-- ─── QUIZ ─── -->
+  <div id="quiz-section" class="section">
+    <div class="quiz-card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+        <span id="q-counter" style="color:#7fb3d8;font-weight:600;font-size:14px;letter-spacing:1px"></span>
+        <span id="q-score" style="color:#aab2bd;font-size:13px"></span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+      <div class="q-prompt" id="q-prompt"></div>
+      <div id="choices-container"></div>
+      <div id="fill-container" style="display:none">
+        <input class="fill-input" id="fill-input" placeholder="Type your answer..." />
+        <p id="fill-correct" style="color:#58d68d;font-size:13px;margin-top:8px;display:none"></p>
+      </div>
+      <div class="feedback" id="feedback">
+        <p id="feedback-label" style="font-weight:600;font-size:13px;margin-bottom:4px"></p>
+        <p id="feedback-text" style="color:#bdc3c7;font-size:13px;line-height:1.5"></p>
+      </div>
+      <div class="hint-box" id="hint-box">
+        <p style="color:#85c1e9;font-size:13px;line-height:1.5" id="hint-text"></p>
+      </div>
+      <div class="btn-row">
+        <button class="hint-btn" id="hint-btn" onclick="toggleHint()">I'm Stuck – Show Hint</button>
+        <div style="flex:1"></div>
+        <button class="submit-btn" id="action-btn" onclick="handleAction()" disabled>Submit</button>
+      </div>
+    </div>
+    <div id="complete-card" style="display:none;text-align:center;padding:40px">
+      <h2 class="section-title" style="text-align:center">Tutorial Complete!</h2>
+      <div id="final-score" style="font-size:48px;font-weight:700;margin:20px 0"></div>
+      <p id="final-msg" style="color:#aab2bd;font-size:16px"></p>
+      <button class="run-btn" onclick="restartQuiz()" style="margin-top:20px">Restart Quiz</button>
+    </div>
+  </div>
+</div>
+
+<footer class="footer"><p>dbt Billing Audit Tutorial — Built for Healthcare Data Engineers</p></footer>
+
+<script>
+// ─── DATA ───
+const REFERENCE = [
+  {s:"ICD-10",c:"E11.9",d:"Type 2 diabetes mellitus without complications"},
+  {s:"ICD-10",c:"I10",d:"Essential (primary) hypertension"},
+  {s:"ICD-10",c:"J06.9",d:"Acute upper respiratory infection, unspecified"},
+  {s:"ICD-10",c:"M54.5",d:"Low back pain"},
+  {s:"ICD-10",c:"E78.5",d:"Hyperlipidemia, unspecified"},
+  {s:"ICD-10",c:"F41.9",d:"Anxiety disorder, unspecified"},
+  {s:"CPT",c:"93000",d:"Electrocardiogram, routine ECG with at least 12 leads"},
+  {s:"CPT",c:"99213",d:"Office visit, established patient, 20-29 min"},
+  {s:"CPT",c:"99214",d:"Office visit, established patient, 30-39 min"},
+  {s:"CPT",c:"36415",d:"Venipuncture (routine blood draw)"},
+  {s:"CPT",c:"80053",d:"Comprehensive metabolic panel"},
+  {s:"CPT",c:"71046",d:"Chest X-ray, 2 views"},
+];
+const ENCOUNTERS = [
+  {id:"ENC-001",s:"ICD-10",c:"E11.9",d:"Type 2 diabetes mellitus without complications",m:false},
+  {id:"ENC-002",s:"CPT",c:"93000",d:"Chest X-ray",m:true},
+  {id:"ENC-003",s:"ICD-10",c:"I10",d:"Essential (primary) hypertension",m:false},
+  {id:"ENC-004",s:"ICD-10",c:"J06.9",d:"Low back pain",m:true},
+  {id:"ENC-005",s:"CPT",c:"99213",d:"Office visit, established patient, 20-29 min",m:false},
+  {id:"ENC-006",s:"CPT",c:"36415",d:"Comprehensive metabolic panel",m:true},
+  {id:"ENC-007",s:"ICD-10",c:"M54.5",d:"Low back pain",m:false},
+  {id:"ENC-008",s:"CPT",c:"80053",d:"Comprehensive metabolic panel",m:false},
+  {id:"ENC-009",s:"ICD-10",c:"E78.5",d:"Type 2 diabetes mellitus without complications",m:true},
+  {id:"ENC-010",s:"CPT",c:"71046",d:"Chest X-ray, 2 views",m:false},
+];
+function getRef(sys,code){ const r=REFERENCE.find(x=>x.s===sys&&x.c===code); return r?r.d:"—"; }
+
+// ─── DEMO ───
+let showingMismatches = false;
+function buildTables(){
+  let rb = document.getElementById('ref-table-body');
+  rb.innerHTML = REFERENCE.map((r,i)=>`<tr style="background:${i%2===0?'rgba(255,255,255,.02)':'rgba(255,255,255,.05)'}"><td><span class="pill ${r.s==='ICD-10'?'pill-icd':'pill-cpt'}">${r.s}</span></td><td class="mono">${r.c}</td><td>${r.d}</td></tr>`).join('');
+  renderEncounters();
+}
+function renderEncounters(){
+  let eb = document.getElementById('enc-table-body');
+  eb.innerHTML = ENCOUNTERS.map((r,i)=>{
+    let cls = showingMismatches && r.m ? 'mismatch-row':'';
+    let bg = i%2===0?'rgba(255,255,255,.02)':'rgba(255,255,255,.05)';
+    let dColor = showingMismatches && r.m ? '#e74c3c':'#c5ccd3';
+    let badge = showingMismatches && r.m ? '<span class="err-badge">✗ MISMATCH</span>':'';
+    return `<tr class="${cls}" style="background:${showingMismatches&&r.m?'rgba(231,76,60,.08)':bg}"><td class="mono">${r.id}</td><td><span class="pill ${r.s==='ICD-10'?'pill-icd':'pill-cpt'}">${r.s}</span></td><td class="mono">${r.c}</td><td style="color:${dColor};font-weight:${showingMismatches&&r.m?600:400}">${r.d}${badge}</td><td style="color:#58d68d">${getRef(r.s,r.c)}</td></tr>`;
+  }).join('');
+}
+function toggleMismatches(){
+  showingMismatches=!showingMismatches;
+  renderEncounters();
+  document.getElementById('run-btn').textContent = showingMismatches?'Hide Mismatches':'▶ Run dbt test (reveal mismatches)';
+  const rb = document.getElementById('result-box');
+  if(showingMismatches){
+    const mis = ENCOUNTERS.filter(e=>e.m);
+    document.getElementById('result-heading').textContent=`dbt test returned ${mis.length} failing row(s):`;
+    document.getElementById('result-list').innerHTML=mis.map(m=>`<li><strong>${m.id}</strong> — code <code class="inline-code">${m.c}</code> (${m.s}) has description "<em style="color:#e74c3c">${m.d}</em>" but expected "<em style="color:#58d68d">${getRef(m.s,m.c)}</em>"</li>`).join('');
+    rb.classList.add('visible');
+  } else { rb.classList.remove('visible'); }
+}
+
+// ─── QUIZ ───
+const QUESTIONS=[
+  {type:"mc",prompt:'In dbt, a data test passes when the query returns _____ rows.',choices:["Exactly 1 row","Zero rows","All rows from the model","At least 5 rows"],answer:1,explanation:"A dbt data test passes when the SQL query returns ZERO rows. Any rows returned represent failures."},
+  {type:"fill",prompt:'Complete the FROM clause:\n\nSELECT * FROM {{ _____(\'stg_encounters\') }}',answer:"ref",explanation:"The dbt Jinja function {{ ref('model_name') }} references another model and builds the DAG dependency."},
+  {type:"mc",prompt:'Which encounter has a MISMATCH?\n\nENC-002: CPT 93000 → "Chest X-ray"\nENC-005: CPT 99213 → "Office visit, established patient, 20-29 min"',choices:["ENC-005","ENC-002","Both","Neither"],answer:1,explanation:"CPT 93000 is 'Electrocardiogram, routine ECG with at least 12 leads', NOT 'Chest X-ray'. ENC-002 is the mismatch."},
+  {type:"fill",prompt:'ICD-10 code E11.9 maps to: "Type 2 diabetes mellitus without ___________"',answer:"complications",explanation:"E11.9 is 'Type 2 diabetes mellitus without complications'—one of the most commonly billed ICD-10 codes."},
+  {type:"mc",prompt:"Where should a dbt singular test SQL file be stored?",choices:["models/","tests/","macros/","seeds/"],answer:1,explanation:"Singular tests are standalone .sql files placed in the tests/ directory of your dbt project."},
+  {type:"fill",prompt:'Complete the WHERE clause to catch mismatches:\n\nWHERE r.description IS NULL\n   OR e.description _____ r.description',answer:"<>",alts:["!="],explanation:"The <> operator (or !=) checks for inequality. We want rows where the encounter description differs from the reference."},
+  {type:"mc",prompt:"CPT code 36415 corresponds to which procedure?",choices:["Comprehensive metabolic panel","Chest X-ray, 2 views","Venipuncture (routine blood draw)","Electrocardiogram"],answer:2,explanation:"CPT 36415 is for venipuncture—the routine collection of venous blood by needle, commonly in outpatient settings."},
+  {type:"mc",prompt:'In a dbt project, reference/lookup data (like our medical codes table) is best stored as a:',choices:["Snapshot","Seed (CSV file)","Source YAML","Macro"],answer:1,explanation:"dbt seeds are CSV files in the seeds/ directory that get loaded into the warehouse with `dbt seed`. Perfect for small, relatively static reference data."},
+];
+let qIdx=0, score=0, selected=null, submitted=false, hintVisible=false;
+
+function renderQuestion(){
+  const q=QUESTIONS[qIdx];
+  document.getElementById('q-counter').textContent=`QUESTION ${qIdx+1} / ${QUESTIONS.length}`;
+  document.getElementById('q-score').textContent=`Score: ${score}`;
+  document.getElementById('progress-fill').style.width=`${((qIdx+1)/QUESTIONS.length)*100}%`;
+  document.getElementById('q-prompt').textContent=q.prompt;
+  document.getElementById('feedback').className='feedback';
+  document.getElementById('hint-box').className='hint-box';
+  document.getElementById('hint-text').textContent=q.explanation;
+  document.getElementById('hint-btn').style.display='inline-block';
+  document.getElementById('hint-btn').textContent="I'm Stuck – Show Hint";
+  hintVisible=false; submitted=false; selected=null;
+
+  const cc=document.getElementById('choices-container');
+  const fc=document.getElementById('fill-container');
+  const fi=document.getElementById('fill-input');
+  document.getElementById('fill-correct').style.display='none';
+
+  if(q.type==='mc'){
+    cc.style.display='block'; fc.style.display='none';
+    cc.innerHTML=q.choices.map((c,i)=>`<button class="choice-btn" data-idx="${i}" onclick="selectChoice(${i})"><span style="font-weight:600;margin-right:10px;color:#7fb3d8">${String.fromCharCode(65+i)}.</span>${c}</button>`).join('');
+  } else {
+    cc.style.display='none'; fc.style.display='block';
+    fi.value=''; fi.style.borderColor='rgba(127,179,216,.2)';
+    fi.oninput=()=>{ document.getElementById('action-btn').disabled=fi.value.trim()===''; };
+  }
+  const btn=document.getElementById('action-btn');
+  btn.textContent='Submit'; btn.disabled=true;
+  btn.onclick=handleAction;
+}
+function selectChoice(idx){
+  if(submitted) return;
+  selected=idx;
+  document.querySelectorAll('.choice-btn').forEach((b,i)=>{
+    b.className='choice-btn'+(i===idx?' selected':'');
+  });
+  document.getElementById('action-btn').disabled=false;
+}
+function handleAction(){
+  if(!submitted) submitAnswer();
+  else nextQuestion();
+}
+function submitAnswer(){
+  submitted=true;
+  const q=QUESTIONS[qIdx];
+  let correct=false;
+  if(q.type==='mc'){
+    correct=selected===q.answer;
+    document.querySelectorAll('.choice-btn').forEach((b,i)=>{
+      if(i===q.answer) b.className='choice-btn correct';
+      else if(i===selected&&!correct) b.className='choice-btn incorrect';
+    });
+  } else {
+    const fi=document.getElementById('fill-input');
+    const ans=fi.value.trim().toLowerCase();
+    correct=ans===q.answer.toLowerCase()||(q.alts&&q.alts.some(a=>ans===a.toLowerCase()));
+    fi.style.borderColor=correct?'#58d68d':'#e74c3c';
+    if(!correct){
+      const fc=document.getElementById('fill-correct');
+      fc.textContent='Correct answer: '+q.answer; fc.style.display='block';
+    }
+  }
+  if(correct) score++;
+  const fb=document.getElementById('feedback');
+  fb.className='feedback visible '+(correct?'pass':'fail');
+  document.getElementById('feedback-label').textContent=correct?'✓ Correct!':'✗ Incorrect';
+  document.getElementById('feedback-label').style.color=correct?'#58d68d':'#e74c3c';
+  document.getElementById('feedback-text').textContent=q.explanation;
+  document.getElementById('hint-btn').style.display='none';
+  const btn=document.getElementById('action-btn');
+  btn.textContent=qIdx<QUESTIONS.length-1?'Next →':'Finish'; btn.disabled=false;
+  btn.onclick=nextQuestion;
+}
+function nextQuestion(){
+  if(qIdx<QUESTIONS.length-1){ qIdx++; renderQuestion(); }
+  else showComplete();
+}
+function showComplete(){
+  document.querySelector('.quiz-card').style.display='none';
+  const cc=document.getElementById('complete-card');
+  cc.style.display='block';
+  const pct=Math.round((score/QUESTIONS.length)*100);
+  document.getElementById('final-score').textContent=`${score} / ${QUESTIONS.length}`;
+  document.getElementById('final-score').style.color=pct>=70?'#58d68d':'#e74c3c';
+  document.getElementById('final-msg').textContent=pct>=70?'Great work! You understand dbt billing audits well.':'Review the demo section and try again to strengthen your understanding.';
+}
+function restartQuiz(){
+  qIdx=0;score=0;selected=null;submitted=false;
+  document.querySelector('.quiz-card').style.display='block';
+  document.getElementById('complete-card').style.display='none';
+  renderQuestion();
+}
+function toggleHint(){
+  hintVisible=!hintVisible;
+  document.getElementById('hint-box').className='hint-box'+(hintVisible?' visible':'');
+  document.getElementById('hint-btn').textContent=hintVisible?'Hide Hint':"I'm Stuck – Show Hint";
+}
+
+// ─── TABS ───
+function switchTab(tab){
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('visible'));
+  if(tab==='demo'){
+    document.querySelectorAll('.tab-btn')[0].classList.add('active');
+    document.getElementById('demo-section').classList.add('visible');
+  } else {
+    document.querySelectorAll('.tab-btn')[1].classList.add('active');
+    document.getElementById('quiz-section').classList.add('visible');
+  }
+}
+
+// ─── INIT ───
+buildTables();
+renderQuestion();
+</script>
+</body>
+</html>

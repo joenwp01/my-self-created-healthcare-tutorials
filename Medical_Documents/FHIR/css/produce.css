@@ -1,0 +1,125 @@
+/* ============================================================
+   Produce Journey — Inherited C-CDA Blue Theme
+   Uses the established C-CDA Pipeline Lab palette directly.
+   Primary accent: #4a90c2 ; header accent: #1e4670
+   ============================================================ */
+
+body.produce-journey .station-accent-strip {
+  background: #4a90c2;
+  height: 4px;
+  border-radius: 2px 2px 0 0;
+  margin-bottom: 0;
+}
+
+body.produce-journey .btn.journey-primary {
+  background: #1e4670;
+  color: #fff;
+}
+body.produce-journey .btn.journey-primary:hover:not(:disabled) {
+  background: #2a5580;
+}
+body.produce-journey .btn.journey-ghost {
+  background: transparent;
+  color: #1e4670;
+  border: 1px solid #1e4670;
+}
+body.produce-journey .btn.journey-ghost:hover:not(:disabled) {
+  background: rgba(30,70,112,0.08);
+}
+
+body.produce-journey .panel.journey-highlight {
+  border-left: 4px solid #4a90c2;
+}
+body.produce-journey .panel h2 { color: #1e4670; }
+
+body.produce-journey a.journey-link {
+  color: #1e4670;
+  text-decoration: underline;
+}
+body.produce-journey a.journey-link:hover { color: #2a5580; }
+
+body.produce-journey .station-indicator {
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: #3a4450;
+  color: #cfe0f0;
+  font-size: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 600;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: all 0.15s;
+}
+body.produce-journey .station-indicator.current {
+  background: #4a90c2;
+  color: #0a2538;
+  border-color: #1e4670;
+}
+body.produce-journey .station-indicator.completed {
+  background: #1e4670;
+  color: #fff;
+}
+body.produce-journey .station-indicator:hover { transform: scale(1.1); }
+
+/* ===== STATION RAIL — vertical timeline with animated fill ===== */
+body.produce-journey .station-rail-wrapper {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  padding: 16px 0;
+  min-height: 100%;
+}
+body.produce-journey .station-rail-bg {
+  position: absolute;
+  left: 50%;
+  top: 22px;
+  bottom: 22px;
+  width: 3px;
+  margin-left: -1.5px;
+  background: #2a3947;
+  border-radius: 1.5px;
+}
+body.produce-journey .station-rail-fill {
+  position: absolute;
+  left: 50%;
+  top: 22px;
+  width: 3px;
+  margin-left: -1.5px;
+  background: linear-gradient(180deg, #1e4670 0%, #4a90c2 100%);
+  border-radius: 1.5px;
+  transition: height 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 0 6px rgba(74, 144, 194, 0.5);
+}
+body.produce-journey .station-rail-dots {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+body.produce-journey .choice-card.selected {
+  border-color: #4a90c2;
+  background: rgba(74,144,194,0.08);
+}
+body.produce-journey .choice-card.correct {
+  border-color: #2a7a3a;
+  background: rgba(42,122,58,0.08);
+}
+
+body.produce-journey .ref-arrow {
+  stroke: #4a90c2;
+  stroke-width: 2;
+  fill: none;
+  marker-end: url(#arrowhead-produce);
+}
+
+body.produce-journey .resource-node {
+  fill: #ececec;
+  stroke: #1e4670;
+  stroke-width: 2;
+}
+body.produce-journey .resource-node.active {
+  fill: #4a90c2;
+  stroke: #1e4670;
+}

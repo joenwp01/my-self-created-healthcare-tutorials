@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Produce Journey — FHIR Pipeline Lab</title>
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/station.css">
+<link rel="stylesheet" href="css/produce.css">
+</head>
+<body class="produce-journey">
+
+<header class="app-header">
+  <div>
+    <h1>FHIR Pipeline Lab — Produce Journey</h1>
+    <div class="subtitle">Prepare &amp; Upload · FHIR R4 · US Core 6.1.0 · terminal = transaction Bundle POST</div>
+    <div class="developer-line"><em>Developed by: Joe Williams</em></div>
+  </div>
+  <div class="header-right">
+    <a class="nav-link" href="fhir_pipeline_lab_v1.html">← Journey selector</a>
+    <button class="nav-link" onclick="openGlossary()">📖 Glossary</button>
+  </div>
+</header>
+
+<aside class="decorative-sidebar-left"></aside>
+<aside class="decorative-sidebar-right">
+  <div id="station-indicators" style="display:flex; flex-direction:column; gap:6px; padding-top: 8px;"></div>
+</aside>
+
+<main class="app-main">
+  <div id="station-root"></div>
+</main>
+
+<div class="modal-overlay" id="glossary-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Glossary</h3>
+      <button class="close-btn" onclick="closeGlossary()">×</button>
+    </div>
+    <dl class="glossary-list" id="glossary-body"></dl>
+  </div>
+</div>
+
+<script src="js/state.js"></script>
+<script src="js/cohort.js"></script>
+<script src="js/glossary.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/runtime.js"></script>
+<script src="js/produce-stations.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    Runtime.init("produce", PRODUCE_STATIONS);
+  });
+</script>
+</body>
+</html>

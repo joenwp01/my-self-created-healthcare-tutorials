@@ -1,0 +1,137 @@
+-- ❌ All four CTEs have this pattern
+FROM {{ ('stg_looker__users') }}
+FROM {{ ('stg_looker__order_items') }}
+FROM {{ ('stg_looker__orders') }}
+FROM {{ ('stg_looker__events') }}
+
+-- ✅ Must be
+FROM {{ ref('stg_looker__users') }}
+FROM {{ ref('stg_looker__order_items') }}
+FROM {{ ref('stg_looker__orders') }}
+FROM {{ ref('stg_looker__events') }}
+
+-- ❌ Trailing comma on last column — order_items CTE
+        MAX(created_at) AS last_order_completed_at,   -- ← comma here
+    FROM {{ ref('stg_looker__order_items') }}
+
+-- ❌ Trailing comma — orders CTE
+            END) AS num_orders_returned,              -- ← comma here
+    FROM {{ ref('stg_looker__orders') }}
+
+-- ❌ Trailing comma — web_traffic CTE
+        COUNT(DISTINCT session_id) AS num_web_sessions,  -- ← comma here
+    FROM {{ ref('stg_looker__events') }}
+
+-- ❌ Trailing comma — final SELECT
+    wt.num_web_sessions,                              -- ← comma here
+FROM customer_base cb
+
+
+WITH customer_base AS (
+    SELECT 
+        id AS user_id,
+        first_name AS customer_first_name,
+        last_name AS customer_last_name,
+        country AS customer_country,
+        traffic_source AS customer_acquisition_channel
+    FROM {{ ref('stg_looker__users') }}
+)
+
+, order_items AS (
+    SELECT 
+        user_id,
+        SUM(sale_price) AS total_amount_spent,
+        COUNT(DISTINCT id) AS total_items_purchased,
+        MIN(created_at) AS first_order_completed_at,
+        MAX(created_at) AS last_order_completed_at
+    FROM {{ ref('stg_looker__order_items') }}
+    WHERE status = 'Complete'
+    GROUP BY 1
+)
+
+, orders AS (
+    SELECT 
+        user_id,
+        COUNT(DISTINCT order_id) AS num_orders,
+        COUNT(DISTINCT 
+            CASE WHEN status = 'Shipped'
+            THEN order_id
+            END) AS num_orders_shipped,
+        COUNT(DISTINCT 
+            CASE WHEN status = 'Complete'
+            THEN order_id
+            END) AS num_orders_complete,
+        COUNT(DISTINCT 
+            CASE WHEN status = 'Processing'
+            THEN order_id
+            END) AS num_orders_processing,
+        COUNT(DISTINCT 
+            CASE WHEN status = 'Cancelled'
+            THEN order_id
+            END) AS num_orders_cancelled,
+        COUNT(DISTINCT 
+            CASE WHEN status = 'Returned'
+            THEN order_id
+            END) AS num_orders_returned
+    FROM {{ ref('stg_looker__orders') }}
+    GROUP BY 1
+)
+
+, web_traffic AS (
+    SELECT 
+        user_id,
+        COUNT(DISTINCT session_id) AS num_web_sessions
+    FROM {{ ref('stg_looker__events') }}
+    GROUP BY 1
+)
+
+SELECT
+    cb.user_id,
+    cb.customer_first_name,
+    cb.customer_last_name,
+    cb.customer_country,
+    cb.customer_acquisition_channel,
+    oi.total_amount_spent,
+    oi.total_items_purchased,
+    oi.first_order_completed_at,
+    oi.last_order_completed_at,
+    o.num_orders,
+    o.num_orders_shipped,
+    o.num_orders_complete,
+    o.num_orders_processing,
+    o.num_orders_cancelled,
+    o.num_orders_returned,
+    wt.num_web_sessions
+FROM customer_base cb
+LEFT JOIN order_items oi 
+    ON cb.user_id = oi.user_id
+LEFT JOIN orders o
+    ON cb.user_id = o.user_id 
+LEFT JOIN web_traffic wt 
+    ON cb.user_id = wt.user_id
+
+=========================================
+---
+
+### All Fixes at a Glance
+
+| Location | Bug | Fix |
+|---|---|---|
+| `customer_base` CTE line 8 | `{{ ('stg_looker__users') }}` | `{{ ref('stg_looker__users') }}` |
+| `order_items` CTE line 15 | `{{ ('stg_looker__order_items') }}` | `{{ ref('stg_looker__order_items') }}` |
+| `order_items` CTE line 14 | Trailing comma after `last_order_completed_at,` | Remove comma |
+| `orders` CTE line 32 | `{{ ('stg_looker__orders') }}` | `{{ ref('stg_looker__orders') }}` |
+| `orders` CTE line 31 | Trailing comma after `num_orders_returned,` | Remove comma |
+| `web_traffic` CTE line 37 | `{{ ('stg_looker__events') }}` | `{{ ref('stg_looker__events') }}` |
+| `web_traffic` CTE line 36 | Trailing comma after `num_web_sessions,` | Remove comma |
+| Final `SELECT` line 52 | Trailing comma after `wt.num_web_sessions,` | Remove comma |
+
+---
+
+### Re-run After Fixes
+
+```powershell
+dbt build --select +customers
+```
+
+

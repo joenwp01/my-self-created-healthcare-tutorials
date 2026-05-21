@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SQL CTEs — Interactive Tutorial</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --surface-raised: #1c2333;
+    --border: #30363d;
+    --border-accent: #3b82f6;
+    --text: #e6edf3;
+    --text-muted: #8b949e;
+    --text-dim: #6e7681;
+    --accent: #7ee787;
+    --accent-glow: rgba(126,231,135,0.12);
+    --green: #3fb950;
+    --green-bg: rgba(63,185,80,0.12);
+    --red: #f85149;
+    --red-bg: rgba(248,81,73,0.12);
+    --orange: #d29922;
+    --orange-bg: rgba(210,153,34,0.12);
+    --purple: #bc8cff;
+    --teal: #56d4dd;
+    --teal-glow: rgba(86,212,221,0.12);
+    --keyword: #ff7b72;
+    --string: #a5d6ff;
+    --param: #ffa657;
+    --cte-name: #7ee787;
+    --comment: #6e7681;
+    --radius: 8px;
+    --mono: 'IBM Plex Mono', monospace;
+    --serif: 'Source Serif 4', Georgia, serif;
+    --sans: 'DM Sans', system-ui, sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.7;
+    min-height: 100vh;
+  }
+
+  /* ── Top bar ── */
+  .topbar {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(13,17,23,0.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 24px;
+    display: flex; align-items: center; gap: 16px;
+  }
+  .topbar-logo {
+    font-family: var(--mono); font-weight: 600;
+    color: var(--accent); font-size: 14px;
+    letter-spacing: 0.5px;
+  }
+  .topbar-progress {
+    flex: 1; height: 4px;
+    background: var(--surface-raised); border-radius: 2px;
+    overflow: hidden;
+  }
+  .topbar-progress-fill {
+    height: 100%; width: 0%;
+    background: linear-gradient(90deg, var(--accent), var(--teal));
+    border-radius: 2px;
+    transition: width 0.5s ease;
+  }
+  .topbar-score {
+    font-family: var(--mono); font-size: 13px;
+    color: var(--text-muted);
+  }
+
+  /* ── Layout ── */
+  .container { max-width: 860px; margin: 0 auto; padding: 0 24px 120px; }
+
+  /* ── Hero ── */
+  .hero {
+    padding: 80px 0 60px;
+    text-align: center;
+    position: relative;
+  }
+  .hero::before {
+    content: '';
+    position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+    width: 600px; height: 300px;
+    background: radial-gradient(ellipse, rgba(126,231,135,0.07) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero h1 {
+    font-family: var(--serif);
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 700; line-height: 1.2;
+    margin-bottom: 16px;
+  }
+  .hero h1 span { color: var(--accent); }
+  .hero p {
+    color: var(--text-muted); font-size: 17px;
+    max-width: 580px; margin: 0 auto 32px;
+  }
+  .hero-cta {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--accent); color: #000;
+    font-weight: 600; font-size: 15px;
+    padding: 12px 28px; border-radius: 6px;
+    border: none; cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .hero-cta:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 20px rgba(126,231,135,0.3);
+  }
+
+  /* ── Sections ── */
+  .section { margin-top: 64px; }
+  .section-label {
+    font-family: var(--mono); font-size: 11px;
+    letter-spacing: 2px; text-transform: uppercase;
+    color: var(--accent); margin-bottom: 8px;
+  }
+  .section h2 {
+    font-family: var(--serif); font-size: 1.6rem;
+    font-weight: 700; margin-bottom: 16px;
+  }
+  .section p, .section li {
+    color: var(--text-muted); line-height: 1.8;
+  }
+  .section ul { padding-left: 20px; margin: 12px 0; }
+  .section li { margin-bottom: 6px; }
+  .section li::marker { color: var(--accent); }
+
+  /* ── Code blocks ── */
+  .code-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    margin: 20px 0;
+    overflow-x: auto;
+    font-family: var(--mono);
+    font-size: 14px;
+    line-height: 1.8;
+    position: relative;
+  }
+  .code-block .label {
+    position: absolute; top: 8px; right: 12px;
+    font-size: 10px; letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+  .kw { color: var(--keyword); font-weight: 500; }
+  .str { color: var(--string); }
+  .param { color: var(--param); font-weight: 500; }
+  .cmt { color: var(--comment); font-style: italic; }
+  .fn { color: var(--purple); }
+  .cte-hl { color: var(--cte-name); font-weight: 500; }
+
+  .callout {
+    background: var(--accent-glow);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 var(--radius) var(--radius) 0;
+    padding: 16px 20px;
+    margin: 20px 0;
+    font-size: 14px;
+    color: var(--text-muted);
+  }
+  .callout strong { color: var(--accent); }
+  .callout.warn {
+    background: var(--orange-bg);
+    border-left-color: var(--orange);
+  }
+  .callout.warn strong { color: var(--orange); }
+  .callout.info {
+    background: var(--teal-glow);
+    border-left-color: var(--teal);
+  }
+  .callout.info strong { color: var(--teal); }
+
+  /* ── Anatomy diagram ── */
+  .anatomy {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    margin: 24px 0;
+    font-family: var(--mono); font-size: 14px;
+    line-height: 2;
+  }
+  .anatomy .arrow {
+    color: var(--text-dim);
+    font-size: 12px;
+    margin-left: 4px;
+  }
+
+  /* ── Exercise cards ── */
+  .exercise {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    margin-top: 48px;
+    overflow: hidden;
+    transition: border-color 0.3s;
+  }
+  .exercise.solved { border-color: var(--green); }
+  .exercise-header {
+    display: flex; align-items: center; gap: 12px;
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface-raised);
+  }
+  .exercise-num {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--mono); font-size: 13px; font-weight: 600;
+    background: var(--accent-glow); color: var(--accent);
+    border: 1px solid rgba(126,231,135,0.25);
+    flex-shrink: 0;
+    transition: background 0.3s, color 0.3s, border-color 0.3s;
+  }
+  .exercise.solved .exercise-num {
+    background: var(--green-bg); color: var(--green);
+    border-color: rgba(63,185,80,0.3);
+  }
+  .exercise-title { font-weight: 600; font-size: 15px; }
+  .exercise-diff {
+    margin-left: auto;
+    font-family: var(--mono); font-size: 11px;
+    letter-spacing: 0.5px; padding: 3px 10px;
+    border-radius: 20px; flex-shrink: 0;
+  }
+  .diff-easy { background: var(--green-bg); color: var(--green); }
+  .diff-med { background: var(--orange-bg); color: var(--orange); }
+  .diff-hard { background: var(--red-bg); color: var(--red); }
+
+  .exercise-body { padding: 24px; }
+  .exercise-body > p {
+    color: var(--text-muted); margin-bottom: 16px; font-size: 15px;
+  }
+
+  .schema-box {
+    background: rgba(188,140,255,0.06);
+    border: 1px solid rgba(188,140,255,0.15);
+    border-radius: var(--radius);
+    padding: 14px 18px;
+    margin-bottom: 20px;
+    font-family: var(--mono); font-size: 13px;
+    line-height: 1.6;
+    color: var(--purple);
+  }
+  .schema-box .tname { color: var(--param); font-weight: 600; }
+  .schema-box .cols { color: var(--text-muted); }
+
+  /* ── Fill-in code area ── */
+  .fill-code {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    font-family: var(--mono); font-size: 14px;
+    line-height: 2.2;
+    margin-bottom: 16px;
+    white-space: pre-wrap;
+    word-break: break-all;
+    overflow-x: auto;
+  }
+  .fill-code .blank-wrap { display: inline-flex; flex-direction: column; vertical-align: bottom; }
+  .fill-code input {
+    background: var(--surface-raised);
+    border: 1px dashed var(--border-accent);
+    border-radius: 4px;
+    color: var(--param);
+    font-family: var(--mono); font-size: 14px;
+    padding: 2px 8px;
+    min-width: 120px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .fill-code input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px var(--accent-glow);
+  }
+  .fill-code input.correct {
+    border-color: var(--green);
+    color: var(--green);
+    background: var(--green-bg);
+  }
+  .fill-code input.wrong {
+    border-color: var(--red);
+    color: var(--red);
+    background: var(--red-bg);
+    animation: shake 0.3s;
+  }
+  @keyframes shake {
+    0%,100% { transform: translateX(0); }
+    25% { transform: translateX(-4px); }
+    75% { transform: translateX(4px); }
+  }
+
+  .blank-label {
+    font-size: 10px; letter-spacing: 0.5px;
+    color: var(--text-dim); text-align: center;
+    margin-top: 2px;
+  }
+
+  /* ── Buttons row ── */
+  .exercise-actions {
+    display: flex; gap: 10px; flex-wrap: wrap;
+    margin-top: 8px;
+  }
+  .btn {
+    font-family: var(--sans);
+    font-size: 13px; font-weight: 600;
+    padding: 8px 18px; border-radius: 6px;
+    border: 1px solid var(--border);
+    cursor: pointer; transition: all 0.15s;
+  }
+  .btn-check {
+    background: var(--accent); color: #000; border-color: var(--accent);
+  }
+  .btn-check:hover { box-shadow: 0 2px 12px rgba(126,231,135,0.3); }
+  .btn-hint {
+    background: transparent; color: var(--orange);
+    border-color: rgba(210,153,34,0.3);
+  }
+  .btn-hint:hover { background: var(--orange-bg); }
+  .btn-reveal {
+    background: transparent; color: var(--red);
+    border-color: rgba(248,81,73,0.3);
+  }
+  .btn-reveal:hover { background: var(--red-bg); }
+  .btn-reset {
+    background: transparent; color: var(--text-muted);
+    border-color: var(--border);
+  }
+  .btn-reset:hover { background: var(--surface-raised); }
+
+  /* ── Hint / feedback area ── */
+  .hint-area {
+    margin-top: 14px;
+    padding: 12px 16px;
+    border-radius: var(--radius);
+    font-size: 14px;
+    display: none;
+  }
+  .hint-area.visible { display: block; }
+  .hint-area.hint { background: var(--orange-bg); color: var(--orange); }
+  .hint-area.success { background: var(--green-bg); color: var(--green); }
+  .hint-area.error { background: var(--red-bg); color: var(--red); }
+
+  /* ── Explanation toggle ── */
+  .explanation {
+    margin-top: 16px;
+    border-top: 1px solid var(--border);
+    padding-top: 16px;
+    display: none;
+  }
+  .explanation.visible { display: block; }
+  .explanation p { color: var(--text-muted); font-size: 14px; margin-bottom: 8px; }
+  .explanation code {
+    background: var(--surface-raised); padding: 1px 6px;
+    border-radius: 3px; font-family: var(--mono); font-size: 13px;
+    color: var(--cte-name);
+  }
+
+  /* ── Footer ── */
+  .footer {
+    text-align: center; padding: 60px 0 40px;
+    color: var(--text-dim); font-size: 13px;
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 600px) {
+    .container { padding: 0 16px 80px; }
+    .code-block, .fill-code, .anatomy { padding: 14px 16px; font-size: 12px; }
+    .exercise-body { padding: 16px; }
+    .fill-code input { min-width: 80px; font-size: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ── Top bar ── -->
+<div class="topbar">
+  <div class="topbar-logo">SQL::CTEs</div>
+  <div class="topbar-progress"><div class="topbar-progress-fill" id="progressFill"></div></div>
+  <div class="topbar-score" id="scoreLabel">0 / 7</div>
+</div>
+
+<div class="container">
+
+<!-- ── Hero ── -->
+<div class="hero">
+  <h1>Common Table <span>Expressions</span></h1>
+  <p>Master CTEs — the named, temporary result sets that make complex SQL readable, maintainable, and powerful. From simple extractions to recursive hierarchies.</p>
+  <button class="hero-cta" onclick="document.getElementById('concept').scrollIntoView()">Start Learning &darr;</button>
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!--  CONCEPT SECTION                       -->
+<!-- ═══════════════════════════════════════ -->
+<div class="section" id="concept">
+  <div class="section-label">Concept</div>
+  <h2>What is a CTE?</h2>
+  <p>A <strong style="color:var(--text)">Common Table Expression</strong> (CTE) is a named, temporary result set defined at the top of a SQL statement using the <code style="font-family:var(--mono);color:var(--keyword)">WITH</code> keyword. It exists only for the duration of that single query — think of it as giving a name to a subquery so you can reference it cleanly, even multiple times.</p>
+
+  <div class="callout">
+    <strong>Why use CTEs?</strong> They break sprawling queries into logical, named steps. Each step is independently readable, testable, and reusable within the same statement. They're the SQL equivalent of well-named functions in application code.
+  </div>
+
+  <p style="margin-top:20px">Here's a query <em>without</em> a CTE — a nested subquery that's hard to follow:</p>
+
+  <div class="code-block">
+    <span class="label">Without CTE</span>
+<span class="kw">SELECT</span> department, avg_salary
+<span class="kw">FROM</span> (
+    <span class="kw">SELECT</span> department, <span class="fn">AVG</span>(salary) <span class="kw">AS</span> avg_salary
+    <span class="kw">FROM</span> employees
+    <span class="kw">GROUP BY</span> department
+) sub
+<span class="kw">WHERE</span> avg_salary > 75000
+<span class="kw">ORDER BY</span> avg_salary <span class="kw">DESC</span>;
+  </div>
+
+  <p>Now the same logic rewritten with a CTE:</p>
+
+  <div class="code-block">
+    <span class="label">With CTE</span>
+<span class="kw">WITH</span> <span class="cte-hl">dept_averages</span> <span class="kw">AS</span> (
+    <span class="kw">SELECT</span> department, <span class="fn">AVG</span>(salary) <span class="kw">AS</span> avg_salary
+    <span class="kw">FROM</span> employees
+    <span class="kw">GROUP BY</span> department
+)
+<span class="kw">SELECT</span> department, avg_salary
+<span class="kw">FROM</span> <span class="cte-hl">dept_averages</span>
+<span class="kw">WHERE</span> avg_salary > 75000
+<span class="kw">ORDER BY</span> avg_salary <span class="kw">DESC</span>;
+  </div>
+
+  <p style="margin-top:16px">Both produce identical results, but the CTE version names the intermediate step, making the intent clear at a glance.</p>
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!--  ANATOMY SECTION                       -->
+<!-- ═══════════════════════════════════════ -->
+<div class="section">
+  <div class="section-label">Structure</div>
+  <h2>Anatomy of a CTE</h2>
+
+  <div class="anatomy">
+<span class="kw">WITH</span> <span class="cte-hl">cte_name</span> <span class="kw">AS</span> (        <span class="arrow">← keyword + name + AS</span>
+    <span class="cmt">-- any valid SELECT</span>      <span class="arrow">← the CTE body</span>
+    <span class="kw">SELECT</span> ...
+    <span class="kw">FROM</span> ...
+)                             <span class="arrow">← closing parenthesis — no comma if only one CTE</span>
+<span class="kw">SELECT</span> ...                    <span class="arrow">← the "main" (outer) query</span>
+<span class="kw">FROM</span> <span class="cte-hl">cte_name</span>               <span class="arrow">← reference the CTE like a table</span>
+<span class="kw">WHERE</span> ...;
+  </div>
+
+  <p style="margin-top:16px">Key rules to remember:</p>
+  <ul>
+    <li><code style="font-family:var(--mono);color:var(--keyword)">WITH</code> appears <strong style="color:var(--text)">once</strong> at the very start. Multiple CTEs are separated by <strong style="color:var(--text)">commas</strong>, not additional WITH keywords.</li>
+    <li>A CTE can reference any CTE defined <em>before</em> it in the same WITH block.</li>
+    <li>The main query at the bottom can reference <em>any</em> of the defined CTEs.</li>
+    <li>CTEs are scoped to the single statement — they vanish after the semicolon.</li>
+  </ul>
+
+  <div class="callout info">
+    <strong>Multiple CTEs syntax:</strong>
+    <code style="font-family:var(--mono);color:var(--text-muted);display:block;margin-top:8px;line-height:1.8">
+      WITH <span style="color:var(--cte-name)">first_cte</span> AS (...)<span style="color:var(--keyword)">,</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:var(--cte-name)">second_cte</span> AS (...)<span style="color:var(--keyword)">,</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:var(--cte-name)">third_cte</span> AS (...)<br>
+      SELECT ... FROM <span style="color:var(--cte-name)">third_cte</span> ...;
+    </code>
+  </div>
+
+  <div class="callout warn">
+    <strong>CTE vs. Temp Table vs. Subquery:</strong> A CTE is <em>not</em> materialized (in most engines) — it's essentially an inline view. If you need to reference the same heavy computation across multiple separate statements, consider a temporary table instead. Within a single statement though, CTEs win on clarity.
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!--  WORKED EXAMPLE                        -->
+<!-- ═══════════════════════════════════════ -->
+<div class="section" id="example">
+  <div class="section-label">Worked Example</div>
+  <h2>Your First CTE</h2>
+  <p><strong style="color:var(--text)">Scenario:</strong> You have a table <code style="color:var(--param);font-family:var(--mono)">orders</code> with columns <code style="color:var(--text-muted);font-family:var(--mono)">id, customer_id, amount, order_date</code>. You want to find customers whose total spending exceeds $1,000.</p>
+
+  <div class="code-block">
+<span class="cmt">-- Step 1: Define a CTE that totals spending per customer</span>
+<span class="kw">WITH</span> <span class="cte-hl">customer_totals</span> <span class="kw">AS</span> (
+    <span class="kw">SELECT</span> customer_id,
+           <span class="fn">SUM</span>(amount) <span class="kw">AS</span> total_spent
+    <span class="kw">FROM</span> orders
+    <span class="kw">GROUP BY</span> customer_id
+)
+
+<span class="cmt">-- Step 2: Query the CTE just like a regular table</span>
+<span class="kw">SELECT</span> customer_id, total_spent
+<span class="kw">FROM</span> <span class="cte-hl">customer_totals</span>
+<span class="kw">WHERE</span> total_spent > 1000
+<span class="kw">ORDER BY</span> total_spent <span class="kw">DESC</span>;
+  </div>
+
+  <p style="margin-top:16px"><strong style="color:var(--text)">What happened:</strong></p>
+  <ul>
+    <li><code style="font-family:var(--mono);color:var(--keyword)">WITH</code> opens the CTE block. <code style="font-family:var(--mono);color:var(--cte-name)">customer_totals</code> is the name we chose.</li>
+    <li>Inside the parentheses is a complete, valid SELECT that groups orders and sums amounts.</li>
+    <li>The outer query references <code style="font-family:var(--mono);color:var(--cte-name)">customer_totals</code> in its FROM clause as if it were a real table, then filters and sorts.</li>
+    <li>After the semicolon, <code style="font-family:var(--mono);color:var(--cte-name)">customer_totals</code> ceases to exist — it's not stored anywhere.</li>
+  </ul>
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!--  EXERCISES                             -->
+<!-- ═══════════════════════════════════════ -->
+<div class="section" id="exercises">
+  <div class="section-label">Practice</div>
+  <h2>Fill in the Blanks</h2>
+  <p>Each exercise presents a scenario and a CTE query with missing pieces. Type the correct SQL in each blank, then check your work. Use <strong style="color:var(--orange)">Hint</strong> if stuck, or <strong style="color:var(--red)">Reveal</strong> to see the answer.</p>
+</div>
+
+<div id="exerciseContainer"></div>
+
+<div class="footer">
+  SQL CTEs Tutorial &middot; Name your logic, tame your queries.
+</div>
+
+</div><!-- /container -->
+
+<script>
+// ═══════════════════════════════════════════
+//  EXERCISE DATA — 7 exercises, mild → moderate
+// ═══════════════════════════════════════════
+const exercises = [
+  // ── 1. Basic single CTE ──
+  {
+    id: 1,
+    title: "Basic CTE — Filter an Aggregation",
+    difficulty: "easy",
+    schema: { table: "products", cols: "id, name, category, price, units_sold" },
+    description: "Use a CTE to calculate total revenue (<code>price × units_sold</code>) per product, then select only products with revenue above 5000.",
+    codeLines: [
+      '{0} product_revenue {1} (',
+      '    SELECT name,',
+      '           price * units_sold AS revenue',
+      '    FROM products',
+      ')',
+      'SELECT name, revenue',
+      '{2} product_revenue',
+      'WHERE revenue > 5000',
+      'ORDER BY revenue DESC;'
+    ],
+    blanks: [
+      { answer: "WITH", hint: "The keyword that starts every CTE block.", label: "keyword" },
+      { answer: "AS", hint: "Connects the CTE name to its definition.", label: "connector" },
+      { answer: "FROM", hint: "In the outer query you reference the CTE just like a table — which clause?", label: "clause" }
+    ],
+    explanation: "<code>WITH</code> opens the CTE, <code>AS</code> binds the name to the subquery, and the outer <code>FROM</code> references it. The CTE acts exactly like a temporary table scoped to this single statement."
+  },
+
+  // ── 2. CTE with JOIN in outer query ──
+  {
+    id: 2,
+    title: "CTE Joined to Another Table",
+    difficulty: "easy",
+    schema: { table: "orders(id, customer_id, amount) &amp; customers(id, name, city)", cols: "" },
+    description: "Create a CTE that computes each customer's order count, then JOIN it to <code>customers</code> to retrieve the customer name and city alongside the count.",
+    codeLines: [
+      'WITH {0} AS (',
+      '    SELECT customer_id,',
+      '           {1}(*) AS order_count',
+      '    FROM orders',
+      '    GROUP BY customer_id',
+      ')',
+      'SELECT c.name, c.city, oc.order_count',
+      'FROM customers c',
+      '{2} order_counts oc ON c.id = oc.{3}',
+      'ORDER BY oc.order_count DESC;'
+    ],
+    blanks: [
+      { answer: "order_counts", hint: "Give the CTE a descriptive name — it calculates order counts.", label: "CTE name" },
+      { answer: "COUNT", hint: "The aggregate function that counts rows.", label: "aggregate fn" },
+      { answer: "JOIN", hint: "SQL keyword to combine the customers table with the CTE.", label: "join keyword", accept: ["JOIN","INNER JOIN","join","inner join"] },
+      { answer: "customer_id", hint: "Which column in the CTE matches customers.id?", label: "join column" }
+    ],
+    explanation: "The CTE <code>order_counts</code> groups orders to get a count per customer. The outer query JOINs this CTE to <code>customers</code> on the shared <code>customer_id = id</code> relationship, retrieving human-readable names alongside the computed count."
+  },
+
+  // ── 3. Two CTEs chained ──
+  {
+    id: 3,
+    title: "Two Chained CTEs",
+    difficulty: "easy",
+    schema: { table: "sales", cols: "id, rep_id, region, amount, sale_date" },
+    description: "Define <strong>two CTEs</strong>: the first calculates total sales per region, the second finds the overall average across regions. The outer query selects regions that beat the average.",
+    codeLines: [
+      'WITH region_totals AS (',
+      '    SELECT region, SUM(amount) AS total',
+      '    FROM sales',
+      '    GROUP BY region',
+      '){0}',
+      'avg_total AS (',
+      '    SELECT {1}(total) AS avg_val',
+      '    FROM {2}',
+      ')',
+      'SELECT rt.region, rt.total',
+      'FROM region_totals rt',
+      '{3} avg_total at ON rt.total > at.avg_val',
+      'ORDER BY rt.total DESC;'
+    ],
+    blanks: [
+      { answer: ",", hint: "Multiple CTEs are separated by this character — not another WITH.", label: "separator" },
+      { answer: "AVG", hint: "Aggregate function for the average.", label: "aggregate fn" },
+      { answer: "region_totals", hint: "The second CTE reads from the first — by name.", label: "source CTE" },
+      { answer: "CROSS JOIN", hint: "The avg_total CTE has one row. Use a join that pairs every region row with that single average row, no ON needed... but we do use one here for the filter condition.", label: "join type", accept: ["CROSS JOIN","cross join","JOIN","join","INNER JOIN","inner join",","] }
+    ],
+    explanation: "A comma separates the two CTEs (not a second <code>WITH</code>). The second CTE <code>avg_total</code> queries the first CTE <code>region_totals</code> — CTEs can reference earlier siblings. <code>CROSS JOIN</code> pairs every region row with the single average row so the outer query can compare them."
+  },
+
+  // ── 4. CTE with window function ──
+  {
+    id: 4,
+    title: "CTE with a Window Function",
+    difficulty: "med",
+    schema: { table: "employees", cols: "id, name, department, salary, hire_date" },
+    description: "Use a CTE with <code>ROW_NUMBER()</code> to rank employees by salary within each department, then select only the top earner per department.",
+    codeLines: [
+      'WITH ranked AS (',
+      '    SELECT name, department, salary,',
+      '           {0}() OVER (',
+      '               PARTITION BY {1}',
+      '               ORDER BY salary {2}',
+      '           ) AS rn',
+      '    FROM employees',
+      ')',
+      'SELECT name, department, salary',
+      'FROM ranked',
+      'WHERE rn = {3};'
+    ],
+    blanks: [
+      { answer: "ROW_NUMBER", hint: "Window function that assigns 1, 2, 3… to each row in a partition.", label: "window fn" },
+      { answer: "department", hint: "We want a separate ranking per department.", label: "partition col" },
+      { answer: "DESC", hint: "To get the highest salary as rank 1, sort descending.", label: "sort direction" },
+      { answer: "1", hint: "Which rank number represents the top earner?", label: "filter value" }
+    ],
+    explanation: "<code>ROW_NUMBER()</code> inside the CTE assigns rank 1 to the highest salary per department (because of <code>DESC</code>). The outer query simply filters to <code>rn = 1</code>. This is a classic \"top-N per group\" pattern — one of the most common CTE use cases."
+  },
+
+  // ── 5. CTE for data cleanup feeding an aggregation ──
+  {
+    id: 5,
+    title: "Data Cleanup CTE",
+    difficulty: "med",
+    schema: { table: "sensor_readings", cols: "id, sensor_id, reading, recorded_at, status" },
+    description: "First CTE: filter to only <code>'valid'</code> status readings. Second CTE: compute the average reading per sensor from that clean data. Outer query: show sensors whose average exceeds 100.",
+    codeLines: [
+      'WITH clean_data AS (',
+      '    SELECT sensor_id, reading',
+      '    FROM sensor_readings',
+      '    WHERE status = {0}',
+      '),',
+      '{1} AS (',
+      '    SELECT sensor_id,',
+      '           AVG(reading) AS avg_reading',
+      '    FROM {2}',
+      '    GROUP BY sensor_id',
+      ')',
+      'SELECT sensor_id, avg_reading',
+      'FROM sensor_avgs',
+      'WHERE avg_reading > 100',
+      '{3} avg_reading DESC;'
+    ],
+    blanks: [
+      { answer: "'valid'", hint: "A string literal in SQL is wrapped in single quotes.", label: "filter value", accept: ["'valid'","'Valid'","'VALID'"] },
+      { answer: "sensor_avgs", hint: "Give this CTE a name that reflects what it computes.", label: "CTE name", accept: ["sensor_avgs","sensor_averages","avg_readings","sensor_avg","averages"] },
+      { answer: "clean_data", hint: "This CTE reads from the first one — what's its name?", label: "source CTE" },
+      { answer: "ORDER BY", hint: "SQL clause to sort the final results.", label: "sort clause" }
+    ],
+    explanation: "This pipeline pattern is a CTE superpower: <code>clean_data</code> filters junk, <code>sensor_avgs</code> aggregates the cleaned rows, and the outer query applies the final business rule. Each step has a clear name and purpose."
+  },
+
+  // ── 6. CTE used in INSERT…SELECT ──
+  {
+    id: 6,
+    title: "CTE Feeding an INSERT",
+    difficulty: "med",
+    schema: { table: "monthly_summaries(month, department, total_sales) &amp; sales(id, department, amount, sale_date)", cols: "" },
+    description: "Build a CTE that aggregates sales by month and department, then <code>INSERT</code> those results into the <code>monthly_summaries</code> table. CTEs aren't limited to SELECT — they work with INSERT, UPDATE, and DELETE.",
+    codeLines: [
+      'WITH monthly_agg {0} (',
+      "    SELECT DATE_TRUNC('month', sale_date) AS month,",
+      '           department,',
+      '           {1}(amount) AS total_sales',
+      '    FROM sales',
+      '    GROUP BY DATE_TRUNC(\'month\', sale_date), department',
+      ')',
+      '{2} monthly_summaries (month, department, total_sales)',
+      'SELECT {3}',
+      'FROM monthly_agg;'
+    ],
+    blanks: [
+      { answer: "AS", hint: "Keyword connecting the CTE name to its definition.", label: "connector" },
+      { answer: "SUM", hint: "Aggregate function to total the sales amounts.", label: "aggregate fn" },
+      { answer: "INSERT INTO", hint: "The DML statement that adds rows to a table.", label: "DML keyword" },
+      { answer: "month, department, total_sales", hint: "Select the three columns from the CTE that match the target table's columns.", label: "select cols", accept: ["month, department, total_sales","month,department,total_sales","*"] }
+    ],
+    explanation: "CTEs are not limited to feeding a SELECT. Here the outer statement is <code>INSERT INTO ... SELECT</code>, which reads from the CTE. This is great for ETL-style operations — transform data in a CTE, then write the results to a summary table."
+  },
+
+  // ── 7. Recursive CTE ──
+  {
+    id: 7,
+    title: "Recursive CTE — Org Chart Hierarchy",
+    difficulty: "hard",
+    schema: { table: "employees", cols: "id, name, manager_id (NULL for CEO)" },
+    description: "Use a <strong>recursive CTE</strong> to walk an org chart. Start from the CEO (<code>manager_id IS NULL</code>) and traverse down, tracking the depth level. Recursive CTEs have two parts: a <em>base case</em> (anchor) and a <em>recursive step</em> joined with <code>UNION ALL</code>.",
+    codeLines: [
+      'WITH {0} org_tree AS (',
+      '    -- Anchor: the root (CEO)',
+      '    SELECT id, name, manager_id, 0 AS depth',
+      '    FROM employees',
+      '    WHERE manager_id IS NULL',
+      '',
+      '    {1}',
+      '',
+      '    -- Recursive step: join employees to the CTE',
+      '    SELECT e.id, e.name, e.manager_id,',
+      '           ot.depth + 1',
+      '    FROM employees e',
+      '    {2} org_tree ot ON e.manager_id = ot.{3}',
+      ')',
+      'SELECT name, depth',
+      'FROM org_tree',
+      'ORDER BY depth, name;'
+    ],
+    blanks: [
+      { answer: "RECURSIVE", hint: "Special keyword added after WITH to enable self-referencing.", label: "recursive kw" },
+      { answer: "UNION ALL", hint: "Combines the anchor result with each recursive iteration.", label: "combiner" },
+      { answer: "JOIN", hint: "Join employees to the CTE itself to walk the tree.", label: "join keyword", accept: ["JOIN","INNER JOIN","join","inner join"] },
+      { answer: "id", hint: "Employees' manager_id matches their manager's primary key.", label: "join col" }
+    ],
+    explanation: "A recursive CTE has <code>WITH RECURSIVE</code>, an <strong>anchor</strong> (the starting rows — here the CEO), <code>UNION ALL</code>, and a <strong>recursive step</strong> that joins the base table back to the CTE itself. Each iteration adds one level of depth until no new rows are produced. This pattern handles trees, graphs, and hierarchies elegantly."
+  }
+];
+
+// ═══════════════════════════════════════════
+//  RENDER ENGINE
+// ═══════════════════════════════════════════
+let solved = new Set();
+
+function updateProgress() {
+  const pct = (solved.size / exercises.length) * 100;
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('scoreLabel').textContent = `${solved.size} / ${exercises.length}`;
+}
+
+function renderExercises() {
+  const container = document.getElementById('exerciseContainer');
+  exercises.forEach(ex => {
+    const div = document.createElement('div');
+    div.className = 'exercise';
+    div.id = `ex-${ex.id}`;
+
+    const diffClass = ex.difficulty === 'easy' ? 'diff-easy' : ex.difficulty === 'med' ? 'diff-med' : 'diff-hard';
+    const diffLabel = ex.difficulty === 'easy' ? 'Easy' : ex.difficulty === 'med' ? 'Medium' : 'Hard';
+
+    let schemaHTML = '';
+    if (ex.schema.cols) {
+      schemaHTML = `<div class="schema-box"><span class="tname">${ex.schema.table}</span> <span class="cols">(${ex.schema.cols})</span></div>`;
+    } else {
+      schemaHTML = `<div class="schema-box"><span class="tname">${ex.schema.table}</span></div>`;
+    }
+
+    // Build code with blanks
+    const joined = ex.codeLines.join('\n');
+    let codeHTML = joined.replace(/\{(\d+)\}/g, (_, idx) => {
+      const b = ex.blanks[parseInt(idx)];
+      const size = Math.max(b.answer.length + 4, 14);
+      return `<span class="blank-wrap"><input type="text" data-ex="${ex.id}" data-blank="${idx}" size="${size}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="???" /><span class="blank-label">${b.label}</span></span>`;
+    });
+
+    // Syntax highlight static parts
+    codeHTML = codeHTML
+      .replace(/\b(WITH|RECURSIVE|SELECT|FROM|WHERE|AND|OR|INSERT INTO|VALUES|UPDATE|SET|DELETE|JOIN|INNER JOIN|LEFT JOIN|CROSS JOIN|ON|GROUP BY|HAVING|ORDER BY|DESC|ASC|IN|LIKE|AS|INTO|UNION ALL|UNION|PARTITION BY|OVER|LIMIT|IS NULL|DATE_TRUNC)\b/g, '<span class="kw">$1</span>')
+      .replace(/\b(SUM|AVG|COUNT|MAX|MIN|ROW_NUMBER|RANK|DENSE_RANK)\b/g, '<span class="fn">$1</span>')
+      .replace(/(--[^\n]*)/g, '<span class="cmt">$1</span>');
+
+    div.innerHTML = `
+      <div class="exercise-header">
+        <div class="exercise-num">${ex.id}</div>
+        <div class="exercise-title">${ex.title}</div>
+        <div class="exercise-diff ${diffClass}">${diffLabel}</div>
+      </div>
+      <div class="exercise-body">
+        <p>${ex.description}</p>
+        ${schemaHTML}
+        <div class="fill-code">${codeHTML}</div>
+        <div class="exercise-actions">
+          <button class="btn btn-check" onclick="checkExercise(${ex.id})">Check Answer</button>
+          <button class="btn btn-hint" onclick="showHint(${ex.id})">Hint</button>
+          <button class="btn btn-reveal" onclick="revealAnswer(${ex.id})">Reveal</button>
+          <button class="btn btn-reset" onclick="resetExercise(${ex.id})">Reset</button>
+        </div>
+        <div class="hint-area" id="hint-${ex.id}"></div>
+        <div class="explanation" id="explain-${ex.id}"><p>${ex.explanation}</p></div>
+      </div>
+    `;
+    container.appendChild(div);
+  });
+}
+
+function getExercise(id) { return exercises.find(e => e.id === id); }
+
+function getInputs(id) {
+  return Array.from(document.querySelectorAll(`input[data-ex="${id}"]`));
+}
+
+function normalize(s) {
+  return s.trim().replace(/\s+/g, ' ').replace(/[""]/g, '"').replace(/['']/g, "'").toUpperCase();
+}
+
+function checkBlank(ex, idx, value) {
+  const b = ex.blanks[idx];
+  const nv = normalize(value);
+  const na = normalize(b.answer);
+  if (nv === na) return true;
+  if (b.accept) {
+    return b.accept.some(a => normalize(a) === nv);
+  }
+  // Case-insensitive fallback for SQL keywords
+  return nv === na;
+}
+
+function checkExercise(id) {
+  const ex = getExercise(id);
+  const inputs = getInputs(id);
+  const hintArea = document.getElementById(`hint-${id}`);
+  let allCorrect = true;
+
+  inputs.forEach((inp, idx) => {
+    inp.classList.remove('correct', 'wrong');
+    if (checkBlank(ex, idx, inp.value)) {
+      inp.classList.add('correct');
+    } else {
+      inp.classList.add('wrong');
+      allCorrect = false;
+    }
+  });
+
+  if (allCorrect) {
+    hintArea.className = 'hint-area visible success';
+    hintArea.textContent = '✓ All correct — nice work!';
+    solved.add(id);
+    document.getElementById(`ex-${id}`).classList.add('solved');
+    document.getElementById(`explain-${id}`).classList.add('visible');
+    updateProgress();
+  } else {
+    const wrongCount = inputs.filter((inp, i) => !checkBlank(ex, i, inp.value)).length;
+    hintArea.className = 'hint-area visible error';
+    hintArea.textContent = `✗ ${wrongCount} blank${wrongCount > 1 ? 's' : ''} still incorrect. Try again or use Hint.`;
+  }
+}
+
+function showHint(id) {
+  const ex = getExercise(id);
+  const inputs = getInputs(id);
+  const hintArea = document.getElementById(`hint-${id}`);
+
+  let targetIdx = -1;
+  for (let i = 0; i < inputs.length; i++) {
+    if (!checkBlank(ex, i, inputs[i].value)) { targetIdx = i; break; }
+  }
+  if (targetIdx < 0) targetIdx = 0;
+
+  const b = ex.blanks[targetIdx];
+  hintArea.className = 'hint-area visible hint';
+  hintArea.innerHTML = `<strong>Hint for "${b.label}":</strong> ${b.hint}`;
+}
+
+function revealAnswer(id) {
+  const ex = getExercise(id);
+  const inputs = getInputs(id);
+  inputs.forEach((inp, idx) => {
+    inp.value = ex.blanks[idx].answer;
+    inp.classList.remove('wrong');
+    inp.classList.add('correct');
+  });
+  const hintArea = document.getElementById(`hint-${id}`);
+  hintArea.className = 'hint-area visible success';
+  hintArea.textContent = 'Answer revealed. Study the pattern, then try the next one!';
+  solved.add(id);
+  document.getElementById(`ex-${id}`).classList.add('solved');
+  document.getElementById(`explain-${id}`).classList.add('visible');
+  updateProgress();
+}
+
+function resetExercise(id) {
+  const inputs = getInputs(id);
+  inputs.forEach(inp => {
+    inp.value = '';
+    inp.classList.remove('correct', 'wrong');
+  });
+  const hintArea = document.getElementById(`hint-${id}`);
+  hintArea.className = 'hint-area';
+  hintArea.textContent = '';
+  document.getElementById(`explain-${id}`).classList.remove('visible');
+}
+
+// ── Initialize ──
+renderExercises();
+updateProgress();
+</script>
+
+</body>
+</html>

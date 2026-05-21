@@ -1,0 +1,73 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>FHIR Transformation Demo Site</title><style>
+:root{--bg:#f6f8fb;--card:#ffffff;--text:#0f172a;--muted:#475569;--line:#dbe2ea;--soft:#f8fafc;--dark:#111827;--blue:#0f172a;--accent:#e2e8f0;--shadow:0 10px 30px rgba(15,23,42,.08)}
+*{box-sizing:border-box} html{scroll-behavior:smooth} body{margin:0;font-family:Arial,Helvetica,sans-serif;background:linear-gradient(180deg,#f8fafc,#eef2f7);color:var(--text);line-height:1.55}
+a{color:#0f172a} .wrap{max-width:1200px;margin:0 auto;padding:24px} .card{background:var(--card);border:1px solid var(--line);border-radius:28px;box-shadow:var(--shadow);padding:24px}
+.top-space{margin-top:24px}.hero{display:flex;gap:18px;justify-content:space-between;align-items:flex-end;flex-wrap:wrap}.eyebrow{font-size:12px;font-weight:700;letter-spacing:.08em;color:#64748b;text-transform:uppercase;margin-bottom:8px}
+h1,h2,h3{margin:0} h1{font-size:38px} h2{font-size:28px} h3{font-size:22px} p{margin:10px 0 0;color:var(--muted)}
+.grid-2,.grid-3{display:grid;gap:16px}.grid-2{grid-template-columns:repeat(2,1fr)}.grid-3{grid-template-columns:repeat(3,1fr)} @media(max-width:960px){.grid-2,.grid-3{grid-template-columns:1fr}}
+.tile,.mini-card{background:#f8fafc;border:1px solid var(--line);border-radius:20px;padding:18px}.tile h3,.mini-card h3{font-size:20px;margin-bottom:6px}.tile p,.mini-card p{font-size:14px;color:#475569;margin:8px 0 0}
+.btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}.button-link{border:1px solid #cbd5e1;background:#fff;color:#334155;padding:10px 16px;border-radius:16px;font-size:14px;cursor:pointer;text-decoration:none;display:inline-block}.button-link.primary{background:var(--dark);color:#fff;border-color:var(--dark)}
+.list{margin:10px 0 0;padding-left:18px;color:#334155}.list li{margin:6px 0}.muted{color:#64748b}.nav{display:flex;gap:10px;flex-wrap:wrap}.notice{background:#fff7ed;border:1px solid #fed7aa;border-radius:18px;padding:14px 16px;color:#334155}.footer{font-size:13px;color:#64748b;margin-top:16px}
+.article{max-width:900px;margin:0 auto}.article .content{background:#fff;border:1px solid var(--line);border-radius:28px;box-shadow:var(--shadow);padding:28px}.article h1{font-size:34px}.article h2{font-size:24px;margin-top:26px}.article h3{font-size:20px;margin-top:20px}.article p{font-size:16px;color:#334155}.article ul,.article ol{color:#334155;padding-left:22px}.article li{margin:8px 0}.article code{background:#eef2f7;padding:2px 6px;border-radius:8px;font-family:Consolas,monospace;font-size:.95em}.article pre{background:#020617;color:#e2e8f0;padding:16px;border-radius:18px;overflow:auto;border:1px solid #0f172a;white-space:pre-wrap;word-break:break-word}.article pre code{background:transparent;padding:0;color:inherit}
+.kicker{display:inline-block;padding:8px 12px;border-radius:999px;background:#f1f5f9;border:1px solid #e2e8f0;color:#334155;font-size:13px;font-weight:700}
+</style></head><body><div class="wrap">
+<div class="hero">
+  <div>
+    <div class="eyebrow">Starter home page</div>
+    <h1>FHIR transformation demo site</h1>
+    <p>This package behaves like a small local website. Start here, launch the interactive demo, and open the guide pages in your browser.</p>
+  </div>
+  <div class="btns">
+    <a class="button-link primary" href="demo.html">Open interactive demo</a>
+    <a class="button-link" href="docs/index.html">Open guide index</a>
+  </div>
+</div>
+
+<div class="grid-2 top-space">
+  <div class="card">
+    <div class="eyebrow">What is inside</div>
+    <h3>Included assets</h3>
+    <ul class="list">
+      <li><code>index.html</code> — polished starter home page with links</li>
+      <li><code>demo.html</code> — full interactive FHIR transformation viewer</li>
+      <li><code>docs/index.html</code> — browser-friendly guide hub</li>
+      <li><code>docs/*.html</code> — HTML versions of every guide</li>
+      <li><code>docs/*.md</code> — original markdown source files</li>
+      <li><code>run_local_server.bat</code> and <code>run_local_server.sh</code> — helper launchers</li>
+    </ul>
+  </div>
+  <div class="card">
+    <div class="eyebrow">Best way to use it</div>
+    <h3>Two simple options</h3>
+    <ol class="list">
+      <li><strong>Fastest:</strong> extract the ZIP, open <code>index.html</code>, and bookmark it.</li>
+      <li><strong>Cleaner bookmark:</strong> run the included local server script, open <code>http://localhost:8000</code>, and bookmark that URL.</li>
+    </ol>
+    <div class="notice top-space">For long-term use, keep the extracted folder in a stable place such as <code>Documents\FHIR-Demo</code>. Moving the folder later can break a <code>file:///</code> bookmark.</div>
+  </div>
+</div>
+
+<div class="card top-space">
+  <div class="eyebrow">Launch points</div>
+  <h3>Open what you need</h3>
+  <div class="grid-3 top-space">
+    <div class="tile"><h3>Interactive demo</h3><p>Use the step-through app with happy-path mode, error branches, terminology simulation, and glossary jump links.</p><div class="btns"><a class="button-link primary" href="demo.html">Launch demo</a></div></div>
+    <div class="tile"><h3>Guide center</h3><p>Browse the browser-friendly HTML guide pages for each data flow and for environment and launch instructions.</p><div class="btns"><a class="button-link primary" href="docs/index.html">Open guide center</a></div></div>
+    <div class="tile"><h3>README</h3><p>Read the package overview and usage notes in markdown form.</p><div class="btns"><a class="button-link" href="README.md">Open README.md</a></div></div>
+  </div>
+</div>
+
+<div class="card top-space">
+  <div class="eyebrow">Demo flows</div>
+  <h3>What the interactive demo covers</h3>
+  <div class="grid-2 top-space"><div class="tile"><h3>Patient + Encounter + Condition</h3><p>See how registration and diagnosis data are separated, normalized, coded, linked into FHIR resources, and flattened for analytics.</p></div><div class="tile"><h3>MedicationRequest flow</h3><p>Follow a prescribing event through parsing, RxNorm-style mapping, requester linkage, validation, and medication reporting output.</p></div><div class="tile"><h3>C-CDA or CSV into FHIR</h3><p>Watch semi-structured XML-style or flat CSV input become extracted facts, reconciled coding, native FHIR, and warehouse rows.</p></div><div class="tile"><h3>FHIR API response into SQL warehouse row</h3><p>Start with a FHIR API Bundle, extract nested fields, resolve references, and load a warehouse fact row.</p></div></div>
+</div>
+
+<div class="card top-space">
+  <div class="eyebrow">Bookmarking guidance</div>
+  <h3>Best browser method</h3>
+  <p><strong>Best overall:</strong> double-click <code>run_local_server.bat</code> on Windows or run <code>bash run_local_server.sh</code> on macOS/Linux, then visit <code>http://localhost:8000</code> and bookmark that page. This feels most like a small local site.</p>
+  <p><strong>Simplest:</strong> open <code>index.html</code> directly and bookmark it. This needs no terminal, but the bookmark depends on the folder staying in the same location.</p>
+  <p class="footer">Tip: once the home page is bookmarked, you can use its links to reach the demo and docs without bookmarking each file separately.</p>
+</div>
+</div></body></html>

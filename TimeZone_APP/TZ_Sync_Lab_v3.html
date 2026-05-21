@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TZ Sync Lab v3 — Timezone Correction Tutorial</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/*──────────────────────────────────────────────────────────────────
+  DESIGN: "Lab Notebook" — warm dark, teal + warm accents,
+  maximum clarity, generous spacing, step-driven flow
+──────────────────────────────────────────────────────────────────*/
+:root {
+  --bg:#0b0d11; --bg2:#0e1117; --surf:#131720; --surf2:#181d28; --surf3:#1e2433;
+  --ink:#c4cad6; --ink2:#8892a4; --ink3:#5c6578; --white:#ebeef5;
+  --bdr:#1f2736; --bdr2:#2a3347;
+  --teal:#2dd4bf; --teal-dim:#134040; --teal-glow:rgba(45,212,191,.12);
+  --amber:#f59e0b; --amber-dim:#3b2a08;
+  --green:#4ade80; --green-dim:#0f2e1a;
+  --red:#f87171; --red-dim:#2d1215;
+  --purple:#a78bfa; --blue:#60a5fa; --orange:#fb923c; --cyan:#67e8f9;
+  --fm:'IBM Plex Mono','Fira Code',monospace;
+  --fb:'Outfit',system-ui,sans-serif;
+  --radius:10px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{height:100%;scroll-behavior:smooth}
+body{font-family:var(--fb);background:var(--bg);color:var(--ink);height:100%;overflow:hidden;font-size:14px;line-height:1.55}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:var(--surf)}
+::-webkit-scrollbar-thumb{background:var(--bdr2);border-radius:3px}
+@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes pulse{0%,100%{opacity:.3}50%{opacity:1}}
+@keyframes glow{0%,100%{box-shadow:0 0 8px var(--teal-glow)}50%{box-shadow:0 0 18px var(--teal-glow)}}
+
+/*── Layout ──────────────────────────────────────────────────────*/
+#app{display:flex;flex-direction:column;height:100vh}
+.topbar{display:flex;align-items:center;padding:12px 22px;border-bottom:1px solid var(--bdr);background:var(--surf);gap:16px;flex-shrink:0}
+.topbar h1{font-size:17px;font-weight:800;letter-spacing:-.3px;white-space:nowrap}
+.topbar h1 .v{font-size:10px;font-family:var(--fm);color:var(--teal);background:var(--teal-dim);padding:2px 8px;border-radius:4px;margin-left:8px;font-weight:600;vertical-align:2px}
+
+/*── Progress Bar ────────────────────────────────────────────────*/
+.progress-wrap{flex:1;display:flex;align-items:center;gap:3px;max-width:520px}
+.prog-dot{width:100%;height:5px;border-radius:3px;background:var(--bdr);transition:background .3s,box-shadow .3s}
+.prog-dot.done{background:var(--teal)}
+.prog-dot.active{background:var(--teal);animation:glow 2s infinite}
+.prog-label{font-size:11px;font-family:var(--fm);color:var(--ink2);white-space:nowrap;margin-left:8px}
+
+.workspace{display:flex;flex:1;min-height:0}
+
+/*── Sidebar ─────────────────────────────────────────────────────*/
+.sidebar{width:300px;min-width:300px;border-right:1px solid var(--bdr);background:var(--surf);overflow-y:auto;display:flex;flex-direction:column}
+
+/* Collapsible params */
+.params-toggle{padding:10px 16px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.8px;color:var(--ink3);cursor:pointer;border-bottom:1px solid var(--bdr);display:flex;justify-content:space-between;align-items:center;background:var(--surf);user-select:none}
+.params-toggle:hover{color:var(--ink2)}
+.params-toggle .arrow{transition:transform .2s;font-size:9px}
+.params-toggle .arrow.open{transform:rotate(90deg)}
+.params-body{padding:12px 16px;border-bottom:1px solid var(--bdr);background:var(--bg2)}
+.params-body.collapsed{display:none}
+.param{margin-bottom:10px}
+.param-lbl{font-size:11px;display:flex;justify-content:space-between;margin-bottom:2px;color:var(--ink2)}
+.param-lbl b{font-family:var(--fm);color:var(--teal)}
+.param-lbl b.warn{color:var(--amber)}
+input[type=range]{width:100%;height:4px;-webkit-appearance:none;appearance:none;background:var(--bdr);border-radius:2px;cursor:pointer;outline:none}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--teal);border:2px solid var(--bg);cursor:grab}
+input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:var(--teal);border:2px solid var(--bg);cursor:grab}
+.btn{border:none;border-radius:var(--radius);padding:8px 14px;font-size:12px;font-family:var(--fb);cursor:pointer;transition:all .12s;font-weight:600}
+.btn:hover{filter:brightness(1.1)}
+.btn-teal{background:var(--teal);color:#000;width:100%}
+.btn-run{background:var(--green);color:#000;padding:6px 16px;font-size:12px}
+.btn-ghost{background:var(--surf2);color:var(--ink);border:1px solid var(--bdr);font-size:11px;width:100%}
+
+/* Steps */
+.steps-title{padding:12px 16px 8px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:var(--teal);border-bottom:none}
+.step-list{padding:4px 10px 12px;display:flex;flex-direction:column;gap:4px}
+.step-btn{display:flex;align-items:flex-start;gap:10px;padding:9px 11px;border-radius:8px;border:1px solid transparent;background:transparent;cursor:pointer;text-align:left;font-family:var(--fb);transition:all .12s;color:var(--ink)}
+.step-btn:hover{background:var(--surf2);border-color:var(--bdr)}
+.step-btn.active{background:var(--teal-dim);border-color:var(--teal);color:var(--white)}
+.step-btn.visited{border-color:var(--bdr)}
+.step-btn.visited .step-num{background:var(--teal);color:#000}
+.step-num{width:24px;height:24px;border-radius:6px;background:var(--bdr);color:var(--ink3);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;font-family:var(--fm);flex-shrink:0;transition:all .15s}
+.step-btn.active .step-num{background:var(--teal);color:#000;box-shadow:0 0 10px var(--teal-glow)}
+.step-text{min-width:0}
+.step-title{font-size:12.5px;font-weight:700;line-height:1.3;margin-bottom:1px}
+.step-sub{font-size:10.5px;color:var(--ink3);line-height:1.3}
+.step-btn.active .step-sub{color:var(--ink2)}
+
+.sb-footer{margin-top:auto;padding:10px 14px;border-top:1px solid var(--bdr);display:flex;flex-direction:column;gap:5px}
+
+/*── Main Panel ──────────────────────────────────────────────────*/
+.main{flex:1;display:flex;flex-direction:column;min-width:0}
+
+/* Hint Banner */
+.hint-bar{padding:10px 20px;border-bottom:1px solid var(--bdr);background:var(--teal-dim);display:flex;align-items:flex-start;gap:10px;flex-shrink:0;animation:fadeUp .25s ease}
+.hint-icon{font-size:16px;flex-shrink:0;margin-top:1px}
+.hint-text{font-size:12.5px;color:var(--ink);line-height:1.5}
+.hint-text b{color:var(--white)}
+
+/* Help Panel (expandable) */
+.help-toggle{display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--teal);cursor:pointer;padding:3px 0;margin-top:4px;font-weight:600;border:none;background:none;font-family:var(--fb)}
+.help-toggle:hover{color:var(--white)}
+.help-body{font-size:12px;color:var(--ink2);line-height:1.6;padding:8px 0 2px;max-width:700px;border-left:2px solid var(--teal-dim);padding-left:12px;margin-top:6px;animation:fadeUp .2s ease}
+.help-body b{color:var(--ink)}
+
+/* Editor */
+.editor-area{padding:10px 20px 8px;border-bottom:1px solid var(--bdr);background:var(--surf);flex-shrink:0}
+.editor-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.editor-label{font-size:12px;font-weight:700;color:var(--ink2)}
+.editor-label span{color:var(--purple)}
+.editor-bar .rt{display:flex;gap:8px;align-items:center}
+.exec-time{font-size:11px;font-family:var(--fm);color:var(--green)}
+#sql-editor{width:100%;min-height:80px;max-height:220px;resize:vertical;font-family:var(--fm);font-size:12px;line-height:1.6;background:var(--bg);color:var(--cyan);border:1px solid var(--bdr);border-radius:8px;padding:10px 12px;tab-size:2;outline:none}
+#sql-editor:focus{border-color:var(--teal);box-shadow:0 0 0 2px var(--teal-glow)}
+.editor-hint{font-size:10px;opacity:.25;margin-top:3px}
+.editor-hint code{color:var(--purple);font-family:var(--fm)}
+
+.error-box{margin:8px 20px;padding:9px 14px;border-radius:8px;background:var(--red-dim);border:1px solid var(--red);color:var(--red);font-size:12px;font-family:var(--fm);animation:fadeUp .2s ease}
+
+/* Results */
+.results-area{flex:1;overflow:auto;padding:0 20px 20px}
+.results-meta{font-size:11px;opacity:.3;padding:8px 0 6px;font-family:var(--fm)}
+.results-wrap{overflow-x:auto;border-radius:8px;border:1px solid var(--bdr)}
+table{width:100%;border-collapse:collapse;font-size:12px;font-family:var(--fm)}
+thead th{padding:8px 11px;text-align:left;font-weight:600;background:var(--surf3);color:var(--teal);font-size:10px;text-transform:uppercase;letter-spacing:1px;white-space:nowrap;border-bottom:2px solid var(--teal-dim);position:sticky;top:0;z-index:1}
+tbody td{padding:5px 11px;white-space:nowrap;border-bottom:1px solid var(--bdr);font-size:11.5px}
+tbody tr:nth-child(even){background:var(--surf)}
+tbody tr:nth-child(odd){background:var(--bg)}
+tbody tr:hover{background:var(--surf2)!important}
+.c-null{opacity:.3;font-style:italic}.c-user{color:var(--purple)}.c-raw{color:var(--orange)}
+.c-tz{color:var(--amber);font-weight:600}.c-utc{color:var(--green)}.c-err{color:var(--red)}
+.c-region{color:var(--blue)}.c-date{color:var(--white)}.c-time{color:var(--cyan)}
+.c-zone{color:var(--amber);font-weight:600}.c-ok{color:var(--green);font-weight:700}
+.c-warn{color:var(--amber);font-weight:700}.c-method{color:var(--purple);font-weight:600}
+
+.placeholder{display:flex;align-items:center;justify-content:center;height:100%;min-height:180px;opacity:.2;text-align:center}
+
+/* Loading */
+#loading{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;flex-direction:column;z-index:999;transition:opacity .4s}
+#loading.hidden{opacity:0;pointer-events:none}
+#loading h2{font-size:22px;font-weight:800;margin-bottom:8px}
+#loading p{font-size:13px;color:var(--teal);animation:pulse 1.4s infinite}
+</style>
+</head>
+<body>
+<div id="loading"><h2>⏱ Loading SQLite…</h2><p>Setting up in-browser database</p></div>
+
+<div id="app">
+  <!-- Top Bar with Progress -->
+  <div class="topbar">
+    <h1>⏱ TZ Sync Lab<span class="v">v3</span></h1>
+    <div class="progress-wrap" id="progress"></div>
+    <span class="prog-label" id="prog-label">Step 1 of 8</span>
+  </div>
+
+  <div class="workspace">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <!-- Collapsible Parameters -->
+      <div class="params-toggle" id="params-toggle" onclick="toggleParams()">
+        ⚙ Data Settings <span class="arrow" id="params-arrow">▶</span>
+      </div>
+      <div class="params-body collapsed" id="params-body">
+        <div class="param"><div class="param-lbl">Users: <b id="lbl-n">40</b></div><input type="range" id="sl-n" min="10" max="120" step="5" value="40"></div>
+        <div class="param"><div class="param-lbl">Seed: <b id="lbl-seed">42</b></div><input type="range" id="sl-seed" min="1" max="999" value="42"></div>
+        <div class="param"><div class="param-lbl">Bug Rate: <b class="warn" id="lbl-rate">100%</b></div><input type="range" id="sl-rate" min="0" max="100" value="100"></div>
+        <button class="btn btn-teal" onclick="regenerate()" style="margin-top:4px">Regenerate Data</button>
+        <div style="font-size:10px;color:var(--ink3);margin-top:8px;line-height:1.4">
+          <b style="color:var(--ink2)">Bug Rate</b> controls what % of timestamps get stored in mixed formats. 100% = maximum chaos.
+        </div>
+      </div>
+
+      <!-- Step List -->
+      <div class="steps-title">Tutorial Steps</div>
+      <div class="step-list" id="step-list"></div>
+
+      <div class="sb-footer">
+        <button class="btn btn-ghost" onclick="exportDB()">↓ Export .sqlite</button>
+        <button class="btn btn-ghost" id="btn-csv" style="display:none" onclick="downloadCsv()">↓ Download CSV</button>
+      </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="main">
+      <div id="hint-bar" class="hint-bar" style="display:none"></div>
+      <div class="editor-area">
+        <div class="editor-bar">
+          <div class="editor-label">SQL — <span id="q-name">…</span></div>
+          <div class="rt"><span class="exec-time" id="exec-time"></span><button class="btn btn-run" onclick="runQuery()">▶ Run</button></div>
+        </div>
+        <textarea id="sql-editor" spellcheck="false"></textarea>
+        <div class="editor-hint">Ctrl+Enter to run · edit freely, re-run anytime · Table: <code>events</code></div>
+      </div>
+      <div id="error-box" class="error-box" style="display:none"></div>
+      <div class="results-area" id="results-area">
+        <div class="placeholder"><div><div style="font-size:40px;margin-bottom:8px">⏱</div><div>Click <b>Step 1</b> in the sidebar to begin</div></div></div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.3/sql-wasm.min.js"></script>
+<script>
+/* ================================================================
+   TZ SYNC LAB v3 — Simplified 8-step linear tutorial
+   Single scenario, auto-run, built-in hints & help
+   ================================================================ */
+let db=null, currentResults=null, activeStep=0, visitedSteps=new Set();
+const $=id=>document.getElementById(id);
+function esc(s){return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+function pad(n,w){return String(n).padStart(w||2,'0');}
+function fmtD(d){return d.toISOString().replace("T"," ").slice(0,19);}
+
+/* ── PRNG ─────────────────────────────────────────────────────── */
+function makeRng(s){let a=[s^0xdead,s^0xbeef,s^0xcafe,s^0xbabe];const rot=(x,k)=>((x<<k)|(x>>>(32-k)))>>>0;return()=>{const r=(rot((a[1]*5)>>>0,7)*9)>>>0;const t=(a[1]<<9)>>>0;a[2]^=a[0];a[3]^=a[1];a[1]^=a[2];a[0]^=a[3];a[2]^=t;a[3]=rot(a[3],11);return(r>>>0)/4294967296;};}
+
+/* ── Data Gen: single ecommerce scenario, 4 source systems ──── */
+const REGIONS={"US-East":{tz:"EST",tzdst:"EDT",off:-5,offdst:-4,iso:"-05:00",isodst:"-04:00"},"US-West":{tz:"PST",tzdst:"PDT",off:-8,offdst:-7,iso:"-08:00",isodst:"-07:00"},"US-Central":{tz:"CST",tzdst:"CDT",off:-6,offdst:-5,iso:"-06:00",isodst:"-05:00"},"EU-London":{tz:"GMT",tzdst:"BST",off:0,offdst:1,iso:"+00:00",isodst:"+01:00"}};
+const EVENTS=["page_view","search","add_to_cart","checkout","purchase"];
+const SOURCES=["web_app","mobile_ios","mobile_android","partner_api"];
+function isDST(d){const m=d.getUTCMonth(),dy=d.getUTCDate();return(m>2&&m<10)||(m===2&&dy>=9)||(m===10&&dy<2);}
+
+function genData(nU,seed,br){
+const rng=makeRng(seed),pick=a=>a[Math.floor(rng()*a.length)],ri=(l,h)=>l+Math.floor(rng()*(h-l));
+const base=new Date("2025-03-08T10:00:00Z").getTime(),rows=[];
+for(let u=1;u<=nU;u++){const rk=pick(Object.keys(REGIONS)),reg=REGIONS[rk],ss=base+ri(0,72)*36e5+ri(0,60)*6e4;let cum=0;
+for(const ev of EVENTS){const src=pick(SOURCES);cum+=ri(2,40)*6e4;const tMs=ss+cum,tU=new Date(tMs),dst=isDST(tU),lo=dst?reg.offdst:reg.off,lMs=tMs+lo*36e5,lD=new Date(lMs),tzA=dst?reg.tzdst:reg.tz,isoO=dst?reg.isodst:reg.iso;
+let tr,tl,tf;
+if(rng()<br){switch(src){
+case"web_app":tr=tU.toISOString().slice(0,19)+"Z";tl="Z";tf="ISO-Z";break;
+case"mobile_ios":tr=fmtD(lD)+" "+tzA;tl=tzA;tf="Local+Abbr";break;
+case"mobile_android":tr=fmtD(lD);tl=null;tf="Naive";break;
+case"partner_api":tr=fmtD(lD).replace(" ","T")+isoO;tl=isoO;tf="ISO-Offset";break;
+}}else{tr=fmtD(tU);tl="UTC";tf="Clean-UTC";}
+rows.push(["U"+pad(u,4),ev,tr,src,tl,tf,rk,fmtD(tU)]);}}return rows;}
+
+/* ═══════════════════════════════════════════════════════════════
+   THE 8 STEPS — each has: title, subtitle, hint, help, sql
+   ═══════════════════════════════════════════════════════════════ */
+const STEPS=[
+{
+  title:"See the Raw Data",
+  sub:"What landed in the database",
+  hint:'<b>What to look at:</b> The <b style="color:var(--orange)">timestamp_raw</b> column. Notice that the same shopping session is recorded in completely different formats — some end with "Z", some say "EST" or "PDT", some have "+08:00", and some have <b>no timezone at all</b>.',
+  help:'<b>Why this matters:</b> A single user\'s journey might touch multiple systems — they browse on their phone (Naive format), search via the partner app (ISO-Offset), then check out on the website (ISO-Z). Each system records time its own way. When these events land in one table, a timestamp of "2025-03-10 20:00:00" could mean UTC <em>or</em> Eastern time — a 5-hour difference. This step lets you see the raw chaos before we do anything about it.',
+  sql:`-- Step 1: Look at the raw data from all four sources
+-- Focus on timestamp_raw and ts_format columns
+SELECT
+    user_id,
+    event_type,
+    timestamp_raw,     -- the messy timestamp
+    ts_format,         -- what format was used
+    tz_label,          -- timezone tag (NULL = missing!)
+    source_system,
+    region
+FROM events
+ORDER BY user_id, true_utc
+LIMIT 30;`
+},
+{
+  title:"Count the Format Types",
+  sub:"How many different clock styles exist",
+  hint:'<b>What to look at:</b> The <b>row_count</b> column shows how many rows use each format. The <b style="color:var(--amber)">ts_format</b> column names the pattern. You should see 4-5 distinct formats — that\'s 4-5 different "languages" for writing time, all in one table.',
+  help:'<b>The four format types:</b><br>• <b>Clean-UTC</b> — "2025-03-10 14:00:00" with tz_label="UTC" (the gold standard)<br>• <b>ISO-Z</b> — "2025-03-10T14:00:00Z" (the Z means UTC)<br>• <b>Local+Abbr</b> — "2025-03-10 09:00:00 EST" (local time with abbreviation)<br>• <b>ISO-Offset</b> — "2025-03-10T09:00:00-05:00" (local time with numeric offset)<br>• <b>Naive</b> — "2025-03-10 09:00:00" with NO timezone (dangerous!)',
+  sql:`-- Step 2: Count rows per timestamp format
+-- This shows the scale of the format mixing problem
+SELECT
+    ts_format,                       -- the format name
+    tz_label,                        -- timezone label (or NULL)
+    source_system,                   -- which system wrote it
+    COUNT(*) AS row_count,           -- how many rows
+    MIN(timestamp_raw) AS example    -- show one example
+FROM events
+GROUP BY ts_format, tz_label, source_system
+ORDER BY row_count DESC;`
+},
+{
+  title:"Break Apart: Date | Time | Zone",
+  sub:"Decompose every timestamp into three fields",
+  hint:'<b>What to look at:</b> Three new columns — <b style="color:var(--white)">date_part</b>, <b style="color:var(--cyan)">time_part</b>, and <b style="color:var(--amber)">zone_part</b>. Rows showing <b style="color:var(--red)">⚠ MISSING</b> for the zone are the most dangerous — we literally don\'t know what clock they\'re on.',
+  help:'<b>Why parse into parts?</b> Date, time, and timezone are three separate facts. When they\'re mashed into one string, it\'s hard to see what\'s wrong. Splitting them out makes it obvious:<br>• Two timestamps with the same <em>time_part</em> but different <em>zone_part</em> values are actually different moments<br>• A missing zone means we\'re guessing<br>• The date_part helps catch DST transitions (Mar 9 = spring-forward day in the US)',
+  sql:`-- Step 3: Split each timestamp into date, time, zone
+SELECT
+    user_id,
+    event_type,
+    timestamp_raw,
+
+    -- Extract the date portion
+    SUBSTR(
+      REPLACE(REPLACE(timestamp_raw,'T',' '),'Z',''),
+      1, 10
+    ) AS date_part,
+
+    -- Extract the time portion
+    SUBSTR(
+      REPLACE(REPLACE(timestamp_raw,'T',' '),'Z',''),
+      12, 8
+    ) AS time_part,
+
+    -- Show the timezone (or flag it missing)
+    COALESCE(tz_label, '⚠ MISSING') AS zone_part,
+
+    ts_format
+FROM events
+ORDER BY user_id, true_utc
+LIMIT 30;`
+},
+{
+  title:"Find Broken Event Sequences",
+  sub:"Detect impossible orderings caused by mixed clocks",
+  hint:'<b>What to look at:</b> Every row here is a <b style="color:var(--red)">bug</b>. The prev_event column shows an event that should come <em>after</em> the next_event — but the raw timestamps sort them wrong. Look at <b>prev_format</b> vs <b>next_format</b> — the clash happens because the same user\'s events were recorded by different source systems on different clocks.',
+  help:'<b>The core problem:</b> Business logic says page_view → search → add_to_cart → checkout → purchase. A single user might browse on mobile (Naive format, local time) then check out on the web (ISO-Z, UTC). Because these timestamps use different clocks, sorting by the raw string puts them in the wrong order.<br><br><b>How we detect it:</b> The SQL uses LAG() to look at the previous event for each user (sorted by raw timestamp), then checks if the pair violates business logic. If no rows appear, try increasing Bug Rate to 100% and clicking Regenerate — or try a different Seed value.',
+  sql:`-- Step 4: Find event pairs that violate business logic
+-- These violations prove the timestamps are on different clocks
+WITH ordered AS (
+    SELECT
+        user_id, event_type, timestamp_raw,
+        ts_format, tz_label,
+        LAG(event_type)    OVER w AS prev_event,
+        LAG(timestamp_raw) OVER w AS prev_ts,
+        LAG(ts_format)     OVER w AS prev_format
+    FROM events
+    WINDOW w AS (PARTITION BY user_id ORDER BY timestamp_raw)
+)
+SELECT
+    user_id,
+    prev_event,   prev_ts,   prev_format,
+    event_type AS next_event,
+    timestamp_raw AS next_ts,
+    ts_format  AS next_format
+FROM ordered
+WHERE
+    (prev_event = 'checkout' AND event_type = 'add_to_cart')
+ OR (prev_event = 'purchase' AND event_type IN
+        ('add_to_cart','checkout','search'))
+ OR (prev_event = 'add_to_cart' AND event_type = 'search')
+ORDER BY user_id;`
+},
+{
+  title:"Measure the Clock Drift",
+  sub:"How far off is each format from true UTC?",
+  hint:'<b>What to look at:</b> The <b style="color:var(--orange)">avg_offset_hours</b> column. <b>Clean-UTC</b> and <b>ISO-Z</b> should show ~0 (they\'re already UTC). <b>Local+Abbr</b> and <b>Naive</b> formats will show offsets matching each region\'s UTC difference (e.g., -5 for US-East).',
+  help:'<b>How this works:</b> We have a hidden "ground truth" column (true_utc) that records the actual UTC time of every event. By subtracting true_utc from the raw timestamp, we measure the exact offset each format introduces.<br><br><b>Key insight:</b> Formats that carry timezone info (EST, -05:00) have <em>predictable</em> offsets we can reverse. Naive formats require us to guess using the region column.',
+  sql:`-- Step 5: Measure offset (hours) of each format vs ground truth
+SELECT
+    ts_format,
+    tz_label,
+    region,
+    COUNT(*) AS n,
+
+    -- Average offset in hours
+    ROUND(AVG(
+        (JULIANDAY(
+            CASE
+              WHEN ts_format='ISO-Z'
+                THEN REPLACE(REPLACE(timestamp_raw,'T',' '),'Z','')
+              WHEN ts_format='ISO-Offset'
+                THEN SUBSTR(REPLACE(timestamp_raw,'T',' '),1,19)
+              WHEN ts_format='Local+Abbr'
+                THEN SUBSTR(timestamp_raw,1,19)
+              ELSE timestamp_raw
+            END
+        ) - JULIANDAY(true_utc)) * 24
+    ), 2) AS avg_offset_hours
+
+FROM events
+GROUP BY ts_format, tz_label, region
+ORDER BY avg_offset_hours;`
+},
+{
+  title:"Fix It — Normalize to UTC",
+  sub:"Convert every format into one consistent clock",
+  hint:'<b>What to look at:</b> Compare <b style="color:var(--orange)">timestamp_raw</b> (messy) with <b style="color:var(--green)">corrected_utc</b> (clean). They should represent the same moment, but now they\'re all in UTC. The <b style="color:var(--purple)">method</b> column tells you how confident the fix is.',
+  help:'<b>How each format is fixed:</b><br>• <b>ISO-Z:</b> Strip the "Z" — the time is already UTC<br>• <b>ISO-Offset:</b> Parse the ±HH:00 suffix and subtract it<br>• <b>Local+Abbr:</b> Look up the abbreviation (EST→+5h, EDT→+4h, PST→+8h…) and add that offset<br>• <b>Naive:</b> No timezone info exists, so we use the <em>region</em> column to guess the offset. This is the least reliable fix — marked with ⚠<br>• <b>Clean-UTC:</b> Already correct, pass through unchanged',
+  sql:`-- Step 6: Convert every timestamp to UTC
+-- Each format needs its own correction logic
+SELECT
+    user_id,
+    event_type,
+    timestamp_raw,
+    ts_format,
+    tz_label,
+
+    -- THE FIX: one CASE branch per format
+    CASE
+      -- Already UTC, just strip the Z
+      WHEN ts_format = 'ISO-Z'
+        THEN REPLACE(REPLACE(timestamp_raw,'T',' '),'Z','')
+
+      -- Has offset like -05:00: parse and reverse it
+      WHEN ts_format = 'ISO-Offset'
+        THEN DATETIME(
+          SUBSTR(REPLACE(timestamp_raw,'T',' '), 1, 19),
+          CASE SUBSTR(timestamp_raw, 20, 1)
+            WHEN '+' THEN '-' || SUBSTR(timestamp_raw,21,2) || ' hours'
+            WHEN '-' THEN '+' || SUBSTR(timestamp_raw,21,2) || ' hours'
+          END)
+
+      -- Has abbreviation like EST: look up the offset
+      WHEN ts_format = 'Local+Abbr'
+        THEN DATETIME(SUBSTR(timestamp_raw, 1, 19),
+          CASE tz_label
+            WHEN 'EST' THEN '+5 hours'
+            WHEN 'EDT' THEN '+4 hours'
+            WHEN 'CST' THEN '+6 hours'
+            WHEN 'CDT' THEN '+5 hours'
+            WHEN 'PST' THEN '+8 hours'
+            WHEN 'PDT' THEN '+7 hours'
+            WHEN 'GMT' THEN '+0 hours'
+            WHEN 'BST' THEN '-1 hours'
+          END)
+
+      -- No timezone at all: guess from region
+      WHEN ts_format = 'Naive'
+        THEN DATETIME(timestamp_raw,
+          CASE region
+            WHEN 'US-East'    THEN '+5 hours'
+            WHEN 'US-West'    THEN '+8 hours'
+            WHEN 'US-Central' THEN '+6 hours'
+            WHEN 'EU-London'  THEN '+0 hours'
+          END)
+
+      -- Clean-UTC: already correct
+      ELSE timestamp_raw
+    END AS corrected_utc,
+
+    true_utc AS ground_truth,
+
+    CASE WHEN ts_format = 'Naive'
+      THEN '⚠ guessed from region'
+      ELSE '✓ deterministic'
+    END AS method
+
+FROM events
+ORDER BY user_id, true_utc
+LIMIT 40;`
+},
+{
+  title:"Check Your Work",
+  sub:"Measure correction accuracy per format",
+  hint:'<b>What to look at:</b> The <b style="color:var(--green)">status</b> column. <b style="color:var(--green)">✓ EXACT</b> means the fix is perfect (error < 1 second). <b style="color:var(--amber)">⚠ RESIDUAL</b> means there\'s leftover error — usually from Naive timestamps where we had to guess the DST state.',
+  help:'<b>Why Naive has residual error:</b> When a timestamp has no timezone label, we guess using the region (e.g., US-East → assume EST, +5h). But during DST, US-East could be EST (-5) or EDT (-4). Without a label, we can\'t tell which, so some rows are off by 1 hour. This is the <em>fundamental limit</em> of fixing data that lost its timezone context.',
+  sql:`-- Step 7: Check accuracy — error in seconds per format
+WITH corrected AS (
+  SELECT *,
+    CASE
+      WHEN ts_format='ISO-Z'
+        THEN REPLACE(REPLACE(timestamp_raw,'T',' '),'Z','')
+      WHEN ts_format='ISO-Offset'
+        THEN DATETIME(
+          SUBSTR(REPLACE(timestamp_raw,'T',' '),1,19),
+          CASE SUBSTR(timestamp_raw,20,1)
+            WHEN '+' THEN '-'||SUBSTR(timestamp_raw,21,2)||' hours'
+            WHEN '-' THEN '+'||SUBSTR(timestamp_raw,21,2)||' hours'
+          END)
+      WHEN ts_format='Local+Abbr'
+        THEN DATETIME(SUBSTR(timestamp_raw,1,19),
+          CASE tz_label
+            WHEN 'EST' THEN '+5 hours' WHEN 'EDT' THEN '+4 hours'
+            WHEN 'CST' THEN '+6 hours' WHEN 'CDT' THEN '+5 hours'
+            WHEN 'PST' THEN '+8 hours' WHEN 'PDT' THEN '+7 hours'
+            WHEN 'GMT' THEN '+0 hours' WHEN 'BST' THEN '-1 hours'
+          END)
+      WHEN ts_format='Naive'
+        THEN DATETIME(timestamp_raw,
+          CASE region
+            WHEN 'US-East' THEN '+5 hours' WHEN 'US-West' THEN '+8 hours'
+            WHEN 'US-Central' THEN '+6 hours' WHEN 'EU-London' THEN '+0 hours'
+          END)
+      ELSE timestamp_raw
+    END AS fixed_utc
+  FROM events
+)
+SELECT
+    ts_format,
+    tz_label,
+    region,
+    COUNT(*) AS n,
+    ROUND(AVG(ABS(
+      (JULIANDAY(fixed_utc) - JULIANDAY(true_utc)) * 86400
+    )), 1) AS avg_error_sec,
+    ROUND(MAX(ABS(
+      (JULIANDAY(fixed_utc) - JULIANDAY(true_utc)) * 86400
+    )), 1) AS max_error_sec,
+    CASE
+      WHEN MAX(ABS((JULIANDAY(fixed_utc)-JULIANDAY(true_utc))*86400)) < 2
+        THEN '✓ EXACT'
+      ELSE '⚠ RESIDUAL'
+    END AS status
+FROM corrected
+GROUP BY ts_format, tz_label, region
+ORDER BY avg_error_sec DESC;`
+},
+{
+  title:"Final Clean Output",
+  sub:"Date | Time | Zone — ready for analytics",
+  hint:'<b>What to look at:</b> Three clean columns — <b style="color:var(--white)">date_utc</b>, <b style="color:var(--cyan)">time_utc</b>, and <b style="color:var(--amber)">zone</b> (always "UTC"). Compare with <b style="color:var(--orange)">original_raw</b> to see how far the data traveled. Events are now in correct chronological order.',
+  help:'<b>This is the goal state.</b> Every timestamp is UTC, split into date and time columns, with the original raw value preserved for audit. You could now:<br>• Sort by corrected time and get correct event ordering<br>• Join across sources without clock mismatches<br>• Convert to any local timezone for display<br>• Run reliable session analytics, funnel analysis, etc.<br><br><b>Key takeaway:</b> Always store UTC at collection time. If you inherit messy data, the format-specific CASE approach from Step 6 is how you recover.',
+  sql:`-- Step 8: Final production-ready output
+-- Separate date | time | zone columns, correct ordering
+WITH corrected AS (
+  SELECT *,
+    CASE
+      WHEN ts_format='ISO-Z'
+        THEN REPLACE(REPLACE(timestamp_raw,'T',' '),'Z','')
+      WHEN ts_format='ISO-Offset'
+        THEN DATETIME(
+          SUBSTR(REPLACE(timestamp_raw,'T',' '),1,19),
+          CASE SUBSTR(timestamp_raw,20,1)
+            WHEN '+' THEN '-'||SUBSTR(timestamp_raw,21,2)||' hours'
+            WHEN '-' THEN '+'||SUBSTR(timestamp_raw,21,2)||' hours'
+          END)
+      WHEN ts_format='Local+Abbr'
+        THEN DATETIME(SUBSTR(timestamp_raw,1,19),
+          CASE tz_label
+            WHEN 'EST' THEN '+5 hours' WHEN 'EDT' THEN '+4 hours'
+            WHEN 'CST' THEN '+6 hours' WHEN 'CDT' THEN '+5 hours'
+            WHEN 'PST' THEN '+8 hours' WHEN 'PDT' THEN '+7 hours'
+            WHEN 'GMT' THEN '+0 hours' WHEN 'BST' THEN '-1 hours'
+          END)
+      WHEN ts_format='Naive'
+        THEN DATETIME(timestamp_raw,
+          CASE region
+            WHEN 'US-East' THEN '+5 hours' WHEN 'US-West' THEN '+8 hours'
+            WHEN 'US-Central' THEN '+6 hours' WHEN 'EU-London' THEN '+0 hours'
+          END)
+      ELSE timestamp_raw
+    END AS corrected_utc
+  FROM events
+)
+SELECT
+    user_id,
+    event_type,
+    SUBSTR(corrected_utc, 1, 10)  AS date_utc,
+    SUBSTR(corrected_utc, 12, 8)  AS time_utc,
+    'UTC'                          AS zone,
+    timestamp_raw                  AS original_raw,
+    ts_format                      AS orig_format,
+    source_system,
+    region
+FROM corrected
+ORDER BY user_id, corrected_utc
+LIMIT 40;`
+}
+];
+
+/* ═══ DATABASE ═══ */
+function seedDB(){if(!db)return;
+const n=+$("sl-n").value,seed=+$("sl-seed").value,rate=+$("sl-rate").value/100;
+db.run("DROP TABLE IF EXISTS events");
+db.run("CREATE TABLE events(user_id TEXT,event_type TEXT,timestamp_raw TEXT,source_system TEXT,tz_label TEXT,ts_format TEXT,region TEXT,true_utc TEXT)");
+const rows=genData(n,seed,rate);
+const st=db.prepare("INSERT INTO events VALUES(?,?,?,?,?,?,?,?)");
+for(const r of rows)st.run(r);st.free();
+currentResults=null;renderResults();}
+function regenerate(){seedDB();if(activeStep>=0)goStep(activeStep);}
+
+/* ═══ STEP NAVIGATION ═══ */
+function buildStepList(){
+const list=$("step-list");list.innerHTML="";
+STEPS.forEach((s,i)=>{
+const btn=document.createElement("button");
+btn.className="step-btn"+(i===activeStep?" active":"")+(visitedSteps.has(i)?" visited":"");
+btn.innerHTML=`<span class="step-num">${i+1}</span><div class="step-text"><div class="step-title">${esc(s.title)}</div><div class="step-sub">${esc(s.sub)}</div></div>`;
+btn.onclick=()=>goStep(i);
+list.appendChild(btn);});}
+
+function updateProgress(){
+const wrap=$("progress");wrap.innerHTML="";
+for(let i=0;i<STEPS.length;i++){const d=document.createElement("div");d.className="prog-dot"+(i<activeStep?" done":"")+(i===activeStep?" active":"");wrap.appendChild(d);}
+$("prog-label").textContent=`Step ${activeStep+1} of ${STEPS.length}`;}
+
+function goStep(i){
+activeStep=i;visitedSteps.add(i);
+const s=STEPS[i];
+$("sql-editor").value=s.sql;
+$("q-name").textContent=`Step ${i+1}: ${s.title}`;
+
+// Show hint
+const hb=$("hint-bar");
+hb.style.display="flex";
+hb.innerHTML=`<span class="hint-icon">💡</span><div><div class="hint-text">${s.hint}</div><button class="help-toggle" onclick="toggleHelp(this)">ℹ More detail ▸</button><div class="help-body" style="display:none">${s.help}</div></div>`;
+
+$("error-box").style.display="none";
+buildStepList();updateProgress();
+// Auto-run
+runQuery();}
+
+function toggleHelp(btn){
+const body=btn.nextElementSibling;
+const show=body.style.display==="none";
+body.style.display=show?"block":"none";
+btn.textContent=show?"ℹ Less detail ▾":"ℹ More detail ▸";}
+
+/* ═══ PARAMS TOGGLE ═══ */
+let paramsOpen=false;
+function toggleParams(){paramsOpen=!paramsOpen;
+$("params-body").className="params-body"+(paramsOpen?"":" collapsed");
+$("params-arrow").className="arrow"+(paramsOpen?" open":"");}
+
+/* ═══ RUN QUERY ═══ */
+function runQuery(){const sql=$("sql-editor").value.trim();if(!sql||!db)return;
+$("error-box").style.display="none";const t0=performance.now();
+try{const res=db.exec(sql);$("exec-time").textContent=Math.round(performance.now()-t0)+"ms";
+currentResults=res.length?res[0]:{columns:[],values:[]};renderResults();
+$("btn-csv").style.display=currentResults.values.length?"block":"none";}
+catch(e){$("error-box").textContent=e.message;$("error-box").style.display="block";currentResults=null;renderResults();$("btn-csv").style.display="none";}}
+
+/* ═══ RENDER RESULTS ═══ */
+function renderResults(){const area=$("results-area");
+if(!currentResults||!currentResults.columns||!currentResults.columns.length){
+area.innerHTML='<div class="placeholder"><div><div style="font-size:40px;margin-bottom:8px">⏱</div><div>Click a step to begin</div></div></div>';return;}
+const cols=currentResults.columns,vals=currentResults.values;
+let h='<div class="results-meta">'+vals.length+' row'+(vals.length!==1?'s':'')+' returned</div><div class="results-wrap"><table><thead><tr>';
+for(const c of cols)h+='<th>'+esc(c)+'</th>';
+h+='</tr></thead><tbody>';
+for(const row of vals){h+='<tr>';
+for(let i=0;i<row.length;i++){const v=row[i],cn=cols[i].toLowerCase();let cls="";
+if(v===null)cls="c-null";
+else if(cn==="status"||cn==="method"||cn==="disambiguation"){
+  const s=String(v);cls=s.includes("✓")?"c-ok":s.includes("⚠")?"c-warn":s.includes("✗")?"c-err":"c-method";}
+else if(cn==="date_utc"||cn==="date_part")cls="c-date";
+else if(cn==="time_utc"||cn==="time_part")cls="c-time";
+else if(cn==="zone"||cn==="zone_part")cls="c-zone";
+else if(cn.includes("user"))cls="c-user";
+else if(cn.includes("corrected")||cn.includes("fixed")||cn.includes("ground")||cn.includes("true"))cls="c-utc";
+else if(cn==="tz_label"||cn.includes("format"))cls="c-tz";
+else if(cn.includes("_raw")||cn.includes("original")||cn.includes("example")||cn.includes("prev_ts")||cn.includes("next_ts"))cls="c-raw";
+else if(cn.includes("region")||cn.includes("source"))cls="c-region";
+else if(cn.includes("error"))cls="c-err";
+h+='<td class="'+cls+'">'+(v===null?'<i>NULL</i>':esc(String(v)))+'</td>';}
+h+='</tr>';}
+h+='</tbody></table></div>';area.innerHTML=h;
+const w=area.querySelector(".results-wrap");if(w)w.style.animation="fadeUp .25s ease";}
+
+/* ═══ CSV / EXPORT ═══ */
+function downloadCsv(){if(!currentResults||!currentResults.values.length)return;
+const h=currentResults.columns.join(","),b=currentResults.values.map(r=>r.map(v=>v===null?"":('"'+String(v).replace(/"/g,'""')+'"')).join(",")).join("\n");
+dl(h+"\n"+b,"text/csv","tz_step"+(activeStep+1)+"_"+Date.now()+".csv");}
+function exportDB(){if(!db)return;dl(db.export(),"application/octet-stream","tz_sync_lab_v3.sqlite");}
+function dl(d,t,n){const b=new Blob([d],{type:t}),u=URL.createObjectURL(b),a=document.createElement("a");a.href=u;a.download=n;a.click();URL.revokeObjectURL(u);}
+
+/* ═══ CONTROLS ═══ */
+$("sl-n").oninput=function(){$("lbl-n").textContent=this.value;};
+$("sl-seed").oninput=function(){$("lbl-seed").textContent=this.value;};
+$("sl-rate").oninput=function(){$("lbl-rate").textContent=this.value+"%";};
+$("sql-editor").addEventListener("keydown",e=>{if((e.metaKey||e.ctrlKey)&&e.key==="Enter"){e.preventDefault();runQuery();}});
+
+/* ═══ INIT ═══ */
+(async()=>{try{
+const SQL=await initSqlJs({locateFile:f=>"https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.3/"+f});
+db=new SQL.Database();seedDB();buildStepList();updateProgress();
+$("loading").classList.add("hidden");setTimeout(()=>$("loading").remove(),400);
+goStep(0);
+}catch(e){$("loading").innerHTML='<h2 style="color:var(--red)">Failed to load SQLite</h2><p style="color:var(--red);animation:none">'+esc(e.message)+'</p>';}})();
+</script>
+</body>
+</html>

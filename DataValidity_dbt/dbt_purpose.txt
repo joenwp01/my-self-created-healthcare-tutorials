@@ -1,0 +1,28 @@
+dbt is useful as an **analytics engineering / data transformation** tool with some strong data validity features.
+
+### Where dbt *does* act like data validity / quality
+
+dbt tests let you enforce **rules about your modeled data** (usually in the warehouse) and fail builds when rules break. Examples:
+
+* **not_null** (required fields present)
+* **unique** (no duplicate keys)
+* **accepted_values** (only allowed codes/statuses)
+* **relationships** (foreign key–like integrity between models)
+* **custom SQL tests** (anything you can express as a query)
+
+In practice, teams often use dbt tests as **quality gates** for curated tables (“silver/gold” models).
+
+### Where dbt is *not* a full data quality platform
+
+Compared to dedicated DQ/observability tools, dbt usually lacks:
+
+* automated **profiling** and rich **rule management UI**
+* built-in **anomaly detection**, drift monitoring, freshness/volume monitoring (beyond basic approaches)
+* **row-level quarantine/work-queue** patterns out of the box
+* end-to-end monitoring/alerting without an orchestrator or add-ons
+
+### So what’s the best classification?
+
+* **dbt = transformation tool with embedded data validity testing**
+* It’s commonly part of a data quality strategy, but not the whole strategy.
+

@@ -1,0 +1,272 @@
+/* ============================================================
+   Station UI — shared between Consume and Produce
+   ============================================================ */
+
+/* ===== STATION HEADER ===== */
+.station-header {
+  background: #ececec;
+  border-radius: 6px;
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+.station-header-body {
+  padding: 16px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+.station-header-body .station-meta { flex: 1; }
+.station-header-body h2 {
+  font-size: 20px;
+  color: #1e4670;
+  margin-bottom: 4px;
+}
+.station-header-body .station-number {
+  font-family: "SF Mono", Menlo, monospace;
+  font-size: 11px;
+  color: #5a6878;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+.station-header-body .progress-indicator {
+  font-size: 12px;
+  color: #3a4450;
+  padding: 4px 10px;
+  background: #dde3ea;
+  border-radius: 10px;
+}
+
+/* ===== LECTURE PANEL ===== */
+.lecture {
+  background: #ececec;
+  border-radius: 6px;
+  padding: 20px;
+  margin-bottom: 16px;
+  line-height: 1.6;
+}
+.lecture h3 { color: #1e4670; margin: 14px 0 8px; font-size: 15px; }
+.lecture h4 { color: #2a3947; margin: 10px 0 6px; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; }
+.lecture p { margin-bottom: 10px; }
+.lecture ul, .lecture ol { margin: 8px 0 12px 22px; }
+.lecture li { margin-bottom: 5px; }
+.lecture code {
+  background: #dde3ea;
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-family: "SF Mono", Menlo, Consolas, monospace;
+  font-size: 12px;
+  color: #1e4670;
+}
+
+/* ===== BEFORE / AFTER GRID ===== */
+.ba-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+.ba-grid .panel h3 {
+  margin-top: 0;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #c8cfd6;
+}
+.ba-grid .before-panel h3 { color: #5a6878; }
+.ba-grid .after-panel h3  { color: #1e4670; }
+.empty-state {
+  color: #7a8594;
+  font-style: italic;
+  padding: 16px;
+  text-align: center;
+  font-size: 13px;
+}
+@media (max-width: 900px) { .ba-grid { grid-template-columns: 1fr; } }
+
+/* ===== PARALLEL LANES (patient focus) ===== */
+.lanes-section {
+  background: #ececec;
+  border-radius: 6px;
+  padding: 16px 20px;
+  margin-bottom: 16px;
+}
+.lanes-section h3 {
+  color: #1e4670;
+  font-size: 14px;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.lanes {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+}
+.lane {
+  background: #dde3ea;
+  border-radius: 4px;
+  padding: 10px;
+  cursor: pointer;
+  transition: all 0.15s;
+  border: 2px solid transparent;
+}
+.lane:hover { transform: translateY(-1px); box-shadow: 0 2px 6px rgba(0,0,0,0.08); }
+.lane.active { border-color: #1e4670; background: #cfdae6; }
+.lane .lane-id {
+  font-family: "SF Mono", Menlo, monospace;
+  font-size: 11px;
+  color: #5a6878;
+  font-weight: 600;
+}
+.lane .lane-name {
+  font-size: 12px;
+  color: #1e4670;
+  margin-top: 3px;
+  font-weight: 500;
+}
+.lane .lane-status {
+  font-size: 10px;
+  color: #7a8594;
+  margin-top: 4px;
+}
+@media (max-width: 900px) { .lanes { grid-template-columns: repeat(2, 1fr); } }
+
+/* ===== TASK PANEL (decisions, Q&A, reveals) ===== */
+.task-panel {
+  background: #ececec;
+  border-radius: 6px;
+  padding: 20px;
+  margin-bottom: 16px;
+}
+.task-panel h3 {
+  color: #1e4670;
+  font-size: 15px;
+  margin-bottom: 10px;
+}
+.task-prompt {
+  background: #dde3ea;
+  padding: 12px 14px;
+  border-radius: 4px;
+  margin-bottom: 14px;
+  font-size: 13px;
+  color: #2a3947;
+}
+
+/* Choice cards */
+.choice-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.choice-card {
+  background: #fff;
+  border: 2px solid #c8cfd6;
+  border-radius: 4px;
+  padding: 12px 14px;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-size: 13px;
+}
+.choice-card:hover { border-color: #7a8594; background: #f4f6f8; }
+.choice-card.incorrect { border-color: #a03030; background: rgba(160,48,48,0.08); }
+
+/* Fill-in / free-text answer input */
+.answer-input {
+  width: 100%;
+  padding: 10px 12px;
+  font-family: "SF Mono", Menlo, monospace;
+  font-size: 13px;
+  border: 2px solid #c8cfd6;
+  border-radius: 4px;
+  background: #fff;
+  color: #1e4670;
+}
+.answer-input:focus { outline: none; border-color: #4a90c2; }
+
+/* Editable code (J3-style) */
+.code-editor {
+  width: 100%;
+  min-height: 140px;
+  padding: 12px;
+  font-family: "SF Mono", Menlo, Consolas, monospace;
+  font-size: 12px;
+  background: #1c2531;
+  color: #e8ecf2;
+  border: 2px solid #2a3947;
+  border-radius: 4px;
+  resize: vertical;
+}
+.code-editor:focus { outline: none; border-color: #4a90c2; }
+
+/* ===== ACTION BAR ===== */
+.action-bar {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+  padding: 14px 20px;
+  background: #ececec;
+  border-radius: 6px;
+}
+.action-bar .spacer { flex: 1; }
+
+/* ===== HINT / REVEAL BOXES ===== */
+.hint-box {
+  background: #fff5dc;
+  border-left: 3px solid #d68a00;
+  padding: 10px 14px;
+  margin: 10px 0;
+  border-radius: 0 4px 4px 0;
+  font-size: 13px;
+  color: #6a5500;
+}
+.hint-box strong { color: #8a6a00; }
+
+.reveal-box {
+  background: #e0f0e4;
+  border-left: 3px solid #2a7a3a;
+  padding: 10px 14px;
+  margin: 10px 0;
+  border-radius: 0 4px 4px 0;
+  font-size: 13px;
+  color: #1e4a28;
+}
+.reveal-box strong { color: #2a7a3a; }
+
+.explanation-box {
+  background: #e0ecf5;
+  border-left: 3px solid #1e4670;
+  padding: 12px 14px;
+  margin: 10px 0;
+  border-radius: 0 4px 4px 0;
+  font-size: 13px;
+  color: #1a3050;
+}
+
+/* ===== FHIR RESOURCE VISUALIZER ===== */
+.resource-viz {
+  background: #ececec;
+  border-radius: 6px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+.resource-viz svg { width: 100%; height: auto; max-height: 340px; }
+
+/* ===== COMPLETION CELEBRATION ===== */
+.journey-complete-banner {
+  background: linear-gradient(135deg, #1e4670 0%, #4a90c2 100%);
+  color: #fff;
+  border-radius: 6px;
+  padding: 24px;
+  margin-bottom: 16px;
+  text-align: center;
+  animation: fadeIn 0.5s ease-out;
+}
+.journey-complete-banner h2 {
+  color: #fff !important;
+  font-size: 22px;
+  margin-bottom: 6px;
+}

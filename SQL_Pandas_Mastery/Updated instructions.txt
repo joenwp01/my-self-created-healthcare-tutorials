@@ -1,0 +1,20 @@
+Updated instructions:
+
+I am interested in contrasting the differences between handling of windows functions for standard ANSI SQL and for Spark SQL.  In particular, contrasting the handling and data presentation of functions which aggregate, specify RANGE of values, specify ROWS of values, LAG, frame boundaries, NULL handling, and other expressions for handling analytical and time-series.  See all information below for additional information and insight.
+
+Create a web-based application, python or HTML, using ANSI SQL as the standard, in order to explain and contrast the analytical data handling differences between ANSI SQL and SPARK SQL.
+Begin with a brief overview of the tutorial's purpose, then demo, in a separate panel, paired (ANSI SQL with SPARK SQL) data manipulation requirement (word problem), conversion of the problem into their respective SQL encoding, the displayed data manipulation results (highlighting differences), and explanation of the differences of data extraction and how to correct the SPARK SQL statement to achieve the same results as the ANSI SQL statement.  In a separate panel immediately below each demo, present a practice problem in which a short, sample data manipulation requirement is given and solved for in ANSI SQL, with results.  Beneath the ANSI SQL solution give the user the opportunity to duplicate the  ANSI SQL results, but with Spark SQL, using fill-in-the-blanks for keywords and/or numbers or dates.  Create "reveal" buttons, per fill-in to give that blank's answer, in case the user is stuck.  Also create an overall "reveal" button for the entire problem. 
+Let the user know if "Correct" or "Wrong. Try Again" with a "Submit" button...and show the "Correct"  or "Wrong. Try Again" results with each attempt.
+
+Continue with the above methodology.  Perform this paired example demonstration, explanation and difference highlighting, along with  tutorial practice opportunity for each of the types of analytical window functions named above and in the information contained in the attached file under "Key Takeaways" and "EXAMPLES" (SUM OVER, RANGE, LAG, NULL, etc.) Remember to use ANSI SQL as the standard to compare to, and that we are creating practice opportunity for Spark SQL statements only.
+
+Use any database or file for storage of preset data or answer, along with the ability to generate "live" results.
+
+For the ANSI SQL engine, it is okay to use SQL Lite or other chosen lightweight ANSI SQL-compatible engine.
+
+For Spark SQL, choose a lightweight SPARKSQL engine from the two listed below, or search web to find another one which you prefer.
+
+References for SparkSQL which can be run in browser:
+   1 - SparkSQL -> https://codesandbox.io/s/spark-sql-online-editor-dv1iu
+
+   2 - SparkSQL -> https://www.sparkplayground.com/pyspark-online-compiler

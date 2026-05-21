@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Parameterized SQL — Interactive Tutorial</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --surface-raised: #1c2333;
+    --border: #30363d;
+    --border-accent: #3b82f6;
+    --text: #e6edf3;
+    --text-muted: #8b949e;
+    --text-dim: #6e7681;
+    --accent: #58a6ff;
+    --accent-glow: rgba(88,166,255,0.15);
+    --green: #3fb950;
+    --green-bg: rgba(63,185,80,0.12);
+    --red: #f85149;
+    --red-bg: rgba(248,81,73,0.12);
+    --orange: #d29922;
+    --orange-bg: rgba(210,153,34,0.12);
+    --purple: #bc8cff;
+    --keyword: #ff7b72;
+    --string: #a5d6ff;
+    --param: #ffa657;
+    --comment: #6e7681;
+    --radius: 8px;
+    --mono: 'IBM Plex Mono', monospace;
+    --serif: 'Source Serif 4', Georgia, serif;
+    --sans: 'DM Sans', system-ui, sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.7;
+    min-height: 100vh;
+  }
+
+  /* ── Top bar ── */
+  .topbar {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(13,17,23,0.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 24px;
+    display: flex; align-items: center; gap: 16px;
+  }
+  .topbar-logo {
+    font-family: var(--mono); font-weight: 600;
+    color: var(--accent); font-size: 14px;
+    letter-spacing: 0.5px;
+  }
+  .topbar-progress {
+    flex: 1; height: 4px;
+    background: var(--surface-raised); border-radius: 2px;
+    overflow: hidden;
+  }
+  .topbar-progress-fill {
+    height: 100%; width: 0%;
+    background: linear-gradient(90deg, var(--accent), var(--purple));
+    border-radius: 2px;
+    transition: width 0.5s ease;
+  }
+  .topbar-score {
+    font-family: var(--mono); font-size: 13px;
+    color: var(--text-muted);
+  }
+
+  /* ── Layout ── */
+  .container { max-width: 860px; margin: 0 auto; padding: 0 24px 120px; }
+
+  /* ── Hero ── */
+  .hero {
+    padding: 80px 0 60px;
+    text-align: center;
+    position: relative;
+  }
+  .hero::before {
+    content: '';
+    position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+    width: 600px; height: 300px;
+    background: radial-gradient(ellipse, rgba(88,166,255,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero h1 {
+    font-family: var(--serif);
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 700; line-height: 1.2;
+    margin-bottom: 16px;
+  }
+  .hero h1 span { color: var(--accent); }
+  .hero p {
+    color: var(--text-muted); font-size: 17px;
+    max-width: 560px; margin: 0 auto 32px;
+  }
+  .hero-cta {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--accent); color: #000;
+    font-weight: 600; font-size: 15px;
+    padding: 12px 28px; border-radius: 6px;
+    border: none; cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .hero-cta:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 20px rgba(88,166,255,0.3);
+  }
+
+  /* ── Sections ── */
+  .section { margin-top: 64px; }
+  .section-label {
+    font-family: var(--mono); font-size: 11px;
+    letter-spacing: 2px; text-transform: uppercase;
+    color: var(--accent); margin-bottom: 8px;
+  }
+  .section h2 {
+    font-family: var(--serif); font-size: 1.6rem;
+    font-weight: 700; margin-bottom: 16px;
+  }
+  .section p, .section li {
+    color: var(--text-muted); line-height: 1.8;
+  }
+  .section ul { padding-left: 20px; margin: 12px 0; }
+  .section li { margin-bottom: 6px; }
+  .section li::marker { color: var(--accent); }
+
+  /* ── Code blocks ── */
+  .code-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    margin: 20px 0;
+    overflow-x: auto;
+    font-family: var(--mono);
+    font-size: 14px;
+    line-height: 1.8;
+    position: relative;
+  }
+  .code-block .label {
+    position: absolute; top: 8px; right: 12px;
+    font-size: 10px; letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+  .kw { color: var(--keyword); font-weight: 500; }
+  .str { color: var(--string); }
+  .param { color: var(--param); font-weight: 500; }
+  .cmt { color: var(--comment); font-style: italic; }
+  .fn { color: var(--purple); }
+
+  .callout {
+    background: var(--accent-glow);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 var(--radius) var(--radius) 0;
+    padding: 16px 20px;
+    margin: 20px 0;
+    font-size: 14px;
+    color: var(--text-muted);
+  }
+  .callout strong { color: var(--accent); }
+  .callout.warn {
+    background: var(--orange-bg);
+    border-left-color: var(--orange);
+  }
+  .callout.warn strong { color: var(--orange); }
+
+  /* ── Exercise cards ── */
+  .exercise {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    margin-top: 48px;
+    overflow: hidden;
+    transition: border-color 0.3s;
+  }
+  .exercise.solved { border-color: var(--green); }
+  .exercise-header {
+    display: flex; align-items: center; gap: 12px;
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface-raised);
+  }
+  .exercise-num {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--mono); font-size: 13px; font-weight: 600;
+    background: var(--accent-glow); color: var(--accent);
+    border: 1px solid rgba(88,166,255,0.25);
+    flex-shrink: 0;
+    transition: background 0.3s, color 0.3s, border-color 0.3s;
+  }
+  .exercise.solved .exercise-num {
+    background: var(--green-bg); color: var(--green);
+    border-color: rgba(63,185,80,0.3);
+  }
+  .exercise-title { font-weight: 600; font-size: 15px; }
+  .exercise-diff {
+    margin-left: auto;
+    font-family: var(--mono); font-size: 11px;
+    letter-spacing: 0.5px; padding: 3px 10px;
+    border-radius: 20px;
+  }
+  .diff-easy { background: var(--green-bg); color: var(--green); }
+  .diff-med { background: var(--orange-bg); color: var(--orange); }
+  .diff-hard { background: var(--red-bg); color: var(--red); }
+
+  .exercise-body { padding: 24px; }
+  .exercise-body > p {
+    color: var(--text-muted); margin-bottom: 16px; font-size: 15px;
+  }
+
+  .schema-box {
+    background: rgba(188,140,255,0.06);
+    border: 1px solid rgba(188,140,255,0.15);
+    border-radius: var(--radius);
+    padding: 14px 18px;
+    margin-bottom: 20px;
+    font-family: var(--mono); font-size: 13px;
+    line-height: 1.6;
+    color: var(--purple);
+  }
+  .schema-box .tname { color: var(--param); font-weight: 600; }
+  .schema-box .cols { color: var(--text-muted); }
+
+  /* ── Fill-in code area ── */
+  .fill-code {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    font-family: var(--mono); font-size: 14px;
+    line-height: 2.6;
+    margin-bottom: 16px;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  .fill-code .blank-wrap {
+    display: inline-block;
+    position: relative;
+    vertical-align: baseline;
+    margin: 0 1px;
+    padding-bottom: 14px;
+  }
+  .fill-code input {
+    background: var(--surface-raised);
+    border: 1px dashed var(--border-accent);
+    border-radius: 4px;
+    color: var(--param);
+    font-family: var(--mono); font-size: 14px;
+    padding: 2px 8px;
+    height: 26px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    vertical-align: baseline;
+  }
+  .fill-code input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px var(--accent-glow);
+  }
+  .fill-code input.correct {
+    border-color: var(--green);
+    color: var(--green);
+    background: var(--green-bg);
+  }
+  .fill-code input.wrong {
+    border-color: var(--red);
+    color: var(--red);
+    background: var(--red-bg);
+    animation: shake 0.3s;
+  }
+  @keyframes shake {
+    0%,100% { transform: translateX(0); }
+    25% { transform: translateX(-4px); }
+    75% { transform: translateX(4px); }
+  }
+
+  .blank-label {
+    position: absolute;
+    left: 0; right: 0;
+    bottom: -1px;
+    font-size: 9px; letter-spacing: 0.5px;
+    color: var(--text-dim); text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    pointer-events: none;
+    line-height: 1;
+  }
+
+  /* ── Buttons row ── */
+  .exercise-actions {
+    display: flex; gap: 10px; flex-wrap: wrap;
+    margin-top: 8px;
+  }
+  .btn {
+    font-family: var(--sans);
+    font-size: 13px; font-weight: 600;
+    padding: 8px 18px; border-radius: 6px;
+    border: 1px solid var(--border);
+    cursor: pointer; transition: all 0.15s;
+  }
+  .btn-check {
+    background: var(--accent); color: #000; border-color: var(--accent);
+  }
+  .btn-check:hover { box-shadow: 0 2px 12px rgba(88,166,255,0.3); }
+  .btn-hint {
+    background: transparent; color: var(--orange);
+    border-color: rgba(210,153,34,0.3);
+  }
+  .btn-hint:hover { background: var(--orange-bg); }
+  .btn-reveal {
+    background: transparent; color: var(--red);
+    border-color: rgba(248,81,73,0.3);
+  }
+  .btn-reveal:hover { background: var(--red-bg); }
+  .btn-reset {
+    background: transparent; color: var(--text-muted);
+    border-color: var(--border);
+  }
+  .btn-reset:hover { background: var(--surface-raised); }
+
+  /* ── Hint/feedback area ── */
+  .hint-area {
+    margin-top: 14px;
+    padding: 12px 16px;
+    border-radius: var(--radius);
+    font-size: 14px;
+    display: none;
+  }
+  .hint-area.visible { display: block; }
+  .hint-area.hint { background: var(--orange-bg); color: var(--orange); }
+  .hint-area.success { background: var(--green-bg); color: var(--green); }
+  .hint-area.error { background: var(--red-bg); color: var(--red); }
+
+  /* ── Explanation toggle ── */
+  .explanation {
+    margin-top: 16px;
+    border-top: 1px solid var(--border);
+    padding-top: 16px;
+    display: none;
+  }
+  .explanation.visible { display: block; }
+  .explanation p { color: var(--text-muted); font-size: 14px; margin-bottom: 8px; }
+  .explanation code {
+    background: var(--surface-raised); padding: 1px 6px;
+    border-radius: 3px; font-family: var(--mono); font-size: 13px;
+    color: var(--param);
+  }
+
+  /* ── Footer ── */
+  .footer {
+    text-align: center; padding: 60px 0 40px;
+    color: var(--text-dim); font-size: 13px;
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 600px) {
+    .container { padding: 0 16px 80px; }
+    .code-block, .fill-code { padding: 14px 16px; font-size: 12px; }
+    .exercise-body { padding: 16px; }
+    .fill-code input { font-size: 12px; height: 22px; }
+    .fill-code .blank-wrap { padding-bottom: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ── Top bar ── -->
+<div class="topbar">
+  <div class="topbar-logo">SQL::PARAMS</div>
+  <div class="topbar-progress"><div class="topbar-progress-fill" id="progressFill"></div></div>
+  <div class="topbar-score" id="scoreLabel">0 / 10</div>
+</div>
+
+<div class="container">
+
+<!-- ── Hero ── -->
+<div class="hero">
+  <h1>Parameterized <span>SQL</span></h1>
+  <p>Learn to write secure, reusable queries by replacing hard-coded values with parameters &mdash; the single most effective defense against SQL injection.</p>
+  <button class="hero-cta" onclick="document.getElementById('concept').scrollIntoView()">Start Learning &darr;</button>
+</div>
+
+<!-- ── Concept Section ── -->
+<div class="section" id="concept">
+  <div class="section-label">Concept</div>
+  <h2>What is a Parameterized Query?</h2>
+  <p>A <strong style="color:var(--text)">parameterized query</strong> (also called a <em>prepared statement</em>) separates the SQL structure from the data values. Instead of concatenating user input directly into SQL strings, you insert <strong style="color:var(--param)">placeholders</strong> and supply the actual values separately.</p>
+
+  <div class="callout">
+    <strong>Why it matters:</strong> When you build SQL by concatenating strings, an attacker can inject malicious SQL fragments. Parameterized queries make this impossible because the database engine treats parameter values as <em>data</em>, never as executable code.
+  </div>
+
+  <p style="margin-top:20px">Here's the dangerous way — raw string concatenation:</p>
+
+  <div class="code-block">
+    <span class="label">BAD — vulnerable</span>
+<span class="cmt">-- Python (UNSAFE!)</span>
+query = <span class="str">f"SELECT * FROM users WHERE name = '<span class="param">{user_input}</span>'"</span>
+cursor.execute(query)
+<span class="cmt">-- If user_input is:  ' OR 1=1 --</span>
+<span class="cmt">-- The query becomes: SELECT * FROM users WHERE name = '' OR 1=1 --'</span>
+<span class="cmt">-- This returns EVERY row!</span>
+  </div>
+
+  <p>Now the safe way — parameterized:</p>
+
+  <div class="code-block">
+    <span class="label">GOOD — safe</span>
+<span class="cmt">-- Python (SAFE)</span>
+query = <span class="str">"SELECT * FROM users WHERE name = <span class="param">%s</span>"</span>
+cursor.execute(query, (<span class="param">user_input</span>,))
+<span class="cmt">-- The database treats user_input as a DATA value,</span>
+<span class="cmt">-- never as part of the SQL command itself.</span>
+  </div>
+
+  <div class="callout warn">
+    <strong>Placeholder syntax varies by platform:</strong> Python DB-API uses <code style="color:var(--param)">%s</code>, SQLite uses <code style="color:var(--param)">?</code>, PostgreSQL (psycopg2) supports both <code style="color:var(--param)">%s</code> and named <code style="color:var(--param)">%(name)s</code>, SQL Server / JDBC uses <code style="color:var(--param)">?</code>, and many ORMs use <code style="color:var(--param)">:name</code> style. In this tutorial we primarily use <code style="color:var(--param)">%s</code> (positional) and <code style="color:var(--param)">:name</code> (named) styles.
+  </div>
+</div>
+
+<!-- ── Worked Example ── -->
+<div class="section" id="example">
+  <div class="section-label">Worked Example</div>
+  <h2>Your First Parameterized Query</h2>
+  <p><strong style="color:var(--text)">Scenario:</strong> You have a table <code style="color:var(--param);font-family:var(--mono)">patients</code> with columns <code style="color:var(--text-muted);font-family:var(--mono)">id, name, dob, diagnosis</code>. You need to look up a single patient by their <code style="color:var(--param);font-family:var(--mono)">diagnosis</code> value that comes from user input.</p>
+
+  <div class="code-block">
+<span class="cmt">-- Step 1: Write the query with a placeholder</span>
+query = <span class="str">"<span class="kw">SELECT</span> id, name, dob
+         <span class="kw">FROM</span> patients
+         <span class="kw">WHERE</span> diagnosis = <span class="param">%s</span>"</span>
+
+<span class="cmt">-- Step 2: Execute, passing the value in a tuple</span>
+cursor.execute(query, (<span class="param">user_diagnosis</span>,))
+
+<span class="cmt">-- Step 3: Fetch results</span>
+results = cursor.<span class="fn">fetchall</span>()
+  </div>
+
+  <p style="margin-top: 16px"><strong style="color:var(--text)">What happened:</strong></p>
+  <ul>
+    <li>The <code style="color:var(--param);font-family:var(--mono)">%s</code> placeholder tells the database "a value goes here."</li>
+    <li>The second argument to <code style="font-family:var(--mono)">execute()</code> is a <strong style="color:var(--text)">tuple</strong> containing the actual value. The database engine safely escapes and binds it.</li>
+    <li>Even if <code style="font-family:var(--mono)">user_diagnosis</code> contains malicious SQL, it's treated as a plain string value.</li>
+  </ul>
+</div>
+
+<!-- ── Exercises ── -->
+<div class="section" id="exercises">
+  <div class="section-label">Practice</div>
+  <h2>Fill in the Blanks</h2>
+  <p>Each exercise presents a scenario and a query with missing pieces. Type the correct SQL or parameter syntax in each blank, then check your work. Use <strong style="color:var(--orange)">Hint</strong> if stuck, or <strong style="color:var(--red)">Reveal</strong> to see the answer.</p>
+</div>
+
+<div id="exerciseContainer"></div>
+
+<div class="footer">
+  Parameterized SQL Tutorial &middot; Practice safe queries.
+</div>
+
+</div><!-- /container -->
+
+<script>
+// ═══════════════════════════════════════════
+//  EXERCISE DATA
+// ═══════════════════════════════════════════
+const exercises = [
+  {
+    id: 1,
+    title: "Simple SELECT with One Parameter",
+    difficulty: "easy",
+    schema: { table: "employees", cols: "id, name, department, salary" },
+    description: "Retrieve all columns for employees in a specific department. The department name comes from user input.",
+    // Lines of the code block. Use {0}, {1}, etc. for blanks.
+    codeLines: [
+      'query = "SELECT * FROM employees',
+      '         WHERE department = {0}"',
+      'cursor.execute(query, ({1},))'
+    ],
+    blanks: [
+      { answer: "%s", hint: "Use the positional placeholder for Python DB-API.", label: "placeholder" },
+      { answer: "dept_input", hint: "Pass the variable holding the user's department choice.", label: "value", accept: ["dept_input","user_dept","department_input","dept","department","user_input"] }
+    ],
+    explanation: "The <code>%s</code> placeholder stands in for the value. The second argument is a tuple with one element — note the trailing comma. The database safely binds the value at execution time."
+  },
+  {
+    id: 2,
+    title: "Two Parameters in a WHERE Clause",
+    difficulty: "easy",
+    schema: { table: "orders", cols: "id, customer_id, product, quantity, order_date" },
+    description: "Find orders for a specific <code>customer_id</code> that have a <code>quantity</code> greater than a threshold — both values from user input.",
+    codeLines: [
+      'query = "SELECT * FROM orders',
+      '         WHERE customer_id = {0}',
+      '         AND quantity > {1}"',
+      'cursor.execute(query, ({2}, {3}))'
+    ],
+    blanks: [
+      { answer: "%s", hint: "Same positional placeholder as before.", label: "placeholder 1" },
+      { answer: "%s", hint: "Each parameter slot needs its own placeholder.", label: "placeholder 2" },
+      { answer: "cust_id", hint: "The variable for the customer ID.", label: "value 1", accept: ["cust_id","customer_id","user_cust_id","cid"] },
+      { answer: "min_qty", hint: "The variable for the quantity threshold.", label: "value 2", accept: ["min_qty","min_quantity","qty_threshold","threshold","qty"] }
+    ],
+    explanation: "Multiple placeholders map to the tuple values <em>in order</em>. The first <code>%s</code> binds to the first tuple element, the second <code>%s</code> to the second. Always match the count!"
+  },
+  {
+    id: 3,
+    title: "Named Parameters",
+    difficulty: "easy",
+    schema: { table: "products", cols: "id, name, category, price" },
+    description: "Using <strong>named parameter</strong> style (<code>:name</code>), find products in a given category below a max price. This style is common in SQLAlchemy, Oracle, and others.",
+    codeLines: [
+      'query = "SELECT name, price FROM products',
+      '         WHERE category = {0}',
+      '         AND price < {1}"',
+      'cursor.execute(query, {"category": {2}, "max_price": {3}})'
+    ],
+    blanks: [
+      { answer: ":category", hint: "Named placeholder using colon syntax matching the dict key.", label: "named param 1" },
+      { answer: ":max_price", hint: "Named placeholder for the price limit.", label: "named param 2" },
+      { answer: "cat_input", hint: "Variable with the user's category value.", label: "value 1", accept: ["cat_input","category_input","user_category","cat","category","user_cat"] },
+      { answer: "price_limit", hint: "Variable with the maximum price.", label: "value 2", accept: ["price_limit","max_price","price_input","user_price","price_max","max_p"] }
+    ],
+    explanation: "Named parameters use <code>:key</code> in the SQL and a <strong>dictionary</strong> instead of a tuple. The keys in the dict must match the placeholder names. This is more readable when queries have many parameters."
+  },
+  {
+    id: 4,
+    title: "INSERT with Parameters",
+    difficulty: "easy",
+    schema: { table: "patients", cols: "id (auto), name, dob, diagnosis" },
+    description: "Insert a new patient record. All three field values come from user input.",
+    codeLines: [
+      'query = "INSERT INTO patients (name, dob, diagnosis)',
+      '         VALUES ({0}, {1}, {2})"',
+      'cursor.execute(query, ({3}, {4}, {5}))'
+    ],
+    blanks: [
+      { answer: "%s", hint: "Positional placeholder for name.", label: "placeholder 1" },
+      { answer: "%s", hint: "Positional placeholder for dob.", label: "placeholder 2" },
+      { answer: "%s", hint: "Positional placeholder for diagnosis.", label: "placeholder 3" },
+      { answer: "patient_name", hint: "Variable holding the patient's name.", label: "value 1", accept: ["patient_name","p_name","name","pname","user_name","name_input"] },
+      { answer: "patient_dob", hint: "Variable holding the date of birth.", label: "value 2", accept: ["patient_dob","dob","p_dob","dob_input","birth_date","date_of_birth"] },
+      { answer: "patient_diagnosis", hint: "Variable holding the diagnosis.", label: "value 3", accept: ["patient_diagnosis","diagnosis","p_diagnosis","diag","diagnosis_input","diag_input"] }
+    ],
+    explanation: "Parameterization works with <code>INSERT</code> too. Each <code>%s</code> in the VALUES clause maps to one element in the tuple. This prevents injection through any of the input fields."
+  },
+  {
+    id: 5,
+    title: "UPDATE with a WHERE Guard",
+    difficulty: "med",
+    schema: { table: "inventory", cols: "id, sku, product_name, quantity, warehouse" },
+    description: "Update the <code>quantity</code> for a specific <code>sku</code> in a given <code>warehouse</code>. All three values are user-supplied.",
+    codeLines: [
+      'query = "UPDATE inventory',
+      '         SET quantity = {0}',
+      '         WHERE sku = {1}',
+      '         AND warehouse = {2}"',
+      'cursor.execute(query, ({3}, {4}, {5}))'
+    ],
+    blanks: [
+      { answer: "%s", hint: "Placeholder for the new quantity.", label: "SET value" },
+      { answer: "%s", hint: "Placeholder for the SKU.", label: "WHERE value 1" },
+      { answer: "%s", hint: "Placeholder for the warehouse.", label: "WHERE value 2" },
+      { answer: "new_qty", hint: "Variable for the new quantity.", label: "param 1", accept: ["new_qty","new_quantity","qty","quantity","updated_qty"] },
+      { answer: "target_sku", hint: "Variable for which SKU to update.", label: "param 2", accept: ["target_sku","sku","sku_input","item_sku","sku_val"] },
+      { answer: "wh_name", hint: "Variable for the warehouse.", label: "param 3", accept: ["wh_name","warehouse","wh","warehouse_name","warehouse_input","wh_input"] }
+    ],
+    explanation: "Parameterized <code>UPDATE</code> queries follow the same pattern. The order in the tuple matches the <em>order of placeholders in the SQL</em>, not the clause order. Here: SET value first, then the two WHERE values."
+  },
+  {
+    id: 6,
+    title: "LIKE Pattern with Parameter",
+    difficulty: "med",
+    schema: { table: "articles", cols: "id, title, body, author, published_date" },
+    description: "Search for articles whose <code>title</code> contains a keyword (partial match). The keyword comes from user input. Remember: the <code>%</code> wildcards are part of the <em>value</em>, not the SQL.",
+    codeLines: [
+      'search_term = {0} + keyword + {1}',
+      'query = "SELECT title, author FROM articles',
+      '         WHERE title LIKE {2}"',
+      'cursor.execute(query, ({3},))'
+    ],
+    blanks: [
+      { answer: '"%"', hint: "Prepend the SQL wildcard character as a string.", label: "prefix", accept: ['"%"',"'%'"] },
+      { answer: '"%"', hint: "Append the SQL wildcard character as a string.", label: "suffix", accept: ['"%"',"'%'"] },
+      { answer: "%s", hint: "Standard positional placeholder.", label: "placeholder" },
+      { answer: "search_term", hint: "Pass the variable you built with wildcards.", label: "value" }
+    ],
+    explanation: "With LIKE, the wildcards <code>%</code> must be part of the <em>parameter value</em>, not hard-coded in the SQL string. Build the pattern in application code first, then pass the complete pattern as a single parameter."
+  },
+  {
+    id: 7,
+    title: "DELETE with Named Parameters",
+    difficulty: "med",
+    schema: { table: "sessions", cols: "id, user_id, token, created_at, expires_at" },
+    description: "Delete expired sessions for a specific user. Use <strong>named parameters</strong>. The user ID and a cutoff timestamp are inputs.",
+    codeLines: [
+      'query = "DELETE FROM sessions',
+      '         WHERE user_id = {0}',
+      '         AND expires_at < {1}"',
+      'cursor.execute(query, {',
+      '    "uid": {2},',
+      '    "cutoff": {3}',
+      '})'
+    ],
+    blanks: [
+      { answer: ":uid", hint: "Named placeholder matching the dict key 'uid'.", label: "param 1" },
+      { answer: ":cutoff", hint: "Named placeholder matching the dict key 'cutoff'.", label: "param 2" },
+      { answer: "user_id", hint: "Variable for the user's ID.", label: "value 1", accept: ["user_id","uid","user","uid_input","target_user"] },
+      { answer: "cutoff_time", hint: "Variable for the expiration cutoff.", label: "value 2", accept: ["cutoff_time","cutoff","expiry","cutoff_ts","timestamp","expire_time","cutoff_dt"] }
+    ],
+    explanation: "Named parameters in <code>DELETE</code> statements work identically. The <code>:uid</code> and <code>:cutoff</code> names must match the dictionary keys exactly."
+  },
+  {
+    id: 8,
+    title: "Parameterized JOIN Query",
+    difficulty: "med",
+    schema: { table: "orders(id, customer_id, total) &amp; customers(id, name, city)", cols: "" },
+    description: "Join <code>orders</code> with <code>customers</code> to find orders above a minimum total for customers in a specific city.",
+    codeLines: [
+      'query = """',
+      '  SELECT c.name, o.id, o.total',
+      '  FROM orders o',
+      '  {0} customers c ON o.customer_id = c.id',
+      '  WHERE c.city = {1}',
+      '  AND o.total > {2}',
+      '"""',
+      'cursor.execute(query, ({3}, {4}))'
+    ],
+    blanks: [
+      { answer: "JOIN", hint: "The SQL keyword to combine two tables.", label: "join keyword", accept: ["JOIN","INNER JOIN","join","inner join"] },
+      { answer: "%s", hint: "Placeholder for the city.", label: "placeholder 1" },
+      { answer: "%s", hint: "Placeholder for the minimum total.", label: "placeholder 2" },
+      { answer: "city_input", hint: "Variable for the target city.", label: "value 1", accept: ["city_input","city","target_city","user_city","city_name"] },
+      { answer: "min_total", hint: "Variable for the minimum order total.", label: "value 2", accept: ["min_total","min_amount","minimum","total_threshold","threshold","min_order"] }
+    ],
+    explanation: "Parameters work in JOINs the same as simple queries. Note that the <code>JOIN ... ON</code> clause uses <em>column references</em> (not parameterized) — only <strong>data values</strong> should be parameterized, never table/column names."
+  },
+  {
+    id: 9,
+    title: "IN Clause with Dynamic List",
+    difficulty: "hard",
+    schema: { table: "products", cols: "id, name, category, price, in_stock" },
+    description: "Select products whose <code>category</code> is in a user-provided list of categories. You must dynamically build the right number of placeholders.",
+    codeLines: [
+      'categories = ["Electronics", "Books", "Toys"]',
+      'placeholders = {0}',
+      'query = f"SELECT * FROM products',
+      '          WHERE category IN ({1})"',
+      'cursor.execute(query, {2})'
+    ],
+    blanks: [
+      { answer: '", ".join(["%s"] * len(categories))', hint: "Create a string of comma-separated %s placeholders, one per category. Use join() on a list of '%s' repeated len(categories) times.", label: "build placeholders", accept: ['", ".join(["%s"] * len(categories))',"\", \".join([\"%s\"] * len(categories))","', '.join(['%s'] * len(categories))","\" ,\".join([\"%s\"] * len(categories))"] },
+      { answer: "placeholders", hint: "Insert the placeholder string you just built.", label: "in f-string" },
+      { answer: "categories", hint: "Pass the list directly — the DB-API accepts sequences.", label: "param values", accept: ["categories","tuple(categories)","list(categories)"] }
+    ],
+    explanation: "You cannot pass a list to a single <code>%s</code>. Instead, generate one <code>%s</code> per item and join them with commas. The f-string inserts this placeholder string into the SQL, then the list is passed as the parameter sequence. This stays injection-safe because each element is individually bound."
+  },
+  {
+    id: 10,
+    title: "Parameterized Subquery with Aggregation",
+    difficulty: "hard",
+    schema: { table: "sales(id, rep_id, amount, region, sale_date) &amp; reps(id, name, hire_date)", cols: "" },
+    description: "Find sales reps whose total sales in a given <code>region</code> exceed an <code>amount threshold</code>, after a specific <code>start date</code>. Uses a subquery with GROUP BY and HAVING — all three filter values are parameterized.",
+    codeLines: [
+      'query = """',
+      '  SELECT r.name, sub.total_sales',
+      '  FROM reps r',
+      '  JOIN (',
+      '    SELECT rep_id, SUM(amount) AS total_sales',
+      '    FROM sales',
+      '    WHERE region = {0}',
+      '    AND sale_date >= {1}',
+      '    GROUP BY rep_id',
+      '    {2} SUM(amount) > {3}',
+      '  ) sub ON r.id = sub.rep_id',
+      '  ORDER BY sub.total_sales DESC',
+      '"""',
+      'cursor.execute(query, ({4}, {5}, {6}))'
+    ],
+    blanks: [
+      { answer: "%s", hint: "Placeholder for the region filter.", label: "region param" },
+      { answer: "%s", hint: "Placeholder for the start date.", label: "date param" },
+      { answer: "HAVING", hint: "SQL keyword to filter after GROUP BY.", label: "keyword" },
+      { answer: "%s", hint: "Placeholder for the amount threshold.", label: "threshold param" },
+      { answer: "region_input", hint: "Variable holding the target region.", label: "value 1", accept: ["region_input","region","target_region","user_region","reg","region_name"] },
+      { answer: "start_date", hint: "Variable holding the start date.", label: "value 2", accept: ["start_date","date_input","from_date","begin_date","start","after_date","min_date"] },
+      { answer: "amount_threshold", hint: "Variable holding the minimum total sales.", label: "value 3", accept: ["amount_threshold","threshold","min_amount","sales_threshold","min_sales","amt_threshold","target_amount"] }
+    ],
+    explanation: "Even inside subqueries, parameterization works identically. The three <code>%s</code> placeholders bind to the tuple in order. The <code>HAVING</code> clause filters <em>after</em> aggregation — it's the GROUP BY equivalent of WHERE. This pattern shows that arbitrarily complex SQL still uses the same safe binding mechanism."
+  }
+];
+
+// ═══════════════════════════════════════════
+//  RENDER ENGINE
+// ═══════════════════════════════════════════
+let solved = new Set();
+
+function updateProgress() {
+  const pct = (solved.size / exercises.length) * 100;
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('scoreLabel').textContent = `${solved.size} / ${exercises.length}`;
+}
+
+function renderExercises() {
+  const container = document.getElementById('exerciseContainer');
+  exercises.forEach(ex => {
+    const div = document.createElement('div');
+    div.className = 'exercise';
+    div.id = `ex-${ex.id}`;
+
+    const diffClass = ex.difficulty === 'easy' ? 'diff-easy' : ex.difficulty === 'med' ? 'diff-med' : 'diff-hard';
+    const diffLabel = ex.difficulty === 'easy' ? 'Easy' : ex.difficulty === 'med' ? 'Medium' : 'Hard';
+
+    let schemaHTML = '';
+    if (ex.schema.cols) {
+      schemaHTML = `<div class="schema-box"><span class="tname">${ex.schema.table}</span> <span class="cols">(${ex.schema.cols})</span></div>`;
+    } else {
+      schemaHTML = `<div class="schema-box"><span class="tname">${ex.schema.table}</span></div>`;
+    }
+
+    // Build code with blanks
+    let codeHTML = '';
+    const joined = ex.codeLines.join('\n');
+    // Replace {N} with inputs
+    codeHTML = joined.replace(/\{(\d+)\}/g, (_, idx) => {
+      const b = ex.blanks[parseInt(idx)];
+      const ansLen = b.answer.length;
+      const widthCh = Math.max(ansLen + 2, 6);
+      return `<span class="blank-wrap"><input type="text" data-ex="${ex.id}" data-blank="${idx}" style="width:${widthCh}ch" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="???" /><span class="blank-label">${b.label}</span></span>`;
+    });
+
+    // Syntax highlight the static parts
+    codeHTML = codeHTML
+      .replace(/\b(SELECT|FROM|WHERE|AND|OR|INSERT INTO|VALUES|UPDATE|SET|DELETE|JOIN|INNER JOIN|LEFT JOIN|ON|GROUP BY|HAVING|ORDER BY|DESC|ASC|IN|LIKE|AS|INTO)\b/g, '<span class="kw">$1</span>')
+      .replace(/(#.*|--.*)/g, '<span class="cmt">$1</span>');
+
+    div.innerHTML = `
+      <div class="exercise-header">
+        <div class="exercise-num">${ex.id}</div>
+        <div class="exercise-title">${ex.title}</div>
+        <div class="exercise-diff ${diffClass}">${diffLabel}</div>
+      </div>
+      <div class="exercise-body">
+        <p>${ex.description}</p>
+        ${schemaHTML}
+        <div class="fill-code">${codeHTML}</div>
+        <div class="exercise-actions">
+          <button class="btn btn-check" onclick="checkExercise(${ex.id})">Check Answer</button>
+          <button class="btn btn-hint" onclick="showHint(${ex.id})">Hint</button>
+          <button class="btn btn-reveal" onclick="revealAnswer(${ex.id})">Reveal</button>
+          <button class="btn btn-reset" onclick="resetExercise(${ex.id})">Reset</button>
+        </div>
+        <div class="hint-area" id="hint-${ex.id}"></div>
+        <div class="explanation" id="explain-${ex.id}"><p>${ex.explanation}</p></div>
+      </div>
+    `;
+    container.appendChild(div);
+  });
+}
+
+function getExercise(id) { return exercises.find(e => e.id === id); }
+
+function getInputs(id) {
+  return Array.from(document.querySelectorAll(`input[data-ex="${id}"]`));
+}
+
+function normalize(s) {
+  return s.trim().replace(/\s+/g,' ').replace(/[""]/g,'"').replace(/['']/g,"'");
+}
+
+function checkBlank(ex, idx, value) {
+  const b = ex.blanks[idx];
+  const nv = normalize(value);
+  const na = normalize(b.answer);
+  if (nv === na) return true;
+  if (b.accept) {
+    return b.accept.some(a => normalize(a) === nv);
+  }
+  return false;
+}
+
+function checkExercise(id) {
+  const ex = getExercise(id);
+  const inputs = getInputs(id);
+  const hintArea = document.getElementById(`hint-${id}`);
+  let allCorrect = true;
+  let firstWrong = -1;
+
+  inputs.forEach((inp, idx) => {
+    inp.classList.remove('correct','wrong');
+    if (checkBlank(ex, idx, inp.value)) {
+      inp.classList.add('correct');
+    } else {
+      inp.classList.add('wrong');
+      allCorrect = false;
+      if (firstWrong < 0) firstWrong = idx;
+    }
+  });
+
+  if (allCorrect) {
+    hintArea.className = 'hint-area visible success';
+    hintArea.textContent = '✓ All correct — nice work!';
+    solved.add(id);
+    document.getElementById(`ex-${id}`).classList.add('solved');
+    document.getElementById(`explain-${id}`).classList.add('visible');
+    updateProgress();
+  } else {
+    hintArea.className = 'hint-area visible error';
+    const wrongCount = inputs.filter((inp,i) => !checkBlank(ex, i, inp.value)).length;
+    hintArea.textContent = `✗ ${wrongCount} blank${wrongCount>1?'s':''} still incorrect. Try again or use Hint.`;
+  }
+}
+
+// Track hint level per blank: show one more hint each click
+const hintLevels = {};
+function showHint(id) {
+  const ex = getExercise(id);
+  const inputs = getInputs(id);
+  const hintArea = document.getElementById(`hint-${id}`);
+
+  // Find first blank that isn't correct
+  let targetIdx = -1;
+  for (let i = 0; i < inputs.length; i++) {
+    if (!checkBlank(ex, i, inputs[i].value)) { targetIdx = i; break; }
+  }
+  if (targetIdx < 0) { targetIdx = 0; }
+
+  const b = ex.blanks[targetIdx];
+  hintArea.className = 'hint-area visible hint';
+  hintArea.innerHTML = `<strong>Hint for "${b.label}":</strong> ${b.hint}`;
+}
+
+function revealAnswer(id) {
+  const ex = getExercise(id);
+  const inputs = getInputs(id);
+  inputs.forEach((inp, idx) => {
+    inp.value = ex.blanks[idx].answer;
+    inp.classList.remove('wrong');
+    inp.classList.add('correct');
+  });
+  const hintArea = document.getElementById(`hint-${id}`);
+  hintArea.className = 'hint-area visible success';
+  hintArea.textContent = 'Answer revealed. Study it, then try the next one from memory!';
+  solved.add(id);
+  document.getElementById(`ex-${id}`).classList.add('solved');
+  document.getElementById(`explain-${id}`).classList.add('visible');
+  updateProgress();
+}
+
+function resetExercise(id) {
+  const inputs = getInputs(id);
+  inputs.forEach(inp => {
+    inp.value = '';
+    inp.classList.remove('correct','wrong');
+  });
+  const hintArea = document.getElementById(`hint-${id}`);
+  hintArea.className = 'hint-area';
+  hintArea.textContent = '';
+  document.getElementById(`explain-${id}`).classList.remove('visible');
+  // Don't remove from solved — they already proved they could do it
+}
+
+// ── Initialize ──
+renderExercises();
+updateProgress();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,1116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HL7 v2: Message to Model — Part 2: From Pipeline to Prediction</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Crimson+Pro:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* ─── Page chrome (outside the tutorial space) ─── */
+  --bg:#7d8b9d;                /* moderate blue-gray page background */
+  --header-bg:#1e4670;         /* medium-dark blue header */
+
+  /* ─── Inside the tutorial space (1/2 shade darker than C-CDA Lab) ─── */
+  --surface:#d3dde8;           /* slight blue-gray, content panels */
+  --surface-raised:#c8d3e0;    /* slightly raised cards */
+  --surface-inset:#a8b4c2;     /* moderate blue-gray inset */
+
+  /* ─── Borders ─── */
+  --border:#8693a3;
+  --border-accent:#5d6e85;
+  --border-focus:#1e4670;
+
+  /* ─── Text (dark charcoals) ─── */
+  --text:#2a2a2a;
+  --text-muted:#4a5260;
+  --text-dim:#6b7280;
+
+  /* ─── Accent: yellow-brown ─── */
+  --accent:#7a5418;
+  --accent-glow:rgba(184,134,42,.12);
+  --accent-dim:#5d3f10;
+  --accent-badge:#b8862a;
+
+  /* ─── Status colors (deeper, WCAG AA on light bg) ─── */
+  --green:#1f6843;--green-bg:rgba(31,104,67,.12);
+  --red:#9c382d;--red-bg:rgba(156,56,45,.10);
+  --orange:#8e4d10;--orange-bg:rgba(142,77,16,.10);
+  --blue:#2c5680;--blue-bg:rgba(44,86,128,.10);
+  --purple:#553a80;--purple-bg:rgba(85,58,128,.10);
+  --cyan:#155f6e;--cyan-bg:rgba(21,95,110,.10);
+
+  --pipe:#7a5418;
+  --c-assemble:#2c5680;--c-reconcile:#553a80;--c-features:#1f6843;--c-quality:#8e4d10;--c-card:#155f6e;
+
+  --radius:8px;--radius-lg:12px;
+  --mono:'JetBrains Mono',monospace;--serif:'Crimson Pro',Georgia,serif;--sans:'DM Sans',system-ui,sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15px;line-height:1.7;min-height:100vh}
+.header{background:var(--header-bg);border-bottom:2px solid var(--accent);padding:20px 28px 16px;color:#f0f4fa}
+.header-top{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.header-brand{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.header-brand h1{font-family:var(--serif);font-size:26px;font-weight:700;color:#f4c97c}
+.header-brand .pipe-motif{font-family:var(--mono);color:#a8b8c8;font-size:20px;letter-spacing:2px}
+.header-brand .subtitle{font-family:var(--sans);font-size:13px;color:#cfd8e3;font-weight:400}
+.header-credit{font-size:11px;color:#a8b8c8;font-family:var(--mono)}
+.prereq{margin-top:12px;padding:10px 16px;background:var(--surface-inset);border:1px solid var(--border);border-radius:var(--radius);font-size:12px;color:var(--text-dim)}
+.prereq a{color:var(--accent);text-decoration:none}
+.prereq a:hover{text-decoration:underline}
+.pipeline-bar{position:sticky;top:0;z-index:90;background:rgba(125,139,157,.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:10px 20px;display:flex;gap:6px;align-items:center;justify-content:center;flex-wrap:wrap}
+.stn-pill{font-family:var(--mono);font-size:11px;font-weight:500;padding:6px 16px;border-radius:20px;cursor:pointer;border:1px solid var(--border);background:var(--surface-inset);color:var(--text-dim);transition:all .2s;display:inline-flex;align-items:center;gap:6px}
+.stn-pill:hover{border-color:var(--border-accent);color:var(--text-muted)}
+.stn-pill.active{border-color:var(--accent);color:var(--accent);background:var(--accent-glow)}
+.stn-pill.done{border-color:var(--green);color:var(--green);background:var(--green-bg)}
+.stn-pill.done::before{content:'✓';font-size:9px}
+.stn-pill .stn-num{font-weight:700}
+.pipeline-arrow{color:var(--text-dim);font-size:14px;margin:0 4px}
+.main{max-width:1100px;margin:0 auto;padding:24px 20px 60px}
+.lecture{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:28px 32px;margin-bottom:24px}
+.lecture h2{font-family:var(--serif);font-size:22px;font-weight:700;color:var(--text);margin-bottom:6px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.lecture h2 .stn-badge{font-family:var(--mono);font-size:11px;font-weight:600;padding:3px 10px;border-radius:12px;background:var(--accent-glow);color:var(--accent);border:1px solid var(--accent-dim)}
+.lecture h2 .stn-info-icon{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:var(--surface-inset);border:1px solid var(--border-accent);color:var(--text-muted);font-family:var(--mono);font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;font-style:italic;line-height:1;padding:0;margin-left:-4px}
+.lecture h2 .stn-info-icon:hover{background:var(--accent-glow);color:var(--accent);border-color:var(--accent);transform:scale(1.1)}
+.card-tile:hover{border-color:var(--cyan) !important;background:var(--surface) !important;transform:translateX(2px)}
+.lecture .concept{font-size:14px;color:var(--text-muted);line-height:1.8;margin-top:10px}
+.lecture .concept strong{color:var(--text)}
+.lecture .concept code{font-family:var(--mono);font-size:12px;background:var(--surface-inset);color:var(--accent);padding:2px 6px;border-radius:4px;border:1px solid var(--border)}
+.ba-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px}
+@media(max-width:768px){.ba-grid{grid-template-columns:1fr}}
+.ba-panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden}
+.ba-panel h3{font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;padding:10px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
+.ba-panel.before h3{color:var(--orange)}.ba-panel.after h3{color:var(--green)}
+.ba-panel .ba-content{padding:14px 16px;font-family:var(--mono);font-size:12px;line-height:1.8;max-height:400px;overflow:auto;color:var(--text-muted)}
+.ba-panel .ba-content::-webkit-scrollbar{width:4px}
+.ba-panel .ba-content::-webkit-scrollbar-thumb{background:var(--border-accent);border-radius:2px}
+.task-panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px 28px;margin-bottom:20px}
+.task-panel h3{font-family:var(--mono);font-size:12px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--accent);margin-bottom:14px}
+.task-prompt{font-size:14px;color:var(--text);margin-bottom:16px;line-height:1.7}
+.task-prompt code{font-family:var(--mono);font-size:12px;background:var(--surface-inset);color:var(--accent);padding:2px 6px;border-radius:4px}
+.choices{display:flex;flex-direction:column;gap:8px}
+.choice-btn{display:flex;align-items:flex-start;gap:12px;padding:12px 16px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface-inset);cursor:pointer;text-align:left;font-family:var(--sans);font-size:13px;color:var(--text-muted);transition:all .2s;line-height:1.5}
+.choice-btn:hover{border-color:var(--border-accent);color:var(--text);background:var(--surface)}
+.choice-btn .choice-key{font-family:var(--mono);font-weight:700;font-size:12px;color:var(--text-dim);min-width:22px;height:22px;display:flex;align-items:center;justify-content:center;border:1px solid var(--border);border-radius:4px;flex-shrink:0}
+.choice-btn.correct{border-color:var(--green);background:var(--green-bg);color:var(--green)}
+.choice-btn.correct .choice-key{border-color:var(--green);color:var(--green)}
+.choice-btn.wrong{border-color:var(--red);background:var(--red-bg);color:var(--red)}
+.choice-btn.wrong .choice-key{border-color:var(--red);color:var(--red)}
+.choice-btn.disabled{pointer-events:none;opacity:.6}
+.fill-group{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:12px}
+.fill-label{font-size:13px;color:var(--text-muted);font-family:var(--mono)}
+.fill-input{font-family:var(--mono);font-size:13px;background:var(--surface-inset);color:var(--text);border:1px solid var(--border);border-radius:4px;padding:6px 10px;width:200px;outline:none;transition:border .2s}
+.fill-input:focus{border-color:var(--accent)}
+.fill-input.correct{border-color:var(--green);color:var(--green);background:var(--green-bg)}
+.fill-input.wrong{border-color:var(--red);color:var(--red);background:var(--red-bg)}
+.action-bar{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:24px}
+.action-bar .left-actions,.action-bar .right-actions{display:flex;gap:8px;flex-wrap:wrap}
+.btn{font-family:var(--mono);font-size:12px;font-weight:600;padding:8px 18px;border-radius:var(--radius);border:1px solid var(--border);cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:6px}
+.btn.primary{background:var(--accent-badge);color:#1a1a1a;border-color:var(--accent-badge);font-weight:700}.btn.primary:hover{box-shadow:0 2px 16px var(--accent-glow);background:#cc9633}.btn.primary:disabled{opacity:.35;cursor:not-allowed;box-shadow:none}
+.btn.secondary{background:transparent;color:var(--text-muted);border-color:var(--border)}.btn.secondary:hover{color:var(--text);border-color:var(--border-accent);background:var(--surface)}
+.btn.warning{background:transparent;color:var(--orange);border-color:rgba(142,77,16,.45)}.btn.warning:hover{background:var(--orange-bg)}
+.btn.danger{background:transparent;color:var(--red);border-color:rgba(156,56,45,.45)}.btn.danger:hover{background:var(--red-bg)}
+.ack-panel{margin-top:16px;border-radius:var(--radius);padding:14px 18px;font-family:var(--mono);font-size:12px;line-height:1.8;display:none}
+.ack-panel.visible{display:block}
+.ack-panel.aa{background:var(--green-bg);border:1px solid rgba(31,104,67,.35);color:var(--green)}
+.ack-panel.ae{background:var(--orange-bg);border:1px solid rgba(142,77,16,.35);color:var(--orange)}
+.explanation{margin-top:14px;padding:14px 18px;background:var(--blue-bg);border:1px solid rgba(44,86,128,.30);border-radius:var(--radius);font-size:13px;color:var(--blue);line-height:1.7;display:none}
+.explanation.visible{display:block}
+.code-block{background:var(--surface-inset);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;font-family:var(--mono);font-size:11.5px;line-height:1.8;overflow-x:auto;color:var(--text-muted);white-space:pre-wrap}
+.field-table{width:100%;border-collapse:collapse;font-size:11px;font-family:var(--mono)}
+.field-table th{text-align:left;color:var(--text-dim);font-weight:500;padding:5px 8px;border-bottom:1px solid var(--border);font-size:10px;letter-spacing:.5px;text-transform:uppercase}
+.field-table td{padding:5px 8px;border-bottom:1px solid var(--border);color:var(--text-muted)}
+.field-table tr:hover td{background:var(--surface-inset)}
+.scorecard{position:fixed;top:12px;right:20px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:10px 14px;font-family:var(--mono);font-size:10px;color:var(--text-dim);z-index:50;min-width:120px}
+.scorecard .sc-row{display:flex;justify-content:space-between;gap:12px;margin-bottom:3px}
+.scorecard .sc-val{color:var(--accent);font-weight:600}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;display:none;align-items:center;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal{background:var(--surface);border:1px solid var(--border-accent);border-radius:var(--radius-lg);width:90%;max-width:720px;max-height:80vh;display:flex;flex-direction:column}
+.modal-header{display:flex;justify-content:space-between;align-items:center;padding:16px 24px;border-bottom:1px solid var(--border)}
+.modal-header h3{font-family:var(--serif);font-size:18px;color:var(--text)}
+.modal-close{background:none;border:none;color:var(--text-dim);font-size:22px;cursor:pointer;padding:4px 8px}
+.modal-close:hover{color:var(--text)}
+.modal-body{padding:20px 24px;overflow-y:auto;font-size:14px;line-height:1.8;color:var(--text-muted)}
+.modal-body .gloss-term{margin-bottom:12px}
+.modal-body .gloss-term dt{font-family:var(--mono);font-weight:600;color:var(--text);font-size:13px}
+.modal-body .gloss-term dd{color:var(--text-muted);font-size:13px;margin-left:16px}
+.empty-state{color:var(--text-dim);font-style:italic;font-size:13px;padding:20px;text-align:center}
+.tag{display:inline-flex;align-items:center;font-family:var(--mono);font-size:10px;font-weight:600;padding:2px 8px;border-radius:10px;letter-spacing:.5px}
+/* ════════════════════════════════════════════════════════════════
+   USER-REQUESTED COLOR OVERRIDES
+   ════════════════════════════════════════════════════════════════ */
+
+/* Item 9: outer page bg → match header blue */
+body{background:#1e4670}
+
+/* Items 1-3: pipeline ribbon stations */
+.stn-pill{background:#73798a;color:#000;border-color:#525861}
+.stn-pill .stn-num{color:#000}
+.stn-pill:hover{background:#8a92a0;color:#000;border-color:#5d6470}
+.stn-pill.done{background:#5cae6a;color:#000;border-color:#3d9555}
+.stn-pill.done:hover{background:#7cc188;color:#000;border-color:#5cae6a}
+.stn-pill.done .stn-num{color:#000}
+.stn-pill.active{background:#4a90c2;color:#000;border-color:#3a7aa6}
+.stn-pill.active:hover{background:#5fa0d0;color:#000;border-color:#4a90c2}
+.stn-pill.active .stn-num{color:#000}
+.stn-pill.done.active{background:#4a90c2;color:#000;border-color:#3a7aa6}
+
+/* Item 4: action button labels → black text */
+.btn.secondary{color:#000}
+.btn.secondary:hover{color:#000}
+.btn.warning{color:#000}
+.btn.warning:hover{color:#000}
+.btn.danger{color:#000}
+.btn.danger:hover{color:#000}
+.btn.primary{color:#000}
+.btn.primary:hover{color:#000}
+
+/* Item 5: Hint and Reveal content → black text */
+.ack-panel.aa, .ack-panel.ae, .ack-panel.ar{color:#000}
+.ack-panel .ack-header, .ack-panel .ack-msg{color:#000}
+.explanation{color:#000;background:#e0e0e0;border-color:#b0b0b0}
+
+/* Item 8: choice button text → black */
+.choice-btn{color:#000}
+.choice-btn:hover{color:#000}
+.choice-btn.correct{color:#000}
+.choice-btn.wrong{color:#000}
+.choice-btn .choice-key{color:#000}
+
+/* ──────────────────────────────────────────────────────────────
+   FOLLOW-UP TROUBLESHOOTING (Round 2)
+   ────────────────────────────────────────────────────────────── */
+
+/* Issue 1: Hint background → neutral gray */
+.ack-panel.ae{background:#cfcfcf;border-color:#9a9a9a}
+
+/* Issue 3: Revealed input text → black so it's clearly visible */
+.fill-input.correct{color:#000;background:rgba(31,104,67,.18)}
+.fill-input.wrong{color:#000;background:rgba(156,56,45,.15)}
+.fill-input{color:#000}
+
+/* Issue 4: Glossary, Cards, Hint, Reveal buttons → match Next Station */
+.btn.secondary, .btn.warning, .btn.danger{
+  background:#b8862a;
+  color:#000;
+  border-color:#b8862a;
+}
+.btn.secondary:hover, .btn.warning:hover, .btn.danger:hover{
+  background:#cc9633;
+  color:#000;
+  border-color:#cc9633;
+}
+
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-top">
+    <div class="header-brand">
+      <h1>HL7 v2<span class="pipe-motif">|</span>Message to Model</h1>
+      <span class="subtitle">Part 2 — From Pipeline to Prediction</span>
+    </div>
+    <div class="header-credit">Developed by: Joe Williams</div>
+  </div>
+  <div class="prereq">← Prerequisites covered in <a href="hl7v2_part1.html">Part 1: The Interface Pipeline</a> · This tutorial begins where Part 1 ended — with a stream of processed HL7 v2 messages. Here, you'll aggregate that stream into an encounter-level dataset suitable for clinical prediction.</div>
+</header>
+
+<nav class="pipeline-bar" id="pipelineBar"></nav>
+
+<main class="main">
+  <section class="lecture" id="lectureSection"></section>
+  <section class="ba-grid" id="baGrid">
+    <div class="ba-panel before"><h3>⬤ Before</h3><div class="ba-content" id="beforePanel"></div></div>
+    <div class="ba-panel after"><h3>⬤ After</h3><div class="ba-content" id="afterPanel"></div></div>
+  </section>
+  <section class="task-panel" id="taskPanel"></section>
+  <div class="ack-panel" id="ackPanel"></div>
+  <div class="explanation" id="explanationPanel"></div>
+  <section class="action-bar">
+    <div class="left-actions">
+      <button class="btn secondary" onclick="openGlossary()">📖 Glossary</button>
+      <button class="btn secondary" onclick="openCardLibrary()">📚 Cards</button>
+    </div>
+    <div class="right-actions">
+      <button class="btn warning" id="hintBtn" onclick="showHint()">💡 Hint</button>
+      <button class="btn danger" id="revealBtn" onclick="revealAnswer()">👁 Reveal</button>
+      <button class="btn primary" id="nextBtn" onclick="nextStation()" disabled>Next Station →</button>
+    </div>
+  </section>
+</main>
+
+<div class="scorecard" id="scorecard">
+  <div class="sc-row"><span>Completed</span><span class="sc-val" id="scDone">0/5</span></div>
+  <div class="sc-row"><span>Hints</span><span class="sc-val" id="scHints">0</span></div>
+  <div class="sc-row"><span>Reveals</span><span class="sc-val" id="scReveals">0</span></div>
+</div>
+
+<div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="modal-header"><h3 id="modalTitle"></h3><button class="modal-close" onclick="closeModal()">×</button></div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<script>
+/* ================================================================
+   HL7 v2: MESSAGE TO MODEL — Part 2: From Pipeline to Prediction
+   Riverside Cohort · 5 Stations · Single Track
+   Terminal Goal: ED High-Utilizer Prediction Dataset
+   ================================================================ */
+
+const STATIONS = [
+  // ──── STATION A1: MESSAGE STREAM ASSEMBLY ────
+  {
+    id:'A1', name:'Message Stream Assembly', shortName:'Assembly', icon:'📥',
+    lecture: `<h2><span class="stn-badge">Station A1</span> Message Stream Assembly</h2>
+<div class="concept">
+<p>A single patient encounter generates <strong>multiple HL7 v2 messages</strong> — an ADT^A01 (admit), several ORU^R01s (lab results arriving over hours), possibly an ADT^A02 (transfer), and an ADT^A03 (discharge). These arrive as <strong>independent messages</strong> at the interface engine, interleaved with messages from other patients.</p>
+<p>The first aggregation step: <strong>group messages into encounter-level records</strong>. Two fields serve as grouping keys: <code>PID.3</code> (MRN) identifies the patient, and <code>PV1-19</code> (visit number) groups messages into the same encounter. Two messages with the same MRN but different visit numbers belong to <strong>different encounters</strong>.</p>
+<p><strong>Ordering matters:</strong> Messages don't always arrive in clinical order. Aisha Washington's ORU^R01 (lab result) may arrive before her ADT^A01 (admission) because the lab system processed faster. For clinical ordering, use <code>OBR-7</code> (observation date/time), not <code>MSH-7</code> (message creation time) — OBR-7 reflects when the specimen was collected, while MSH-7 reflects when the message was generated.</p>
+</div>`,
+    before: function(){
+      return `<div class="code-block"><strong>Interleaved message stream (interface engine log):</strong>
+
+08:30:00  ADT^A01  MRN001/VN001  Sarah Chen — Admit ICU
+08:45:00  ADT^A01  MRN002/VN002  Robert Kowalski — Admit MED
+09:00:00  ADT^A01  MRN003/VN003  Maya Patel — Admit BHU
+09:20:00  ADT^A01  MRN005/VN005  Aisha Washington — Admit ED
+09:30:00  ORU^R01  MRN005/VN005  Aisha — CBC result
+09:35:00  ORU^R01  MRN001/VN001  Sarah — CBC result
+09:40:00  ADT^A01  MRN004/VN004  James Morrison — Admit MED
+09:45:00  ORU^R01  MRN001/VN001  Sarah — BMP result
+10:00:00  ORU^R01  MRN002/VN002  Robert — Chem7 result
+10:30:00  ADT^A08  MRN004/VN004  James — Address update #1
+11:00:00  ADT^A02  MRN005/VN005  Aisha — Transfer ED→ICU
+13:30:00  ADT^A08  MRN004/VN004  James — Address update #2
+16:00:00  ADT^A03  MRN001/VN001  Sarah — Discharge
+18:00:00  ADT^A03  MRN004/VN004  James — Discharge
+
+15 messages, 5 patients, interleaved in arrival order.</div>`;
+    },
+    after: function(){
+      return `<table class="field-table">
+<tr><th>Patient</th><th>MRN</th><th>Visit</th><th>Messages</th><th>Msg Count</th></tr>
+<tr><td>Sarah Chen</td><td>MRN001</td><td>VN001</td><td>A01, ORU(CBC), ORU(BMP), A03</td><td>4</td></tr>
+<tr><td>Robert Kowalski</td><td>MRN002</td><td>VN002</td><td>A01, ORU(Chem7)</td><td>2</td></tr>
+<tr><td>Maya Patel</td><td>MRN003</td><td>VN003</td><td>A01</td><td>1</td></tr>
+<tr><td>James Morrison</td><td>MRN004</td><td>VN004</td><td>A01, A08, A08, A03</td><td>4</td></tr>
+<tr><td>Aisha Washington</td><td>MRN005</td><td>VN005</td><td>A01, ORU(CBC), A02, A03</td><td>3*</td></tr>
+</table>
+<p style="margin-top:8px;font-size:12px;color:var(--text-dim)">*Aisha's A03 not shown in log above — her encounter is still open. Grouped by PID.3 (MRN) + PV1-19 (visit number).</p>`;
+    },
+    tasks: [
+      {
+        type:'fill',
+        prompt:'Which two HL7 v2 fields serve as the grouping keys for assembling a message stream into encounter-level records?',
+        blanks:[
+          {label:'Patient identifier field:', answer:'PID.3', accept:['PID.3','pid.3','PID-3','pid-3','MRN','mrn','PID.3 (MRN)']},
+          {label:'Encounter grouping field:', answer:'PV1-19', accept:['PV1-19','pv1-19','PV1.19','pv1.19','PV1-19 (visit number)','visit number']}
+        ],
+        hint:'One field identifies WHO the patient is (their medical record number). The other identifies WHICH VISIT these messages belong to.',
+        explanation:'<code>PID.3</code> (Patient Identifier List / MRN) identifies the patient across messages. <code>PV1-19</code> (Visit Number) groups messages into the same encounter. Together, they form a composite key: MRN + Visit Number = one encounter\'s message stream. Two messages with the same MRN but different visit numbers are from different encounters (e.g., an ED visit last month and an inpatient stay this week).',
+        ackId:'STREAM01'
+      },
+      {
+        type:'choice',
+        prompt:'Aisha\'s ORU^R01 has <code>MSH-7 = 20260119093000</code> (message created at 09:30) but <code>OBR-7 = 20260119084500</code> (specimen collected at 08:45). Which timestamp should be used for <strong>clinical ordering</strong> of results?',
+        options:[
+          {key:'A', text:'MSH-7 — message creation time determines the order', correct:false},
+          {key:'B', text:'OBR-7 — specimen collection time reflects clinical sequence', correct:true},
+          {key:'C', text:'Use the earlier of the two timestamps', correct:false},
+          {key:'D', text:'Use the message arrival time at the interface engine', correct:false}
+        ],
+        hint:'Clinical ordering should reflect when events happened in the patient\'s care, not when computers processed them.',
+        explanation:'<code>OBR-7</code> (observation date/time) reflects when the specimen was actually collected — the clinically meaningful timestamp. MSH-7 is when the lab system generated the message (which could be minutes or hours later, depending on processing delays). For analytics, clinical ordering always uses the observation timestamp, not the message timestamp.',
+        ackId:'STREAM01'
+      }
+    ]
+  },
+
+  // ──── STATION A2: TEMPORAL RECONCILIATION ────
+  {
+    id:'A2', name:'Temporal Reconciliation', shortName:'Reconcile', icon:'🔄',
+    lecture: `<h2><span class="stn-badge">Station A2</span> Temporal Reconciliation & Conflict Resolution</h2>
+<div class="concept">
+<p>Once messages are grouped by encounter, <strong>conflicts</strong> must be resolved. Multiple messages for the same patient may carry <strong>different values for the same field</strong> — which one is authoritative?</p>
+<p><strong>Demographic updates:</strong> ADT^A08 messages modify demographics mid-encounter. If James Morrison's PID.11 (address) changes twice during his stay, the <strong>last value by MSH-7 timestamp</strong> is current. HL7 v2 uses <em>snapshot semantics</em> for demographics — each message carries the full current state, not a delta.</p>
+<p><strong>Lab result corrections:</strong> An OBX may arrive with <code>OBX-11 = "P"</code> (preliminary), followed later by <code>OBX-11 = "C"</code> (corrected) or <code>"F"</code> (final). The corrected/final value <strong>replaces</strong> the preliminary — but should the preliminary be deleted or retained with a status flag? For analytics, retaining both with status flags provides the richest data.</p>
+<p><strong>Duplicate detection:</strong> Two OBX segments with the same OBX-3 (observation ID) and OBR-7 (timestamp) are likely duplicates from a retransmission. Two with the same OBX-3 but different OBR-7 are distinct measurements taken at different times.</p>
+</div>`,
+    before: function(){
+      return `<div class="code-block"><strong>Conflict scenarios from the Riverside Cohort:</strong>
+
+<strong>1. James Morrison — Address conflict:</strong>
+  ADT^A08 at 10:30 → PID.11: 567 Cedar Ln, Bellevue WA
+  ADT^A08 at 13:30 → PID.11: 890 Birch St, Bellevue WA
+  Which address is current?
+
+<strong>2. Aisha Washington — Lab result correction:</strong>
+  ORU^R01 at 09:30 → OBX: WBC = 14.8 (OBX-11 = "P" preliminary)
+  ORU^R01 at 12:00 → OBX: WBC = 15.1 (OBX-11 = "F" final)
+  Which value goes in the analytics dataset?
+
+<strong>3. Robert Kowalski — Duplicate detection:</strong>
+  ORU^R01 at 10:00 → OBX: Creatinine = 1.4 (OBR-7 = 09:00)
+  ORU^R01 at 10:05 → OBX: Creatinine = 1.4 (OBR-7 = 09:00)
+  Same OBX-3, same OBR-7, same value — retransmission duplicate.</div>`;
+    },
+    after: function(){
+      return `<table class="field-table">
+<tr><th>Conflict Type</th><th>Resolution Strategy</th><th>Rule</th></tr>
+<tr><td>Demographic update</td><td>Last-write-wins (by MSH-7)</td><td>Latest timestamp = current value</td></tr>
+<tr><td>Lab preliminary → final</td><td>Status-based replacement</td><td>F or C replaces P; retain both with flags</td></tr>
+<tr><td>Lab preliminary → corrected</td><td>Correction supersedes</td><td>C value replaces P; flag correction in audit</td></tr>
+<tr><td>Duplicate (same OBX-3 + OBR-7)</td><td>Deduplicate</td><td>Keep first, discard retransmission</td></tr>
+<tr><td>Distinct (same OBX-3, diff OBR-7)</td><td>Keep both</td><td>Different collection times = different results</td></tr>
+</table>`;
+    },
+    tasks: [
+      {
+        type:'choice',
+        prompt:'James Morrison\'s address changes twice during his stay: "567 Cedar Ln" at 10:30 and "890 Birch St" at 13:30 (both via ADT^A08). Which address should appear in the analytics dataset?',
+        options:[
+          {key:'A', text:'567 Cedar Ln — the first recorded address is the most reliable', correct:false},
+          {key:'B', text:'890 Birch St — last-write-wins by MSH-7 timestamp (v2 snapshot semantics)', correct:true},
+          {key:'C', text:'Both — store address history as an array', correct:false},
+          {key:'D', text:'Neither — addresses are PHI and should have been stripped', correct:false}
+        ],
+        hint:'HL7 v2 uses snapshot semantics for demographics — each A08 carries the COMPLETE current state, not a change log.',
+        explanation:'<strong>Last-write-wins</strong>: "890 Birch St" is the current address. Each ADT^A08 carries the full current demographics as a snapshot. The later timestamp (13:30 > 10:30) means the 890 Birch St A08 reflects the most recent state. For analytics, the current address is what matters. Address history could be stored separately for longitudinal studies, but the encounter-level dataset should have the latest value.',
+        ackId:'RECON01'
+      },
+      {
+        type:'choice',
+        prompt:'Aisha\'s WBC arrives as preliminary (14.8, OBX-11="P") then final (15.1, OBX-11="F"). For the analytics feature <code>wbc_first</code>, which value should be used?',
+        options:[
+          {key:'A', text:'14.8 — it was the first result received', correct:false},
+          {key:'B', text:'The average: (14.8 + 15.1) / 2 = 14.95', correct:false},
+          {key:'C', text:'14.8 — preliminary values are closer to the true clinical state at time of draw', correct:false},
+          {key:'D', text:'15.1 — the final (F) value supersedes the preliminary (P)', correct:true}
+        ],
+        hint:'OBX-11 status codes indicate the result\'s lifecycle. "P" is preliminary (may change), "F" is final (confirmed), "C" is corrected (supersedes previous).',
+        explanation:'<strong>15.1 (final)</strong> is the correct value. The OBX-11 status code "F" (final) indicates the lab has confirmed this result — it supersedes the preliminary "P" value. Preliminary results are early estimates that may change as the lab completes its analysis. For analytics, always use the highest-status result: F > C > P. The feature name "wbc_first" refers to the first WBC in chronological OBR-7 order, not the first message received.',
+        ackId:'RECON01'
+      }
+    ]
+  },
+
+  // ──── STATION A3: CROSS-MESSAGE FEATURE EXTRACTION ────
+  {
+    id:'A3', name:'Feature Extraction', shortName:'Features', icon:'📊',
+    lecture: `<h2><span class="stn-badge">Station A3</span> Cross-Message Feature Extraction</h2>
+<div class="concept">
+<p>Analytic features must be extracted from the reconciled message stream and <strong>flattened into encounter-level columns</strong>. Each feature has a specific source segment and extraction rule. Some are <strong>direct</strong> (DG1-3 → primary diagnosis code), some are <strong>computed</strong> (LOS = A03 timestamp – A01 timestamp), and some require <strong>aggregation</strong> (lab count = count of OBX segments with status F or C).</p>
+<p>The target: an <strong>ED high-utilizer prediction model</strong> dataset. Each row represents one encounter. Columns include demographics, clinical features, and utilization metrics — all derived from the HL7 v2 message stream processed through Part 1's pipeline.</p>
+<p><strong>Production automation:</strong> This feature extraction is essentially a SQL transformation from a staged message table to an encounter-level feature table — which is exactly what a <strong>dbt model</strong> does. The model uses <code>{{ config(materialized='table') }}</code> because the encounter dataset is rebuilt nightly from the full message stream, and reconciliation reprocesses conflicts on every run (no incremental append).</p>
+</div>`,
+    before: function(){
+      return `<div class="code-block"><strong>Feature extraction rules — ED high-utilizer model:</strong>
+
+Feature              Source            Extraction Rule
+──────────────────   ────────────────  ──────────────────────
+age_at_encounter     PID.7, PV1.44    PV1.44 year - PID.7 year
+admin_sex            PID.8            Direct
+zip_3digit           PID.11.5         First 3 chars (de-identified)
+encounter_type       PV1.2            Direct (E/I/O)
+primary_dx_icd10     DG1-3 (first)    Direct
+dx_count             DG1 segments     Count
+los_hours            PV1.44, PV1.45   Timestamp difference
+lab_result_count     OBX (F/C only)   Count
+wbc_first            OBX 6690-2       First by OBR-7
+creatinine_first     OBX 2160-0       First by OBR-7
+lactate_first        OBX 2524-7       First by OBR-7
+has_substance_dx     DG1 F10-F19      Boolean (privacy-aware)
+transfer_count       ADT^A02          Count
+arrival_hour         PV1.44           Hour component
+weekend_flag         PV1.44           Day of week in {Sat,Sun}
+
+<strong>dbt model header:</strong>
+{{ config(materialized='table') }}
+
+SELECT encounter_id, age_at_encounter, ...
+FROM {{ ref('stg_hl7v2_messages') }}</div>`;
+    },
+    after: function(){
+      return `<table class="field-table">
+<tr><th>Feature</th><th>Sarah</th><th>Robert</th><th>Maya</th><th>James</th><th>Aisha</th></tr>
+<tr><td>age_at_encounter</td><td>72</td><td>58</td><td>34</td><td>45</td><td>29</td></tr>
+<tr><td>admin_sex</td><td>F</td><td>M</td><td>F</td><td>M</td><td>F</td></tr>
+<tr><td>encounter_type</td><td>I</td><td>I</td><td>I</td><td>I</td><td>E</td></tr>
+<tr><td>primary_dx_icd10</td><td>I50.9</td><td>I50.9</td><td>F32.1*</td><td>J18.9</td><td>—</td></tr>
+<tr><td>los_hours</td><td>91.3</td><td>—</td><td>—</td><td>72.0</td><td>2.3</td></tr>
+<tr><td>wbc_first</td><td>7.2</td><td>8.5</td><td>—</td><td>—</td><td>14.8→15.1</td></tr>
+<tr><td>creatinine_first</td><td>1.1</td><td>1.4</td><td>—</td><td>—</td><td>—</td></tr>
+<tr><td>lactate_first</td><td>—</td><td>NULL</td><td>—</td><td>—</td><td>3.8</td></tr>
+<tr><td>has_substance_dx</td><td>FALSE</td><td>FALSE</td><td>NULL**</td><td>FALSE</td><td>—</td></tr>
+<tr><td>transfer_count</td><td>0</td><td>0</td><td>0</td><td>0</td><td>1</td></tr>
+</table>
+<p style="margin-top:8px;font-size:11px;color:var(--text-dim)">*Maya's F10.20 (substance abuse) was stripped by 42 CFR Part 2; F32.1 (depression) is the remaining primary dx.<br>**has_substance_dx = NULL because the Part 2 redaction makes it unknowable, not FALSE.</p>`;
+    },
+    tasks: [
+      {
+        type:'fill',
+        prompt:'The feature extraction model is rebuilt nightly from the full message stream. In dbt, which materialization strategy fills the blank?<br><code style="font-size:13px">&#123;&#123; config(materialized=\'<strong>___</strong>\') &#125;&#125;</code>',
+        blanks:[
+          {label:'materialized = \'', answer:'table', accept:['table','TABLE','Table',"'table'"]}
+        ],
+        hint:'The reconciliation logic reprocesses conflicts on every run — you can\'t just append new rows. What materialization drops and rebuilds the entire table?',
+        explanation:'<code>table</code> (full refresh) is the correct materialization. Because temporal reconciliation (Station A2) must reprocess conflicts across the entire message stream, incremental appends don\'t work — a corrected lab result from today might replace a preliminary from yesterday. The model drops and rebuilds the full encounter table on each run. In dbt: <code>{{ config(materialized=\'table\') }}</code>.',
+        ackId:'FEAT01'
+      },
+      {
+        type:'choice',
+        prompt:'Sarah Chen has 3 WBC results during her stay: 7.2 (08:45), 7.8 (12:00), and 8.1 (16:00), all final (OBX-11="F"). Which value should populate <code>wbc_first</code>?',
+        options:[
+          {key:'A', text:'7.2 — the earliest result by OBR-7 (specimen collection time)', correct:true},
+          {key:'B', text:'8.1 — the most recent result', correct:false},
+          {key:'C', text:'7.7 — the average of all three', correct:false},
+          {key:'D', text:'7.8 — the median value', correct:false}
+        ],
+        hint:'The feature name is "wbc_FIRST" — it captures the initial clinical state at presentation, before treatment effects.',
+        explanation:'<code>7.2</code> — the earliest by OBR-7 collection timestamp. The feature "wbc_first" captures the patient\'s initial lab state at presentation, which is the most predictive for ED high-utilizer models. Later values reflect treatment response, not presentation acuity. The extraction rule is: first value by OBR-7 timestamp, filtered to OBX-11 in (F, C) to exclude preliminary results.',
+        ackId:'FEAT01'
+      }
+    ]
+  },
+
+  // ──── STATION A4: DATASET SHAPING & QUALITY ────
+  {
+    id:'A4', name:'Dataset Quality', shortName:'Quality', icon:'🔍',
+    lecture: `<h2><span class="stn-badge">Station A4</span> Dataset Shaping & Quality Assessment</h2>
+<div class="concept">
+<p>The extracted features must be assembled into a tabular dataset, then assessed for <strong>completeness, quality, and potential biases</strong> before modeling. Missing values, outliers, and systematic data gaps must be identified — some are random (a lab wasn't ordered), some are systemic (a source system version doesn't send certain data), and some are <strong>privacy-induced</strong> (42 CFR Part 2 redaction removes data from specific populations).</p>
+<p>Three quality issues are embedded in the Riverside Cohort:</p>
+<p>(1) Robert's <code>lactate_first</code> is NULL — his v2.3 source system doesn't send lactate. This is <strong>systemic missingness</strong> correlated with source system version, not random. (2) Maya's <code>has_substance_dx</code> is NULL — the privacy pipeline redacted her F10.20 diagnosis. This feature is <strong>systematically missing for the very population the model should identify</strong>. (3) Aisha's <code>los_hours = 2.3</code> while others have 48–96+ hours — ED vs inpatient encounter type mixing.</p>
+<p><strong>Production automation:</strong> These quality checks map directly to <strong>dbt schema tests</strong> — <code>not_null</code> on required fields, <code>accepted_values</code> on coded fields.</p>
+</div>`,
+    before: function(){
+      return `<div class="code-block"><strong>Dataset quality report — 5 patients × 16 features:</strong>
+
+Feature              Complete  Nulls  Issue
+──────────────────   ────────  ─────  ──────────────────────
+age_at_encounter     5/5       0      ✅
+admin_sex            5/5       0      ✅
+encounter_type       5/5       0      ✅ but mixed E/I
+primary_dx_icd10     4/5       1      ⚠ Aisha (ED, no dx)
+los_hours            3/5       2      ⚠ Robert, Maya (no A03)
+wbc_first            3/5       2      ⚠ Maya, James (no labs)
+creatinine_first     2/5       3      ⚠ Most patients missing
+lactate_first        1/5       4      ⚠ Only Aisha has lactate
+has_substance_dx     4/5       1      🔴 Maya = NULL (Part 2 redaction)
+transfer_count       5/5       0      ✅
+
+<strong>dbt schema tests:</strong>
+models:
+  - name: mart_ed_encounters
+    columns:
+      - name: encounter_id
+        tests: [not_null, unique]
+      - name: encounter_type
+        tests:
+          - accepted_values:
+              values: ['E', 'I', 'O']</div>`;
+    },
+    after: function(){
+      return `<table class="field-table">
+<tr><th>Issue</th><th>Feature</th><th>Patient</th><th>Type</th><th>Mitigation</th></tr>
+<tr><td>v2.3 gap</td><td>lactate_first</td><td>Robert</td><td style="color:var(--orange)">Systemic</td><td>Source-system-version indicator</td></tr>
+<tr><td>Part 2 redaction</td><td>has_substance_dx</td><td>Maya</td><td style="color:var(--red)">Privacy-induced bias</td><td>⚠ No clean solution (see exercise)</td></tr>
+<tr><td>Type mixing</td><td>los_hours</td><td>Aisha</td><td style="color:var(--orange)">Structural</td><td>Stratify by encounter_type</td></tr>
+<tr><td>No discharge</td><td>los_hours</td><td>Robert, Maya</td><td>Data gap</td><td>Flag as open encounter</td></tr>
+</table>`;
+    },
+    tasks: [
+      {
+        type:'choice',
+        prompt:'Maya Patel\'s <code>has_substance_dx</code> is NULL because 42 CFR Part 2 redacted her F10.20 diagnosis. The feature is systematically missing for patients WITH substance use disorders. How should this be handled for the prediction model?',
+        options:[
+          {key:'A', text:'Impute as FALSE — if the diagnosis was redacted, treat it as absent', correct:false},
+          {key:'B', text:'Create a missingness indicator (substance_dx_available = 0/1) and drop has_substance_dx', correct:false},
+          {key:'C', text:'Drop the feature entirely — it cannot be reliably populated due to privacy constraints', correct:true},
+          {key:'D', text:'Exclude patients with redacted values from the dataset', correct:false}
+        ],
+        hint:'Each option has a serious flaw. Imputing FALSE introduces label bias. A missingness indicator exposes redaction status (privacy violation). Excluding patients biases the cohort. There\'s no clean answer — but one option is least harmful.',
+        explanation:'<strong>Drop the feature entirely</strong> is the least harmful option, though none are perfect. Imputing FALSE systematically mislabels the very population the model should detect (label bias). A missingness indicator reveals WHO was redacted, which arguably violates Part 2\'s purpose (privacy leak). Excluding patients removes the population of interest (selection bias). Dropping the feature loses predictive power but preserves privacy and avoids systematic bias. This exercise teaches that <strong>privacy and analytics are in genuine tension</strong> — there isn\'t always a clean technical solution.',
+        ackId:'QUAL01'
+      },
+      {
+        type:'fill',
+        prompt:'In a dbt schema test, which test type ensures that <code>encounter_type</code> only contains valid values (E, I, O)?',
+        blanks:[
+          {label:'Test name:', answer:'accepted_values', accept:['accepted_values','accepted values','acceptedValues','ACCEPTED_VALUES']}
+        ],
+        hint:'This dbt test checks that every value in a column belongs to a predefined list of valid options.',
+        explanation:'<code>accepted_values</code> is the dbt schema test that validates column values against an allowed list. In the schema.yml: <code>tests: [{accepted_values: {values: [\'E\', \'I\', \'O\']}}]</code>. This catches data quality issues like encounter_type = "X" or NULL values that would break downstream analytics. It\'s the dbt equivalent of the HL7 Table validation you did manually at Station 5 in Part 1.',
+        ackId:'QUAL01'
+      }
+    ]
+  },
+
+  // ──── STATION A5: DATASET CARD & PROVENANCE ────
+  {
+    id:'A5', name:'Dataset Card & Provenance', shortName:'Card', icon:'📋',
+    lecture: `<h2><span class="stn-badge">Station A5</span> Dataset Card & Provenance Documentation</h2>
+<div class="concept">
+<p>A <strong>dataset card</strong> documents the dataset's origin, composition, intended use, limitations, and ethical considerations. For a dataset derived from HL7 v2 message streams, <strong>provenance</strong> is especially important — the data passed through 13 transformation stations (parsing, validation, vocabulary translation, de-identification, FHIR conversion) before reaching aggregation. Each station could introduce bias or error.</p>
+<p>The dataset card serves three audiences: <strong>data scientists</strong> (who need to understand the features and their derivation), <strong>clinical researchers</strong> (who need to understand the population and limitations), and <strong>compliance officers</strong> (who need to verify privacy protections were applied).</p>
+<p>Key sections: purpose and intended use, source description, pipeline provenance (linking back to Part 1), feature definitions, known limitations, bias and fairness considerations, privacy compliance, and recommended next steps.</p>
+</div>`,
+    before: function(){
+      return `<div class="code-block"><strong>Completed dataset — 5 rows × 16 features:</strong>
+
+encounter_id | age | sex | type | primary_dx | los_hrs | wbc  | ...
+─────────────┼─────┼─────┼──────┼────────────┼─────────┼──────┼────
+ENC-001      | 72  | F   | I    | I50.9      | 91.3    | 7.2  |
+ENC-002      | 58  | M   | I    | I50.9      | NULL    | 8.5  |
+ENC-003      | 34  | F   | I    | F32.1      | NULL    | NULL |
+ENC-004      | 45  | M   | I    | J18.9      | 72.0    | NULL |
+ENC-005      | 29  | F   | E    | NULL       | 2.3     | 15.1 |
+
+<strong>Terminal goal:</strong> ED high-utilizer prediction model
+<strong>Question:</strong> Is this dataset ready for modeling?</div>`;
+    },
+    after: function(){
+      return `<div class="code-block"><strong>Dataset Card — ED High-Utilizer Prediction</strong>
+
+<strong>1. Purpose:</strong> Risk stratification for patients likely
+   to have 4+ ED visits in 12 months.
+
+<strong>2. Source:</strong> 5-patient Riverside Cohort, HL7 v2.3/v2.5.1
+   mixed. Messages: ADT (A01/A02/A03/A04/A08), ORU (R01).
+
+<strong>3. Pipeline:</strong> 13-station transformation chain (Part 1):
+   MLLP → Segments → Routing → Vocab → Validation →
+   Transform → MPI → PHI → MinNec → 42CFR → FHIR →
+   USCore → Bundle
+
+<strong>4. Limitations:</strong>
+   - 5-patient cohort (not statistically powered)
+   - Mixed v2 versions (v2.3 systemic data gaps)
+   - Substance use features dropped (42 CFR Part 2)
+   - ED/inpatient type mixing in LOS distributions
+
+<strong>5. Bias warnings:</strong>
+   - Privacy redaction removes a key predictor
+   - Source system version correlates with data completeness
+   - Small cohort cannot represent population diversity
+
+<strong>6. NOT suitable for:</strong>
+   - Individual clinical decisions
+   - Production deployment without larger validation cohort
+   - Populations not represented in the 5-patient sample</div>`;
+    },
+    tasks: [
+      {
+        type:'fill',
+        prompt:'Complete the dataset card statement: "This dataset was derived from _____ and _____ HL7 v2 message types."',
+        blanks:[
+          {label:'Message type 1:', answer:'ADT', accept:['ADT','adt','Adt']},
+          {label:'Message type 2:', answer:'ORU', accept:['ORU','oru','Oru']}
+        ],
+        hint:'The Riverside Cohort generated two categories of messages: patient movement events and lab results.',
+        explanation:'<code>ADT</code> (Admit/Discharge/Transfer) and <code>ORU</code> (Observation Result Unsolicited). ADT messages provided demographics, encounter details, diagnoses, and insurance. ORU messages provided lab results. Together, they form the source data for all 16 features in the encounter-level dataset. Documenting the source message types is critical because it defines what clinical data IS and ISN\'T captured — no medication data (no RXA messages), no orders (no ORM messages).',
+        ackId:'CARD01'
+      },
+      {
+        type:'choice',
+        prompt:'A data scientist wants to use this 5-patient dataset to deploy an ED high-utilizer prediction model at Riverside Medical Center. Based on the dataset card, should this be approved?',
+        options:[
+          {key:'A', text:'Yes — the features are well-defined and the pipeline is validated', correct:false},
+          {key:'B', text:'Yes, but only for the ED department (not inpatient)', correct:false},
+          {key:'C', text:'No — 5 patients is not statistically powered for production deployment; the dataset is suitable for pipeline validation and feature engineering exploration only', correct:true},
+          {key:'D', text:'No — the dataset contains PHI and cannot be used for prediction', correct:false}
+        ],
+        hint:'Read the "NOT suitable for" section of the dataset card. What does it say about production deployment?',
+        explanation:'<strong>No — not ready for production.</strong> A 5-patient dataset cannot represent population diversity, has insufficient statistical power for reliable model training, and has known data gaps (substance use features dropped, v2.3 systemic missingness). The dataset IS suitable for <strong>pipeline validation</strong> (confirming the 13-station transformation chain works correctly) and <strong>feature engineering exploration</strong> (testing extraction rules before scaling to the full patient population). Production deployment requires a validation cohort of thousands of encounters.',
+        ackId:'CARD01'
+      }
+    ]
+  }
+];
+
+// ──────────── GLOSSARY (Part 2 focused) ────────────
+const GLOSSARY = {
+  'ADT':'Admit/Discharge/Transfer — message type for patient movement events (A01, A02, A03, A04, A08).',
+  'dbt':'Data Build Tool — transformation framework for SQL-based data modeling with materializations, tests, and ref() chains.',
+  'Dataset Card':'Documentation artifact describing a dataset\'s origin, composition, limitations, biases, and intended use.',
+  'De-identification':'Process of removing or generalizing PHI identifiers per HIPAA Safe Harbor or Expert Determination methods.',
+  'Encounter':'A single patient visit or admission, bounded by ADT^A01 (admit) and ADT^A03 (discharge).',
+  'Feature Extraction':'Process of deriving analytic variables from raw message data for use in prediction models.',
+  'GEM':'General Equivalence Mappings — ICD-9 to ICD-10 crosswalk maintained by CMS.',
+  'Incremental':'dbt materialization that appends new/changed rows without rebuilding the full table.',
+  'LOS':'Length of Stay — time between admission and discharge, typically in hours.',
+  'Materialization':'dbt strategy for persisting model results: table (full refresh), incremental, view, or ephemeral.',
+  'MRN':'Medical Record Number — facility-specific patient identifier stored in PID.3.',
+  'MSH-7':'Message timestamp — when the HL7 v2 message was created (not necessarily when the clinical event occurred).',
+  'OBR-7':'Observation date/time — when the specimen was collected or observation made (clinically meaningful timestamp).',
+  'OBX-11':'Observation result status: P (preliminary), F (final), C (corrected), X (canceled).',
+  'ORU':'Observation Result Unsolicited — message type for lab and clinical results (R01 trigger event).',
+  'PV1-19':'Visit Number — encounter-level identifier that groups multiple messages into one encounter.',
+  'Snapshot Semantics':'HL7 v2 convention where each message carries the complete current state, not a delta/change record.',
+  'Table (materialization)':'dbt strategy that drops and rebuilds the entire table on each run — used when reconciliation prevents incremental processing.',
+  '42 CFR Part 2':'Federal regulation restricting disclosure of substance abuse treatment records, requiring explicit patient consent.',
+  'accepted_values':'dbt schema test that validates column values belong to a predefined list of allowed options.',
+  'not_null':'dbt schema test that ensures a column contains no NULL values.',
+  'ref()':'dbt function that creates dependencies between models, referencing upstream tables by model name rather than hardcoded table names.'
+};
+
+// ──────────── STATE ────────────
+let currentStation = 0;
+let state = loadState();
+
+function defaultState(){ return {completed:[], decisions:{}, reveals:{}, hints:{}}; }
+function loadState(){
+  try{ const s=JSON.parse(localStorage.getItem('hl7v2_part2_state')); return s||defaultState(); }
+  catch(e){ return defaultState(); }
+}
+function saveState(){ localStorage.setItem('hl7v2_part2_state', JSON.stringify(state)); }
+
+// ──────────── RENDER ────────────
+function render(){
+  renderPipelineBar();
+  renderStation();
+  updateScorecard();
+}
+
+function renderPipelineBar(){
+  const bar=document.getElementById('pipelineBar');
+  let html='';
+  STATIONS.forEach((s,i)=>{
+    if(i>0) html+='<span class="pipeline-arrow">→</span>';
+    const done=state.completed.includes(s.id);
+    const active=i===currentStation;
+    html+=`<div class="stn-pill ${done?'done':''} ${active?'active':''}" onclick="goToStation(${i})">
+      <span class="stn-num">${s.id}</span> ${s.shortName}</div>`;
+  });
+  bar.innerHTML=html;
+}
+
+function renderStation(reset = true){
+  const s=STATIONS[currentStation];
+  document.getElementById('lectureSection').innerHTML=s.lecture;
+  // Inject info icon next to station badge
+  const lectureBadge = document.querySelector('#lectureSection h2 .stn-badge');
+  if(lectureBadge && !document.querySelector('#lectureSection .stn-info-icon')){
+    const infoBtn = document.createElement('button');
+    infoBtn.className = 'stn-info-icon';
+    infoBtn.setAttribute('type','button');
+    infoBtn.setAttribute('title',`Open Station ${s.id} reference card`);
+    infoBtn.textContent = 'i';
+    infoBtn.onclick = function(){ openStationCard(s.id); };
+    lectureBadge.parentNode.insertBefore(infoBtn, lectureBadge.nextSibling);
+  }
+  document.getElementById('beforePanel').innerHTML=typeof s.before==='function'?s.before():s.before;
+  document.getElementById('afterPanel').innerHTML=typeof s.after==='function'?s.after():s.after;
+  renderTasks(s);
+  if(reset){
+    document.getElementById('ackPanel').className='ack-panel';
+    document.getElementById('ackPanel').innerHTML='';
+    document.getElementById('explanationPanel').className='explanation';
+    document.getElementById('explanationPanel').innerHTML='';
+  }
+  const done=state.completed.includes(s.id);
+  document.getElementById('nextBtn').disabled=!done;
+  document.getElementById('hintBtn').style.display=s.tasks.length?'':'none';
+  document.getElementById('revealBtn').style.display=s.tasks.length?'':'none';
+  if(reset) window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+function renderTasks(station){
+  const panel=document.getElementById('taskPanel');
+  if(!station.tasks||!station.tasks.length){panel.innerHTML='<div class="empty-state">No exercises.</div>';return;}
+  const done=state.completed.includes(station.id);
+  let html='<h3>🎯 Exercise</h3>';
+  station.tasks.forEach((task,ti)=>{
+    const taskKey=`s${station.id}_t${ti}`;
+    const answered=state.decisions[taskKey]!==undefined;
+    if(task.type==='choice'){
+      html+=`<div class="task-prompt">${task.prompt}</div><div class="choices">`;
+      task.options.forEach(opt=>{
+        let cls='choice-btn';
+        if(answered||done){
+          cls+=' disabled';
+          if(opt.correct) cls+=' correct';
+          else if(state.decisions[taskKey]===opt.key&&!opt.correct) cls+=' wrong';
+        }
+        html+=`<div class="${cls}" onclick="handleChoice('${station.id}',${ti},'${opt.key}',${opt.correct})">
+          <span class="choice-key">${opt.key}</span><span>${opt.text}</span></div>`;
+      });
+      html+='</div>';
+    } else if(task.type==='fill'){
+      html+=`<div class="task-prompt">${task.prompt}</div>`;
+      task.blanks.forEach((b,bi)=>{
+        const bk=`${taskKey}_b${bi}`;
+        const val=state.decisions[bk]||'';
+        const correct=answered&&b.accept.some(a=>a.toLowerCase()===val.toLowerCase());
+        html+=`<div class="fill-group"><span class="fill-label">${b.label}</span>
+          <input class="fill-input ${answered?(correct?'correct':'wrong'):''}" id="${bk}" value="${esc(val)}"
+          ${answered||done?'disabled':''} onkeydown="if(event.key==='Enter')handleFill('${station.id}',${ti})"/></div>`;
+      });
+      if(!answered&&!done) html+=`<button class="btn primary" style="margin-top:12px" onclick="handleFill('${station.id}',${ti})">Check Answer</button>`;
+    }
+  });
+  panel.innerHTML=html;
+}
+
+// ──────────── HANDLERS ────────────
+function handleChoice(sId,ti,key,isCorrect){
+  const tk=`s${sId}_t${ti}`;
+  if(state.decisions[tk]!==undefined)return;
+  state.decisions[tk]=key;
+  const task=STATIONS.find(s=>s.id===sId).tasks[ti];
+  showACK(isCorrect?'AA':'AE',task.ackId,isCorrect?'Correct.':'Review and try again.');
+  if(isCorrect){checkAllDone(sId);showExplanation(task.explanation);}
+  saveState();renderStation(false);
+}
+
+function handleFill(sId,ti){
+  const task=STATIONS.find(s=>s.id===sId).tasks[ti];
+  const tk=`s${sId}_t${ti}`;
+  let allCorrect=true;
+  task.blanks.forEach((b,bi)=>{
+    const bk=`${tk}_b${bi}`;
+    const input=document.getElementById(bk);
+    if(!input)return;
+    const val=input.value.trim();
+    state.decisions[bk]=val;
+    if(!b.accept.some(a=>a.toLowerCase()===val.toLowerCase()))allCorrect=false;
+  });
+  state.decisions[tk]=allCorrect?'correct':'wrong';
+  showACK(allCorrect?'AA':'AE',task.ackId,allCorrect?'All fields correct.':'One or more fields incorrect.');
+  if(allCorrect){checkAllDone(sId);showExplanation(task.explanation);}
+  saveState();renderStation(false);
+}
+
+function checkAllDone(sId){
+  const s=STATIONS.find(st=>st.id===sId);
+  const allAnswered=s.tasks.every((_,ti)=>state.decisions[`s${sId}_t${ti}`]!==undefined);
+  const allCorrect=s.tasks.every((t,ti)=>{
+    const tk=`s${sId}_t${ti}`;
+    if(t.type==='choice')return t.options.find(o=>o.correct)?.key===state.decisions[tk];
+    return state.decisions[tk]==='correct';
+  });
+  if(allCorrect&&!state.completed.includes(sId)){state.completed.push(sId);saveState();}
+  document.getElementById('nextBtn').disabled=!state.completed.includes(sId);
+}
+
+function showHint(){
+  const s=STATIONS[currentStation];
+  if(!s.tasks.length)return;
+  const task=s.tasks[0];
+  state.hints[`s${s.id}`]=(state.hints[`s${s.id}`]||0)+1;
+  saveState();updateScorecard();
+  showACK('AE',task.ackId||'HINT',task.hint);
+}
+
+function revealAnswer(){
+  const s=STATIONS[currentStation];
+  if(!s.tasks.length)return;
+  state.reveals[`s${s.id}`]=(state.reveals[`s${s.id}`]||0)+1;
+  s.tasks.forEach((task,ti)=>{
+    const tk=`s${s.id}_t${ti}`;
+    if(state.decisions[tk]!==undefined)return;
+    if(task.type==='choice'){
+      const correct=task.options.find(o=>o.correct);
+      state.decisions[tk]=correct?correct.key:'A';
+    }else if(task.type==='fill'){
+      task.blanks.forEach((b,bi)=>{state.decisions[`${tk}_b${bi}`]=b.answer;});
+      state.decisions[tk]='correct';
+    }
+  });
+  if(!state.completed.includes(s.id))state.completed.push(s.id);
+  saveState();
+  showACK('AA',s.tasks[0].ackId||'REVEAL','Answer revealed.');
+  showExplanation(s.tasks[s.tasks.length-1].explanation||'Answer revealed.');
+  renderStation(false);
+  setTimeout(()=>{const exp=document.getElementById('explanationPanel');if(exp)exp.scrollIntoView({behavior:'smooth',block:'center'});},50);
+}
+
+function showACK(code,cid,text){
+  const p=document.getElementById('ackPanel');
+  const cls=code==='AA'?'aa':'ae';
+  const label=code==='AA'?'Application Accept':'Application Error';
+  p.className=`ack-panel visible ${cls}`;
+  p.innerHTML=`<div style="font-weight:700">MSA|${code}|${cid}</div><div>${label}: ${text}</div>`;
+}
+
+function showExplanation(text){
+  const p=document.getElementById('explanationPanel');
+  p.className='explanation visible';
+  p.innerHTML=`<strong>Explanation:</strong> ${text}`;
+}
+
+// ──────────── NAVIGATION ────────────
+function goToStation(i){currentStation=i;render();}
+function nextStation(){if(currentStation<STATIONS.length-1){currentStation++;render();}}
+
+// ──────────── SCORECARD ────────────
+function updateScorecard(){
+  document.getElementById('scDone').textContent=`${state.completed.length}/5`;
+  document.getElementById('scHints').textContent=Object.values(state.hints).reduce((a,b)=>a+b,0);
+  document.getElementById('scReveals').textContent=Object.values(state.reveals).reduce((a,b)=>a+b,0);
+}
+
+// ──────────── GLOSSARY ────────────
+function openGlossary(){
+  document.getElementById('modalTitle').textContent='Glossary';
+  let html='<dl>';
+  Object.entries(GLOSSARY).sort((a,b)=>a[0].localeCompare(b[0])).forEach(([t,d])=>{
+    html+=`<div class="gloss-term"><dt>${t}</dt><dd>${d}</dd></div>`;
+  });
+  document.getElementById('modalBody').innerHTML=html+'</dl>';
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+// ──────────── STATION REFERENCE CARD DATA ────────────
+// Topic-specific reference content for each Part 2 station.
+// Designed for the analytics/dataset domain (vs Part 1's segment/field domain).
+const STATION_CARDS = {
+  'A1': {
+    keyConcepts: [
+      'Encounter grouping','Composite key','Out-of-order delivery','Clinical vs message time',
+      'PID.3 (MRN)','PV1-19 (visit number)','OBR-7','MSH-7'
+    ],
+    inputs: [
+      'ADT^A01 (admit) — encounter open',
+      'ADT^A02 (transfer)',
+      'ADT^A03 (discharge) — encounter close',
+      'ADT^A08 (demographic update)',
+      'ORU^R01 (lab result)'
+    ],
+    outputs: 'Per-encounter grouped message bundles, ordered by OBR-7 (clinical time)',
+    productionNotes: [
+      'Grouping key: PID.3 + PV1-19 (composite)',
+      'Same MRN, different visit numbers ⇒ different encounters',
+      'Use OBR-7 for clinical ordering, never MSH-7',
+      'Buffer messages briefly to absorb out-of-order delivery'
+    ],
+    pitfalls: 'Using MSH-7 for clinical sequence reorders results by lab system processing speed instead of specimen collection time.'
+  },
+  'A2': {
+    keyConcepts: [
+      'Snapshot semantics','Last-write-wins','OBX-11 status','Preliminary (P)','Final (F)',
+      'Corrected (C)','Duplicate detection','Retransmission','Conflict resolution'
+    ],
+    inputs: [
+      'Multiple ADT^A08 messages (demographic conflicts)',
+      'OBX with OBX-11 = P → F → C lifecycle',
+      'Retransmitted ORU^R01 (same OBX-3 + OBR-7)'
+    ],
+    outputs: 'Reconciled per-encounter facts: one current value per (patient, field) pair, with audit trail',
+    productionNotes: [
+      'Demographics: latest MSH-7 wins (snapshot semantics)',
+      'Lab status priority: F > C > P (final supersedes preliminary)',
+      'Dedupe by (OBX-3, OBR-7); same code+time = duplicate',
+      'Different OBR-7 = distinct measurements, keep both',
+      'Retain superseded values with status flags for richest analytics'
+    ],
+    pitfalls: 'Averaging preliminary + final lab values produces a clinically meaningless number.'
+  },
+  'A3': {
+    keyConcepts: [
+      'Direct extraction','Computed feature','Aggregate feature','dbt model',
+      "materialized='table'",'Full refresh','encounter_id','wbc_first',
+      'los_hours','feature flattening'
+    ],
+    inputs: [
+      'stg_hl7v2_messages (reconciled message stream)',
+      'Per-encounter ADT/ORU bundles from A1+A2',
+      'Lookup tables for code crosswalks (LOINC, ICD-10)'
+    ],
+    outputs: 'mart_ed_encounters: one row per encounter × 16 features (demographics, clinical, utilization)',
+    productionNotes: [
+      "{{ config(materialized='table') }} — full refresh nightly",
+      'Why table not incremental: reconciliation reprocesses past conflicts',
+      "Use ref('stg_hl7v2_messages') for upstream dependency",
+      "wbc_first = first by OBR-7 where OBX-11 IN ('F','C')",
+      'los_hours = (PV1.45 - PV1.44) cast to hours'
+    ],
+    pitfalls: "Using 'incremental' materialization breaks reconciliation — corrected lab from yesterday won't replace yesterday's preliminary value."
+  },
+  'A4': {
+    keyConcepts: [
+      'Completeness','Random missingness','Systemic missingness','Privacy-induced bias',
+      'Selection bias','Type mixing','dbt schema tests','not_null','accepted_values',
+      'unique','42 CFR Part 2'
+    ],
+    inputs: [
+      'mart_ed_encounters (5 patients × 16 features)',
+      'Source system version metadata',
+      'Privacy redaction logs (42 CFR Part 2)',
+      'schema.yml test definitions'
+    ],
+    outputs: 'Quality-assessed dataset + test results + bias warnings flagged for the dataset card',
+    productionNotes: [
+      'Three missingness types: random, systemic, privacy-induced',
+      'dbt tests: not_null on encounter_id, accepted_values on encounter_type',
+      'unique on encounter_id catches grouping bugs from A1',
+      "Stratify analyses by encounter_type to handle ED/inpatient mixing",
+      'Document privacy-induced gaps separately from data quality issues'
+    ],
+    pitfalls: 'Imputing missing has_substance_dx as FALSE systematically mislabels exactly the population the model should detect. There is no clean technical fix — privacy and analytics are in genuine tension here.'
+  },
+  'A5': {
+    keyConcepts: [
+      'Dataset card','Provenance','Intended use','Known limitations','Bias warnings',
+      'Privacy compliance','Three audiences','13-station chain','NOT suitable for',
+      'Statistical power'
+    ],
+    inputs: [
+      'Quality-assessed dataset from A4',
+      'Pipeline metadata: which stations, which versions, what was redacted',
+      'IRB approval scope and population definition',
+      'Source message inventory: ADT, ORU types and counts'
+    ],
+    outputs: 'Dataset card document — required artifact accompanying every analytic dataset',
+    productionNotes: [
+      'Three audiences: data scientists, clinical researchers, compliance',
+      'Source description: which v2 versions, which message types',
+      'Pipeline provenance: link back to each Part 1 station',
+      'Bias warnings: source-system-version, privacy redaction, small n',
+      'NOT suitable for: production deployment, individual decisions, populations not represented'
+    ],
+    pitfalls: 'A 5-patient cohort cannot be deployed for production prediction — suitable only for pipeline validation and feature engineering exploration.'
+  }
+};
+
+// ──────────── REFERENCE CARDS ────────────
+function extractCardSummary(lectureHTML){
+  if(!lectureHTML) return '';
+  const tmp = document.createElement('div');
+  tmp.innerHTML = lectureHTML;
+  const para = tmp.querySelector('.concept p');
+  if(!para) return '';
+  let text = para.textContent.trim().replace(/\s+/g,' ');
+  if(text.length > 280) text = text.substring(0,280).replace(/\s\S*$/,'') + '…';
+  return text;
+}
+
+function openCardLibrary(){
+  document.getElementById('modalTitle').textContent = '📚 Reference Card Library';
+  let html = '<p style="color:var(--text-dim);margin-bottom:16px;font-size:13px">Quick-reference cards for each analytics station. Click a card to jump to that station, or click the <em>i</em> icon next to any station heading to open its detailed card.</p>';
+  STATIONS.forEach((s, idx) => {
+    const summary = extractCardSummary(s.lecture);
+    const done = state.completed.includes(s.id);
+    const cardData = STATION_CARDS[s.id] || {};
+    const concepts = (cardData.keyConcepts || []).slice(0,4);
+    html += `<div class="card-tile" onclick="goToStationFromModal(${idx})" style="margin-bottom:10px;padding:12px 14px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface-inset);cursor:pointer;transition:all .15s">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+        <span style="font-size:18px">${s.icon||'•'}</span>
+        <strong style="color:var(--text);font-size:14px">Station ${s.id}: ${s.name}</strong>
+        ${done ? '<span style="color:var(--green);font-size:11px;font-family:var(--mono)">✓ done</span>' : ''}
+        <span style="margin-left:auto;font-family:var(--mono);font-size:10px;color:var(--cyan);border:1px solid var(--cyan);padding:2px 6px;border-radius:10px">Part 2</span>
+      </div>
+      <div style="font-size:12.5px;color:var(--text-muted);line-height:1.6;margin-bottom:8px">${summary || '<em>(no preview)</em>'}</div>
+      ${concepts.length ? `<div style="display:flex;gap:5px;flex-wrap:wrap">
+        ${concepts.map(c => `<span style="font-family:var(--mono);font-size:10px;background:var(--bg);color:var(--text-dim);padding:2px 6px;border-radius:3px;border:1px solid var(--border)">${c}</span>`).join('')}
+      </div>` : ''}
+    </div>`;
+  });
+  document.getElementById('modalBody').innerHTML = html;
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+function openStationCard(stationId){
+  const stn = STATIONS.find(s=>String(s.id)===String(stationId));
+  if(!stn) return;
+  const summary = extractCardSummary(stn.lecture);
+  const tasksList = stn.tasks || [];
+  const choiceCount = tasksList.filter(t => t.type === 'choice').length;
+  const fillCount = tasksList.filter(t => t.type === 'fill').length;
+  const cardData = STATION_CARDS[stn.id] || {};
+
+  document.getElementById('modalTitle').textContent = `${stn.icon||''} Station ${stn.id} Reference Card`.trim();
+
+  let html = `<div style="font-size:13px;color:var(--text-muted);line-height:1.7">
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--border)">
+      <strong style="color:var(--text);font-size:15px">${stn.name}</strong>
+      <span style="font-family:var(--mono);font-size:10px;color:var(--cyan);border:1px solid var(--cyan);padding:2px 8px;border-radius:10px">Part 2 · single track</span>
+    </div>
+
+    <div style="margin-bottom:14px">
+      <div style="font-family:var(--mono);font-size:10px;letter-spacing:1px;color:var(--text-dim);text-transform:uppercase;margin-bottom:6px">Concept Summary</div>
+      <div>${summary || '<em>(no summary)</em>'}</div>
+    </div>`;
+
+  // Key Concepts (chips)
+  if(cardData.keyConcepts && cardData.keyConcepts.length){
+    html += `<div style="margin-bottom:14px">
+      <div style="font-family:var(--mono);font-size:10px;letter-spacing:1px;color:var(--text-dim);text-transform:uppercase;margin-bottom:6px">Key Concepts</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        ${cardData.keyConcepts.map(c => `<code style="font-family:var(--mono);font-size:11px;background:var(--surface-inset);color:var(--accent);padding:3px 8px;border-radius:4px;border:1px solid var(--border)">${c}</code>`).join('')}
+      </div>
+    </div>`;
+  }
+
+  // Pipeline Inputs
+  if(cardData.inputs && cardData.inputs.length){
+    html += `<div style="margin-bottom:14px">
+      <div style="font-family:var(--mono);font-size:10px;letter-spacing:1px;color:var(--text-dim);text-transform:uppercase;margin-bottom:6px">Pipeline Inputs</div>
+      <ul style="list-style:none;padding:0;margin:0">
+        ${cardData.inputs.map(i => `<li style="padding:3px 0;color:var(--text-muted)"><span style="color:var(--orange);font-family:var(--mono);margin-right:6px">→</span>${i}</li>`).join('')}
+      </ul>
+    </div>`;
+  }
+
+  // Outputs
+  if(cardData.outputs){
+    html += `<div style="margin-bottom:14px">
+      <div style="font-family:var(--mono);font-size:10px;letter-spacing:1px;color:var(--text-dim);text-transform:uppercase;margin-bottom:6px">Output</div>
+      <div><span style="color:var(--green);font-family:var(--mono);margin-right:6px">←</span>${cardData.outputs}</div>
+    </div>`;
+  }
+
+  // Production Notes
+  if(cardData.productionNotes && cardData.productionNotes.length){
+    html += `<div style="margin-bottom:14px">
+      <div style="font-family:var(--mono);font-size:10px;letter-spacing:1px;color:var(--text-dim);text-transform:uppercase;margin-bottom:6px">Production Notes</div>
+      <ul style="list-style:none;padding:0;margin:0">
+        ${cardData.productionNotes.map(n => `<li style="padding:3px 0;color:var(--text-muted);font-size:12.5px"><span style="color:var(--cyan);font-family:var(--mono);margin-right:6px">•</span>${n}</li>`).join('')}
+      </ul>
+    </div>`;
+  }
+
+  // Common Pitfall
+  if(cardData.pitfalls){
+    html += `<div style="margin-bottom:14px;padding:10px 12px;background:rgba(251,146,60,.06);border-left:3px solid var(--orange);border-radius:4px">
+      <div style="font-family:var(--mono);font-size:10px;letter-spacing:1px;color:var(--orange);text-transform:uppercase;margin-bottom:4px">⚠ Common Pitfall</div>
+      <div style="font-size:12.5px;color:var(--text-muted)">${cardData.pitfalls}</div>
+    </div>`;
+  }
+
+  // Exercise count
+  html += `<div style="margin-bottom:14px">
+      <div style="font-family:var(--mono);font-size:10px;letter-spacing:1px;color:var(--text-dim);text-transform:uppercase;margin-bottom:6px">Exercises</div>
+      <div>${tasksList.length} total · ${choiceCount} multiple-choice · ${fillCount} fill-in-blank</div>
+    </div>
+
+    <div style="display:flex;gap:8px;margin-top:18px;padding-top:14px;border-top:1px solid var(--border)">
+      <button class="btn primary" style="flex:1" onclick="closeModal()">Continue Station</button>
+      <button class="btn secondary" onclick="closeModal();openCardLibrary()">📚 Full Library</button>
+    </div>
+  </div>`;
+
+  document.getElementById('modalBody').innerHTML = html;
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+function goToStationFromModal(idx){
+  closeModal();
+  goToStation(idx);
+}
+
+function closeModal(){document.getElementById('modalOverlay').classList.remove('open');}
+window.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
+
+// ──────────── BOOT ────────────
+window.addEventListener('DOMContentLoaded',render);
+</script>
+</body>
+</html>

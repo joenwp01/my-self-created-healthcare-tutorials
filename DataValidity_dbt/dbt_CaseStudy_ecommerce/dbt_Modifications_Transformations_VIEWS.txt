@@ -1,0 +1,50 @@
+
+
+## This is what happens in the 1st layer for dbt accessing raw data / source:
+
+---
+
+### What Is Actually True
+
+The renaming, recasting, column dropping, and cleaning **are always done in the SQL `SELECT` statement itself** — that part is non-negotiable. The transformation logic lives in the `.sql` file regardless of how the result is materialized.
+
+What *is* configurable — independently of the transformation logic — is **whether dbt writes the result of that SELECT to disk or not**. That is purely a `materialized` setting.
+
+---
+
+### The Three Real Options at the Staging Layer
+
+**`view` (default convention)**
+dbt creates a view definition in the warehouse. Nothing is written to disk. The transformation SQL executes fresh every time a downstream model queries it. The raw table is read directly at query time through the view. No storage cost, always current.
+
+**`table`**
+dbt executes the transformation SQL and **writes the result as a physical table** in the staging schema. The renamed, recast, cleaned copy now exists as a real stored object in the warehouse. The raw table is no longer touched at query time — downstream models read from this physical copy instead. This is a legitimate and sometimes necessary choice when the raw table is large or expensive to scan repeatedly.
+
+**`incremental`**
+dbt writes a physical table initially, then on subsequent runs only processes and appends/merges new rows. Used at staging when the raw source is very high volume — a streaming events table with billions of rows for example. The on-disk copy is built once and surgically updated rather than rebuilt in full each run.
+
+---
+
+### So What Never Changes
+
+What is *always* true regardless of materialization is this — **the raw table itself is never touched**. dbt has no `UPDATE`, `DELETE`, or `INSERT` against raw source tables. The `source()` macro is read-only by design. The original on-disk data is permanently preserved exactly as the loader wrote it. The transformation only affects what dbt *outputs*, not what it reads from.
+
+```
+raw.orders  ──[READ ONLY, never modified]──►  SELECT (transformation SQL)
+                                                        │
+                                          ┌─────────────┼──────────────┐
+                                          ▼             ▼              ▼
+                                        VIEW          TABLE      INCREMENTAL
+                                    (no storage)   (full copy    (append/merge
+                                                    on disk)      on disk)
+```
+
+---
+
+### Why Views Are the Convention Specifically at Staging
+
+The reason the community defaults to views at staging is that staging models are intentionally thin — a few renames and recasts add almost no computation cost. Materializing a thin pass-through as a table would consume storage and rebuild time to gain essentially nothing. The heavier computation happens at the intermediate and mart layers, where table materialization starts paying for itself by avoiding redundant re-execution of expensive joins and aggregations.
+
+But in a healthcare data context for instance — where a raw EHR table might be 50GB+ and queried by a dozen downstream models simultaneously — materializing the staging model as a table or incremental is completely standard practice and often necessary for performance and cost control.
+
+The short answer: **views are the default and the convention, but physical staging tables are a fully supported and sometimes required option. The transformation logic in the SQL itself is what defines the staging layer, not the materialization choice.**

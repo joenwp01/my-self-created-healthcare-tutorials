@@ -1,0 +1,59 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>C-CDA or CSV into FHIR demo</title><style>
+:root{--bg:#f6f8fb;--card:#ffffff;--text:#0f172a;--muted:#475569;--line:#dbe2ea;--soft:#f8fafc;--dark:#111827;--blue:#0f172a;--accent:#e2e8f0;--shadow:0 10px 30px rgba(15,23,42,.08)}
+*{box-sizing:border-box} html{scroll-behavior:smooth} body{margin:0;font-family:Arial,Helvetica,sans-serif;background:linear-gradient(180deg,#f8fafc,#eef2f7);color:var(--text);line-height:1.55}
+a{color:#0f172a} .wrap{max-width:1200px;margin:0 auto;padding:24px} .card{background:var(--card);border:1px solid var(--line);border-radius:28px;box-shadow:var(--shadow);padding:24px}
+.top-space{margin-top:24px}.hero{display:flex;gap:18px;justify-content:space-between;align-items:flex-end;flex-wrap:wrap}.eyebrow{font-size:12px;font-weight:700;letter-spacing:.08em;color:#64748b;text-transform:uppercase;margin-bottom:8px}
+h1,h2,h3{margin:0} h1{font-size:38px} h2{font-size:28px} h3{font-size:22px} p{margin:10px 0 0;color:var(--muted)}
+.grid-2,.grid-3{display:grid;gap:16px}.grid-2{grid-template-columns:repeat(2,1fr)}.grid-3{grid-template-columns:repeat(3,1fr)} @media(max-width:960px){.grid-2,.grid-3{grid-template-columns:1fr}}
+.tile,.mini-card{background:#f8fafc;border:1px solid var(--line);border-radius:20px;padding:18px}.tile h3,.mini-card h3{font-size:20px;margin-bottom:6px}.tile p,.mini-card p{font-size:14px;color:#475569;margin:8px 0 0}
+.btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}.button-link{border:1px solid #cbd5e1;background:#fff;color:#334155;padding:10px 16px;border-radius:16px;font-size:14px;cursor:pointer;text-decoration:none;display:inline-block}.button-link.primary{background:var(--dark);color:#fff;border-color:var(--dark)}
+.list{margin:10px 0 0;padding-left:18px;color:#334155}.list li{margin:6px 0}.muted{color:#64748b}.nav{display:flex;gap:10px;flex-wrap:wrap}.notice{background:#fff7ed;border:1px solid #fed7aa;border-radius:18px;padding:14px 16px;color:#334155}.footer{font-size:13px;color:#64748b;margin-top:16px}
+.article{max-width:900px;margin:0 auto}.article .content{background:#fff;border:1px solid var(--line);border-radius:28px;box-shadow:var(--shadow);padding:28px}.article h1{font-size:34px}.article h2{font-size:24px;margin-top:26px}.article h3{font-size:20px;margin-top:20px}.article p{font-size:16px;color:#334155}.article ul,.article ol{color:#334155;padding-left:22px}.article li{margin:8px 0}.article code{background:#eef2f7;padding:2px 6px;border-radius:8px;font-family:Consolas,monospace;font-size:.95em}.article pre{background:#020617;color:#e2e8f0;padding:16px;border-radius:18px;overflow:auto;border:1px solid #0f172a;white-space:pre-wrap;word-break:break-word}.article pre code{background:transparent;padding:0;color:inherit}
+.kicker{display:inline-block;padding:8px 12px;border-radius:999px;background:#f1f5f9;border:1px solid #e2e8f0;color:#334155;font-size:13px;font-weight:700}
+</style></head><body><div class="wrap article"><div class="nav"><a class="button-link" href="../index.html">Home</a><a class="button-link" href="../demo.html">Interactive demo</a><a class="button-link" href="index.html">Guide index</a></div><div class="content top-space"><div class="kicker">Guide</div><h1>C-CDA or CSV into FHIR demo</h1><p class="muted">HTML browser version of the included markdown guide.</p><h1>C-CDA or CSV into FHIR demo</h1>
+<h2>Purpose</h2>
+<p>This demo shows how non-FHIR source content, whether document-based or tabular, is extracted and turned into standard FHIR resources.</p>
+<h2>Significant steps</h2>
+<ol>
+<li><p>Receive source content</p>
+<ul>
+<li>Accepts either a C-CDA fragment or a CSV-like extract.</li>
+</ul>
+</li>
+<li><p>Extract structured facts</p>
+<ul>
+<li>Pulls out diagnosis, onset date, patient key, and related coding.</li>
+</ul>
+</li>
+<li><p>Reconcile codes</p>
+<ul>
+<li>Preserves or maps multiple coding systems, for example ICD-10-CM plus SNOMED CT.</li>
+<li>Resolves whether the codings agree semantically.</li>
+</ul>
+</li>
+<li><p>Build the FHIR resource</p>
+<ul>
+<li>Creates a <code>Condition</code> resource from the extracted and normalized fact.</li>
+</ul>
+</li>
+<li><p>Export or warehouse load</p>
+<ul>
+<li>Sends the Condition onward in FHIR form or flattens it for analytics.</li>
+</ul>
+</li>
+</ol>
+<h2>Error branches shown</h2>
+<ul>
+<li>Malformed source payload</li>
+<li>Partial extraction only</li>
+<li>Coding conflict between source narrative and code</li>
+<li>FHIR profile validation failure</li>
+<li>Warehouse type mismatch</li>
+</ul>
+<h2>What this teaches</h2>
+<ul>
+<li>Much of the real work happens before FHIR resource creation.</li>
+<li>FHIR often sits in the middle of a broader pipeline rather than at the very beginning.</li>
+<li>One source fact may carry multiple coding systems that need deliberate handling.</li>
+</ul>
+<div class="top-space"><a class="button-link" href="03_ccda_or_csv_into_fhir.md">Open original markdown</a></div></div></div></body></html>

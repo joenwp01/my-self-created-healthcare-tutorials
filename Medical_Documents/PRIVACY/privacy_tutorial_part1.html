@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Healthcare Privacy Tutorial — Part 1: Stations 01-05</title>
+<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&family=JetBrains+Mono:wght@400;500;600&family=Source+Sans+3:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0d1219;--bg2:#121c28;--bgc:#15202e;--bga:#1c2d40;--bgi:#0a1520;
+--bc:#1e3045;--ba:#2a4a6b;--tp:#dde8f0;--ts:#7fa8c4;--tm:#4a6d8a;
+--tl:#2eb8b0;--tld:#1a7a74;--gn:#6db87a;--gnd:#3a6b45;
+--am:#e8a838;--amd:#a87820;--co:#d9604e;--cod:#8a3020;
+--bl:#4a9fd4;--bld:#2a6090;--pu:#9b7fe8;--cy:#48c8e8;
+--sh:0 4px 28px rgba(0,0,0,.45);--si:inset 0 2px 6px rgba(0,0,0,.35);
+--r:8px;--rl:14px;
+--ff:'Crimson Pro',Georgia,serif;--fn:'Source Sans 3',system-ui,sans-serif;--fm:'JetBrains Mono','Consolas',monospace;}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{font-family:var(--fn);background:var(--bg);color:var(--tp);line-height:1.72;font-size:17px;min-height:100vh;}
+.pw{max-width:940px;margin:0 auto;padding:40px 28px 120px;}
+.pgb{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,var(--tl),var(--cy));z-index:200;transition:width .25s ease;}
+.hero{text-align:center;padding:68px 20px 48px;position:relative;}
+.hero::before{content:'';position:absolute;top:-60px;left:50%;transform:translateX(-50%);width:700px;height:500px;background:radial-gradient(ellipse,rgba(46,184,176,.07) 0%,transparent 68%);pointer-events:none;}
+.hlb{font-family:var(--fm);font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--tl);margin-bottom:18px;}
+.hero h1{font-family:var(--ff);font-size:clamp(2rem,5vw,3rem);font-weight:700;line-height:1.18;margin-bottom:16px;}
+.hero h1 span{color:var(--tl);}
+.hsub{font-size:18px;color:var(--ts);max-width:660px;margin:0 auto;font-weight:300;line-height:1.65;}
+.hmt{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin-top:20px;}
+.hbg{display:inline-block;font-family:var(--fm);font-size:11px;letter-spacing:1.8px;padding:4px 14px;border-radius:4px;}
+.hbp{color:var(--co);background:rgba(217,96,78,.08);border:1px solid rgba(217,96,78,.2);}
+.hbj{color:var(--am);background:rgba(232,168,56,.08);border:1px solid rgba(232,168,56,.18);}
+.hbc{color:var(--tl);background:rgba(46,184,176,.07);border:1px solid rgba(46,184,176,.15);}
+.hbd{color:var(--tm);background:rgba(255,255,255,.03);border:1px solid var(--bc);}
+.pnv{background:var(--bgc);border:1px solid var(--bc);border-radius:var(--rl);padding:18px 26px;margin:18px 0;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;}
+.pnl{font-family:var(--fm);font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--tm);}
+.pnv a{font-family:var(--fm);font-size:12px;color:var(--tl);text-decoration:none;padding:6px 16px;border:1px solid var(--tld);border-radius:5px;transition:background .2s;}
+.pnv a:hover{background:rgba(46,184,176,.08);}
+.pnc{font-family:var(--fm);font-size:12px;color:var(--tl);padding:6px 16px;background:rgba(46,184,176,.08);border:1px solid var(--tld);border-radius:5px;}
+.toc{background:var(--bgc);border:1px solid var(--bc);border-radius:var(--rl);padding:28px 34px;margin:20px 0 48px;}
+.toc h2{font-family:var(--ff);font-size:21px;margin-bottom:18px;color:var(--am);}
+.toc a{color:var(--ts);text-decoration:none;font-size:14.5px;display:flex;align-items:baseline;gap:10px;padding:5px 0;transition:color .2s;}
+.toc a:hover{color:var(--tl);}
+.tn{font-family:var(--fm);font-size:11px;color:var(--tld);min-width:22px;}
+.tnw{font-family:var(--fm);font-size:9px;letter-spacing:1px;color:var(--co);margin-left:4px;vertical-align:2px;}
+hr.dv{border:none;height:1px;background:var(--bc);margin:50px 0;}
+.sta{margin-bottom:68px;animation:fu .5s ease both;}
+@keyframes fu{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.shd{display:flex;align-items:center;gap:14px;margin-bottom:8px;}
+.sn{font-family:var(--fm);font-size:11px;letter-spacing:2.5px;text-transform:uppercase;color:var(--tld);}
+.stg{font-family:var(--fm);font-size:10px;letter-spacing:1.5px;text-transform:uppercase;padding:3px 10px;border-radius:4px;border:1px solid;margin-left:auto;}
+.tgn{color:var(--co);border-color:rgba(217,96,78,.3);background:rgba(217,96,78,.06);}
+.tga{color:var(--tm);border-color:var(--bc);background:rgba(255,255,255,.02);}
+.sta h2{font-family:var(--ff);font-size:27px;font-weight:700;margin-bottom:18px;color:var(--tp);border-bottom:1px solid var(--bc);padding-bottom:11px;}
+.sta h3{font-family:var(--ff);font-size:20px;font-weight:600;margin:28px 0 11px;color:var(--am);}
+.sta p{margin-bottom:13px;}
+.kt{color:var(--tl);font-weight:600;}
+.cn{background:linear-gradient(135deg,rgba(46,184,176,.06),rgba(74,159,212,.04));border:1px solid rgba(46,184,176,.15);border-radius:var(--rl);padding:20px 24px;margin:20px 0;}
+.cnt{font-family:var(--fm);font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--tl);margin-bottom:9px;}
+.fb{background:var(--bg2);border-left:3px solid var(--tl);border-radius:0 var(--r) var(--r) 0;padding:16px 24px;margin:16px 0;font-family:var(--fm);font-size:14px;line-height:2;overflow-x:auto;color:var(--am);}
+.fb .lb{display:block;font-family:var(--fn);font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:var(--tm);margin-bottom:5px;}
+.nt{width:100%;border-collapse:collapse;margin:14px 0 20px;font-size:15px;}
+.nt th{text-align:left;padding:9px 14px;background:var(--bg2);color:var(--tl);font-family:var(--fm);font-size:11px;letter-spacing:1.5px;text-transform:uppercase;border-bottom:2px solid var(--ba);}
+.nt td{padding:9px 14px;border-bottom:1px solid var(--bc);vertical-align:top;}
+.nt td:first-child{font-family:var(--fm);color:var(--am);white-space:nowrap;width:155px;}
+.nt tr:last-child td{border-bottom:none;}
+.ctw{overflow-x:auto;margin:12px 0;}
+.ct{width:100%;border-collapse:collapse;font-size:13px;font-family:var(--fm);}
+.ct th{padding:7px 11px;background:var(--bg2);color:var(--tl);font-size:10px;letter-spacing:1px;text-transform:uppercase;border-bottom:2px solid var(--ba);white-space:nowrap;}
+.ct td{padding:6px 11px;border-bottom:1px solid var(--bc);color:var(--ts);white-space:nowrap;}
+.ct tr:last-child td{border-bottom:none;}
+.ct tr:hover td{background:rgba(46,184,176,.03);}
+.cd{background:rgba(217,96,78,.12);color:var(--co);}
+.cq{background:rgba(232,168,56,.10);color:var(--am);}
+.cs{background:rgba(155,127,232,.10);color:var(--pu);}
+.ck{color:var(--gn);}
+.cx{color:var(--tm);text-decoration:line-through;}
+.cg{color:var(--cy);}
+.ck1{background:rgba(217,96,78,.10);color:var(--co);font-weight:600;}
+.ck2{background:rgba(109,184,122,.10);color:var(--gn);font-weight:600;}
+.dt{display:flex;align-items:center;gap:10px;width:100%;background:var(--bg2);border:1px solid var(--ba);border-radius:var(--rl);padding:13px 18px;cursor:pointer;text-align:left;transition:background .2s,border-color .2s;margin-bottom:5px;}
+.dt:hover{background:var(--bga);border-color:var(--tld);}
+.dt .di{font-size:17px;flex-shrink:0;}
+.dt .dl{font-family:var(--fm);font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--tl);}
+.dt .tt{font-family:var(--ff);font-size:15px;color:var(--ts);flex:1;}
+.dt .da{font-family:var(--fm);font-size:12px;color:var(--tm);transition:transform .2s;margin-left:auto;}
+.dt.op .da{transform:rotate(90deg);}
+.dt.op{border-color:var(--tld);background:rgba(46,184,176,.04);}
+.dc{display:none;background:var(--bgc);border:1px solid var(--tld);border-top:none;border-radius:0 0 var(--rl) var(--rl);padding:22px 24px;margin-bottom:16px;}
+.dc.op{display:block;}
+.sl{font-family:var(--fm);font-size:10px;letter-spacing:2px;text-transform:uppercase;margin-bottom:7px;padding:3px 9px;border-radius:4px;display:inline-block;}
+.slb{color:var(--co);background:rgba(217,96,78,.08);border:1px solid rgba(217,96,78,.2);}
+.slo{color:var(--am);background:rgba(232,168,56,.08);border:1px solid rgba(232,168,56,.2);}
+.sla{color:var(--gn);background:rgba(109,184,122,.08);border:1px solid rgba(109,184,122,.2);}
+.dp{background:var(--bg2);border-radius:var(--r);padding:14px 16px;margin:9px 0;}
+.dot{font-family:var(--fm);font-size:12.5px;color:var(--am);line-height:1.9;padding:8px 0;}
+.dn{font-size:14px;color:var(--ts);margin-top:12px;line-height:1.65;padding:11px 15px;background:rgba(46,184,176,.04);border-left:2px solid var(--tld);border-radius:0 var(--r) var(--r) 0;}
+.ex{background:var(--bgc);border:1px solid var(--bld);border-radius:var(--rl);padding:26px 28px;margin:8px 0 30px;position:relative;box-shadow:var(--sh);}
+.ex::before{content:'✎';position:absolute;top:-13px;left:18px;background:var(--tl);color:#fff;width:27px;height:27px;display:flex;align-items:center;justify-content:center;border-radius:50%;font-size:13px;}
+.ext{font-family:var(--ff);font-size:18px;font-weight:600;margin-bottom:5px;color:var(--tp);}
+.exd{font-family:var(--fm);font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--gn);margin-bottom:15px;}
+.pb{margin:14px 0;}.pa{display:none;margin:14px 0;}.pa.vs{display:block;}
+.pl{font-family:var(--fm);font-size:10px;letter-spacing:2px;text-transform:uppercase;margin-bottom:7px;display:inline-block;padding:3px 9px;border-radius:4px;}
+.plb{color:var(--co);background:rgba(217,96,78,.08);border:1px solid rgba(217,96,78,.2);}
+.pla{color:var(--gn);background:rgba(109,184,122,.08);border:1px solid rgba(109,184,122,.2);}
+.pbx{background:var(--bg2);border-radius:var(--r);padding:13px 15px;}
+.hb{background:transparent;border:1px solid var(--amd);color:var(--am);font-family:var(--fm);font-size:11px;letter-spacing:1px;text-transform:uppercase;padding:6px 15px;border-radius:5px;cursor:pointer;margin:9px 0;transition:background .2s;}
+.hb:hover{background:rgba(232,168,56,.08);}
+.hbx{display:none;background:rgba(232,168,56,.05);border:1px solid rgba(232,168,56,.15);border-radius:var(--r);padding:13px 17px;margin:9px 0 14px;color:var(--am);font-size:15px;line-height:1.65;}
+.hbx.vs{display:block;}
+.fl{font-weight:600;margin:16px 0 7px;font-size:15px;}
+.fi{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px;margin:9px 0;line-height:2.6;font-size:15px;}
+.fi .ts{white-space:nowrap;}
+.bw{display:inline-flex;flex-direction:column;align-items:center;}
+.bi{background:var(--bgi);border:1px solid var(--ba);border-bottom:2px solid var(--tl);color:var(--tp);font-family:var(--fm);font-size:14px;padding:4px 9px;border-radius:4px 4px 0 0;text-align:center;transition:border-color .25s;box-shadow:var(--si);}
+.bi:focus{outline:none;border-color:var(--tl);box-shadow:var(--si),0 0 0 2px rgba(46,184,176,.18);}
+.bi.ok{border-color:var(--gn);border-bottom-color:var(--gn);background:rgba(109,184,122,.07);color:var(--gn);}
+.bi.no{border-color:var(--co);border-bottom-color:var(--co);background:rgba(217,96,78,.06);}
+.rb{background:none;border:none;color:var(--tm);font-size:10px;font-family:var(--fm);cursor:pointer;margin-top:2px;padding:2px 4px;transition:color .2s;}
+.rb:hover{color:var(--tl);}
+.bg{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:15px;}
+.cb{background:var(--tl);color:#0d1219;border:none;font-family:var(--fm);font-size:12px;letter-spacing:1px;text-transform:uppercase;padding:10px 26px;border-radius:6px;cursor:pointer;font-weight:600;transition:background .2s,transform .1s;}
+.cb:hover{background:var(--cy);}
+.cb:active{transform:scale(.97);}
+.rab{background:transparent;color:var(--am);border:1px solid var(--amd);font-family:var(--fm);font-size:12px;letter-spacing:1px;text-transform:uppercase;padding:10px 26px;border-radius:6px;cursor:pointer;transition:background .2s;}
+.rab:hover{background:rgba(232,168,56,.08);}
+.res{display:none;margin-top:15px;padding:15px 20px;border-radius:var(--r);font-size:15px;line-height:1.65;}
+.res.vs{display:block;}
+.res.ok{background:rgba(109,184,122,.07);border:1px solid rgba(109,184,122,.2);color:var(--gn);}
+.res.no{background:rgba(217,96,78,.05);border:1px solid rgba(217,96,78,.18);color:var(--co);}
+.res.sl{background:rgba(232,168,56,.05);border:1px solid rgba(232,168,56,.18);color:var(--am);}
+.od{display:none;background:var(--bg2);border:1px solid var(--gnd);border-radius:var(--r);padding:18px 22px;margin-top:12px;font-family:var(--fm);font-size:13px;line-height:1.9;color:var(--tl);}
+.od.vs{display:block;}
+.ol{font-family:var(--fn);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--tm);margin-bottom:9px;}
+.mg{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:13px;margin:16px 0;}
+.mc{background:var(--bg2);border-radius:var(--r);padding:16px 18px;border-top:3px solid;}
+.mc.pr{border-color:var(--co);}
+.mc.jo{border-color:var(--am);}
+.mc.ma{border-color:var(--bl);}
+.mn{font-family:var(--fm);font-size:11px;letter-spacing:2px;text-transform:uppercase;margin-bottom:7px;}
+.mc.pr .mn{color:var(--co);}
+.mc.jo .mn{color:var(--am);}
+.mc.ma .mn{color:var(--bl);}
+.mf{font-family:var(--fm);font-size:12px;color:var(--am);margin:7px 0;padding:5px 9px;background:var(--bgc);border-radius:4px;}
+.mc p{font-size:13px;color:var(--ts);line-height:1.6;}
+.rm{display:flex;align-items:center;gap:12px;margin:5px 0;}
+.rw{flex:1;height:9px;background:var(--bg2);border-radius:5px;overflow:hidden;}
+.rb2{height:100%;border-radius:5px;}
+.rb2.h{background:linear-gradient(90deg,var(--co),#ff4444);width:100%;}
+.rb2.m{background:linear-gradient(90deg,var(--am),var(--co));width:60%;}
+.rb2.l{background:linear-gradient(90deg,var(--gn),var(--tl));width:10%;}
+.rl{font-family:var(--fm);font-size:11px;letter-spacing:1px;min-width:88px;text-align:right;}
+.rl.h{color:var(--co);}
+.rl.m{color:var(--am);}
+.rl.l{color:var(--gn);}
+.rt{width:100%;border-collapse:collapse;font-size:13px;margin:12px 0;}
+.rt th{padding:7px 11px;background:var(--bg2);color:var(--tl);font-family:var(--fm);font-size:10px;letter-spacing:1px;text-transform:uppercase;border-bottom:2px solid var(--ba);}
+.rt td{padding:7px 11px;border-bottom:1px solid var(--bc);font-family:var(--fm);font-size:12px;}
+.rt .ps{color:var(--gn);}
+.rt .fl2{color:var(--co);}
+.ig{display:grid;grid-template-columns:repeat(auto-fill,minmax(185px,1fr));gap:7px;margin:14px 0;}
+.ii{background:var(--bg2);border-radius:6px;padding:7px 11px;border-left:3px solid var(--co);font-size:13px;color:var(--ts);}
+.ii .in{font-family:var(--fm);font-size:10px;color:var(--co);margin-bottom:2px;}
+em{color:var(--tl);font-style:italic;font-family:var(--ff);}
+strong{color:var(--tp);font-weight:600;}
+code{font-family:var(--fm);font-size:.88em;background:var(--bg2);padding:2px 6px;border-radius:4px;color:var(--pu);}
+@media(max-width:680px){.pw{padding:18px 13px 80px;}.ex,.dc{padding:18px 14px;}.fi{font-size:14px;}.mg{grid-template-columns:1fr;}}
+</style></head>
+<body>
+<div class="pgb" id="pgb"></div>
+<div class="pw">
+<header class="hero">
+  <div class="hlb">Interactive Tutorial — Healthcare Privacy Series</div>
+  <h1>Healthcare Data <span>Privacy &amp; De-Identification</span></h1>
+  <p class="hsub">Stations 01-05: De-Identification, HIPAA Safe Harbor, Re-Identification Risk, k-Anonymity, and l-Diversity — anchored by The Meridian Cohort.</p>
+  <div class="hmt">
+    <span class="hbg hbp">PART 1 OF 2</span>
+    <span class="hbg hbj">JOURNEY: REALISTIC</span>
+    <span class="hbg hbc">THE MERIDIAN COHORT</span>
+    <span class="hbg hbd">DEVELOPED BY: JOE WILLIAMS</span>
+  </div>
+</header>
+<div class="pnv">
+  <span class="pnl">Tutorial Navigation</span>
+  <div style="display:flex;gap:10px;flex-wrap:wrap;">
+    <span class="pnc">&#9664; Part 1 — Stations 01-05 (current)</span>
+    <a href="privacy_tutorial_part2.html">Part 2 — Stations 06-11 + Summary &#9654;</a>
+  </div>
+</div>
+<nav class="toc">
+  <h2>Part 1 Contents</h2>
+  <a href="#coh"><span class="tn">&#9733;</span>The Meridian Cohort</a>
+  <a href="#s01"><span class="tn">01</span>De-Identification: General Concepts<span class="tnw">NEW</span></a>
+  <a href="#s02"><span class="tn">02</span>HIPAA Safe Harbor — 18 Identifier Rule<span class="tnw">NEW</span></a>
+  <a href="#s03"><span class="tn">03</span>Re-Identification Risk — 3 Attacker Models<span class="tnw">NEW</span></a>
+  <a href="#s04"><span class="tn">04</span>k-Anonymity — Equivalence Classes<span class="tnw">NEW</span></a>
+  <a href="#s05"><span class="tn">05</span>l-Diversity — Sensitive Attribute Protection<span class="tnw">NEW</span></a>
+</nav>
+
+<section class="sta" id="coh">
+  <div class="shd"><div class="sn">THE MERIDIAN COHORT</div></div>
+  <h2>The Meridian Cohort — Your Working Dataset</h2>
+  <p>Six synthetic patients travel through all 11 stations carrying deliberate, multi-layered privacy violations. <em>No real patient data is used in this tutorial.</em></p>
+  <div class="cn"><div class="cnt">Color Legend</div><p>
+    <span style="background:rgba(217,96,78,.2);color:var(--co);padding:2px 8px;border-radius:3px;font-family:var(--fm);font-size:12px;">RED</span> Direct Identifier &#8212; suppress (name, SSN, address, phone, email, fax) &nbsp;
+    <span style="background:rgba(232,168,56,.2);color:var(--am);padding:2px 8px;border-radius:3px;font-family:var(--fm);font-size:12px;">AMBER</span> Quasi-Identifier &#8212; generalize (DOB, ZIP, sex) &nbsp;
+    <span style="background:rgba(155,127,232,.2);color:var(--pu);padding:2px 8px;border-radius:3px;font-family:var(--fm);font-size:12px;">PURPLE</span> Sensitive Attribute &#8212; retain but protect via k-anon/l-diversity
+  </p></div>
+  <div class="ctw"><table class="ct">
+    <thead><tr><th>#</th><th>Name</th><th>Sex</th><th>DOB</th><th>SSN</th><th>ZIP</th><th>Primary Dx</th><th>Additional ID</th></tr></thead>
+    <tbody>
+      <tr><td>P1</td><td class="cd">Margaret Chen</td><td class="cq">F</td><td class="cq">03/14/1952</td><td class="cd">524-43-9821</td><td class="cq">98032</td><td class="cs">Z21 &#8212; HIV/AIDS</td><td class="cd">14821 Cedar Ridge Ln, Kent WA</td></tr>
+      <tr><td>P2</td><td class="cd">David Okafor</td><td class="cq">M</td><td class="cq">07/22/1978</td><td class="cd">386-92-1047</td><td class="cq">98102</td><td class="cs">F11.20 &#8212; Opioid Use Disorder</td><td class="cd">Employer: Boeing Defense</td></tr>
+      <tr><td>P3</td><td class="cd">Yolanda Reyes</td><td class="cq">F</td><td class="cq">11/09/1965</td><td class="cd">721-55-3384</td><td class="cq">98032</td><td class="cs">E11.9 &#8212; Type 2 Diabetes</td><td class="cd">Race: Hispanic/Latina</td></tr>
+      <tr><td>P4</td><td class="cd">Thomas Nakamura</td><td class="cq">M</td><td class="cq">02/28/1981</td><td class="cd">453-67-8821</td><td class="cq">98102</td><td class="cs">I10 &#8212; Hypertension</td><td class="cd">Phone: 206-555-0182</td></tr>
+      <tr><td>P5</td><td class="cd">Priya Subramanian</td><td class="cq">F</td><td class="cq">08/15/1972</td><td class="cd">619-38-2754</td><td class="cq">98055</td><td class="cs">F31.9 &#8212; Bipolar Disorder</td><td class="cd">Email: psubramanian@gmail.com</td></tr>
+      <tr><td>P6</td><td class="cd">James Holbrook</td><td class="cq">M</td><td class="cq">12/03/1989</td><td class="cd">832-10-4963</td><td class="cq">98055</td><td class="cs">I25.10 &#8212; Coronary Artery Disease</td><td class="cd">Fax: 206-555-0299</td></tr>
+    </tbody>
+  </table></div>
+</section><hr class="dv">
+
+<section class="sta" id="s01">
+  <div class="shd"><div class="sn">Station 01</div><span class="stg tgn">NEW</span></div>
+  <h2>De-Identification &#8212; General Concepts</h2>
+  <p><span class="kt">De-identification</span> is the process of removing or transforming information in a dataset so individuals cannot be readily identified. It enables secondary use of healthcare data &#8212; research, analytics, public health &#8212; without exposing patient privacy.</p>
+  <p>De-identification is <strong>not</strong> anonymization. Anonymization implies identity can never be recovered. De-identification reduces re-identification risk to an acceptable level. This distinction matters legally and ethically under HIPAA.</p>
+  <h3>Three Categories of Data Fields</h3>
+  <div class="cn"><div class="cnt">Identifier Classification</div><p>
+    <strong>Direct Identifiers</strong> &#8212; Alone or nearly alone they identify an individual: names, SSNs, MRNs, phone, email, full addresses, biometrics. These are <em>suppressed</em> (removed entirely).<br><br>
+    <strong>Quasi-Identifiers (QI)</strong> &#8212; Individually innocuous but identifying in combination: DOB, ZIP, sex, age, race/ethnicity. These are <em>generalized</em> (made less precise) to preserve analytical utility while reducing linkability.<br><br>
+    <strong>Sensitive Attributes</strong> &#8212; The information we want to analyze: diagnoses, labs, medications. Retained but only after QIs are sufficiently anonymized.
+  </p></div>
+  <h3>Three De-Identification Techniques</h3>
+  <table class="nt"><thead><tr><th>Technique</th><th>What It Does &amp; When to Apply</th></tr></thead><tbody>
+    <tr><td>Suppression</td><td>Completely removes a field. Applied to direct identifiers and records that cannot meet privacy standards through generalization alone.</td></tr>
+    <tr><td>Generalization</td><td>Replaces precise values with broader categories. DOB &#8594; year; 5-digit ZIP &#8594; 3-digit prefix; exact age &#8594; decade. Preserves utility while reducing linkability.</td></tr>
+    <tr><td>Perturbation</td><td>Adds controlled random noise to numeric values. Used in differential privacy (Part 2, Station 11). Useful for aggregate statistics where exact counts must be obscured.</td></tr>
+  </tbody></table>
+  <button class="dt" onclick="toggleDemo('d01')"><span class="di">&#128218;</span><span class="dl">Focused Tutorial</span><span class="tt">Classifying and Transforming Thomas Nakamura's Record (P4)</span><span class="da">&#9658;</span></button>
+  <div class="dc" id="d01">
+    <p style="color:var(--ts);font-size:15px;margin-bottom:14px;">We walk through P4 (Thomas Nakamura) field-by-field: classify each field, then apply the correct transformation.</p>
+    <div class="sl slb">BEFORE &#8212; Raw Record</div>
+    <div class="dp"><table class="ct"><thead><tr><th>Field</th><th>Raw Value</th></tr></thead><tbody>
+      <tr><td>Full Name</td><td class="cd">Thomas Nakamura</td></tr>
+      <tr><td>Date of Birth</td><td class="cq">02/28/1981</td></tr>
+      <tr><td>SSN</td><td class="cd">453-67-8821</td></tr>
+      <tr><td>ZIP Code</td><td class="cq">98102</td></tr>
+      <tr><td>Primary Diagnosis</td><td class="cs">I10 &#8212; Hypertension</td></tr>
+      <tr><td>Phone Number</td><td class="cd">206-555-0182</td></tr>
+    </tbody></table></div>
+    <div class="sl slo">OPERATION &#8212; Classify &amp; Transform</div>
+    <div class="dot">Full Name     &#8594; Direct Identifier   &#8594; SUPPRESS (remove entirely)<br>Date of Birth &#8594; Quasi-Identifier    &#8594; GENERALIZE (year only: 1981)<br>SSN           &#8594; Direct Identifier   &#8594; SUPPRESS<br>ZIP Code      &#8594; Quasi-Identifier    &#8594; GENERALIZE (3-digit prefix: 981**)<br>Primary Dx    &#8594; Sensitive Attribute &#8594; RETAIN (protected by anonymized QIs)<br>Phone Number  &#8594; Direct Identifier   &#8594; SUPPRESS</div>
+    <div class="sl sla">AFTER &#8212; De-Identified Record</div>
+    <div class="dp"><table class="ct"><thead><tr><th>Field</th><th>Transformed Value</th><th>Action</th></tr></thead><tbody>
+      <tr><td>Full Name</td><td class="cx">[SUPPRESSED]</td><td style="color:var(--co);font-size:12px;">Direct &#8594; Suppressed</td></tr>
+      <tr><td>Date of Birth</td><td class="cg">1981</td><td style="color:var(--cy);font-size:12px;">QI &#8594; Generalized (year only)</td></tr>
+      <tr><td>SSN</td><td class="cx">[SUPPRESSED]</td><td style="color:var(--co);font-size:12px;">Direct &#8594; Suppressed</td></tr>
+      <tr><td>ZIP Code</td><td class="cg">981**</td><td style="color:var(--cy);font-size:12px;">QI &#8594; Generalized (3-digit prefix)</td></tr>
+      <tr><td>Primary Dx</td><td class="ck">I10 &#8212; Hypertension</td><td style="color:var(--gn);font-size:12px;">Sensitive &#8594; Retained</td></tr>
+      <tr><td>Phone Number</td><td class="cx">[SUPPRESSED]</td><td style="color:var(--co);font-size:12px;">Direct &#8594; Suppressed</td></tr>
+    </tbody></table></div>
+    <div class="dn">Three direct identifiers suppressed. Two QIs generalized. The sensitive diagnosis retained &#8212; but Thomas's remaining QIs {M, 1981, 981**} may still uniquely identify him. That risk is quantified in Stations 03-04.</div>
+  </div>
+  <div class="ex" id="ex01">
+    <div class="ext">Exercise 1 &#8212; Classify the Meridian Cohort Fields</div>
+    <div class="exd">&#9679; Difficulty: Beginner</div>
+    <p>Using P1 (Margaret Chen's) record, classify each field. Enter: <code>direct</code>, <code>quasi</code>, or <code>sensitive</code> for type; <code>suppress</code>, <code>generalize</code>, or <code>retain</code> for technique.</p>
+    <button class="hb" onclick="toggleHint('h01')">Show Hint</button>
+    <div class="hbx" id="h01">Names, SSNs, addresses, phone/fax/email are always direct &#8594; suppress. DOB and ZIP are quasi &#8594; generalize. Diagnoses are sensitive &#8594; retain.</div>
+    <div class="pb">
+      <div class="pl plb">BEFORE &#8212; Raw Record: P1 Margaret Chen</div>
+      <div class="pbx"><table class="ct"><thead><tr><th>Field</th><th>Raw Value</th></tr></thead><tbody>
+        <tr><td>Full Name</td><td>Margaret Chen</td></tr>
+        <tr><td>Date of Birth</td><td>03/14/1952</td></tr>
+        <tr><td>SSN</td><td>524-43-9821</td></tr>
+        <tr><td>ZIP Code</td><td>98032</td></tr>
+        <tr><td>Primary Diagnosis</td><td>Z21 &#8212; HIV/AIDS</td></tr>
+        <tr><td>Home Address</td><td>14821 Cedar Ridge Ln, Kent WA</td></tr>
+      </tbody></table></div>
+    </div>
+    <div class="fl">Fill in:</div>
+    <div class="fi"><span class="ts">Full Name is a</span><span class="bw"><input class="bi" id="e01a" style="width:88px" data-answer="direct" data-type="text" placeholder="?"><button class="rb" onclick="revealAnswer('e01a')">reveal</button></span><span class="ts">identifier &#8594; technique:</span><span class="bw"><input class="bi" id="e01b" style="width:100px" data-answer="suppress" data-type="text" placeholder="?"><button class="rb" onclick="revealAnswer('e01b')">reveal</button></span></div>
+    <div class="fi"><span class="ts">SSN is a</span><span class="bw"><input class="bi" id="e01c" style="width:88px" data-answer="direct" data-type="text" placeholder="?"><button class="rb" onclick="revealAnswer('e01c')">reveal</button></span><span class="ts">identifier &#8594; technique:</span><span class="bw"><input class="bi" id="e01d" style="width:100px" data-answer="suppress" data-type="text" placeholder="?"><button class="rb" onclick="revealAnswer('e01d')">reveal</button></span></div>
+    <div class="fi"><span class="ts">Date of Birth is a</span><span class="bw"><input class="bi" id="e01e" style="width:88px" data-answer="quasi" data-type="text" placeholder="?"><button class="rb" onclick="revealAnswer('e01e')">reveal</button></span><span class="ts">identifier &#8594; technique:</span><span class="bw"><input class="bi" id="e01f" style="width:112px" data-answer="generalize" data-type="text" placeholder="?"><button class="rb" onclick="revealAnswer('e01f')">reveal</button></span></div>
+    <div class="fi"><span class="ts">ZIP Code is a</span><span class="bw"><input class="bi" id="e01g" style="width:88px" data-answer="quasi" data-type="text" placeholder="?"><button class="rb" onclick="revealAnswer('e01g')">reveal</button></span><span class="ts">identifier &#8594; technique:</span><span class="bw"><input class="bi" id="e01h" style="width:112px" data-answer="generalize" data-type="text" placeholder="?"><button class="rb" onclick="revealAnswer('e01h')">reveal</button></span></div>
+    <div class="fi"><span class="ts">Diagnosis Z21 is a</span><span class="bw"><input class="bi" id="e01i" style="width:100px" data-answer="sensitive" data-type="text" placeholder="?"><button class="rb" onclick="revealAnswer('e01i')">reveal</button></span><span class="ts">attribute &#8594; technique:</span><span class="bw"><input class="bi" id="e01j" style="width:88px" data-answer="retain" data-type="text" placeholder="?"><button class="rb" onclick="revealAnswer('e01j')">reveal</button></span></div>
+    <div class="fi"><span class="ts">Home Address is a</span><span class="bw"><input class="bi" id="e01k" style="width:88px" data-answer="direct" data-type="text" placeholder="?"><button class="rb" onclick="revealAnswer('e01k')">reveal</button></span><span class="ts">identifier &#8594; technique:</span><span class="bw"><input class="bi" id="e01l" style="width:100px" data-answer="suppress" data-type="text" placeholder="?"><button class="rb" onclick="revealAnswer('e01l')">reveal</button></span></div>
+    <div class="bg">
+      <button class="cb" onclick="subEx('ex01',['e01a','e01b','e01c','e01d','e01e','e01f','e01g','e01h','e01i','e01j','e01k','e01l'])">Submit</button>
+      <button class="rab" onclick="revAll('ex01',['e01a','e01b','e01c','e01d','e01e','e01f','e01g','e01h','e01i','e01j','e01k','e01l'])">Reveal All</button>
+    </div>
+    <div class="res" id="ex01r"></div>
+    <div class="pa" id="ex01a">
+      <div class="pl pla">AFTER &#8212; De-Identified Record: P1 Margaret Chen</div>
+      <div class="pbx"><table class="ct"><thead><tr><th>Field</th><th>Transformed</th><th>Action</th></tr></thead><tbody>
+        <tr><td>Full Name</td><td class="cx">[SUPPRESSED]</td><td style="color:var(--co);font-size:12px;">Direct &#8594; Suppressed</td></tr>
+        <tr><td>Date of Birth</td><td class="cg">1952</td><td style="color:var(--cy);font-size:12px;">QI &#8594; Year only</td></tr>
+        <tr><td>SSN</td><td class="cx">[SUPPRESSED]</td><td style="color:var(--co);font-size:12px;">Direct &#8594; Suppressed</td></tr>
+        <tr><td>ZIP Code</td><td class="cg">980**</td><td style="color:var(--cy);font-size:12px;">QI &#8594; 3-digit prefix</td></tr>
+        <tr><td>Primary Dx</td><td class="ck">Z21 &#8212; HIV/AIDS</td><td style="color:var(--gn);font-size:12px;">Sensitive &#8594; Retained</td></tr>
+        <tr><td>Home Address</td><td class="cx">[SUPPRESSED]</td><td style="color:var(--co);font-size:12px;">Direct &#8594; Suppressed</td></tr>
+      </tbody></table></div>
+      <div class="od vs"><div class="ol">Key Observation</div>Three direct identifiers suppressed. Two QIs generalized. Sensitive HIV diagnosis retained. But Margaret is still the only F+70s+980** patient in this cohort &#8212; k=1. Stations 03-05 address this residual risk.</div>
+    </div>
+  </div>
+</section><hr class="dv">
+
+<section class="sta" id="s02">
+  <div class="shd"><div class="sn">Station 02</div><span class="stg tgn">NEW</span></div>
+  <h2>HIPAA Safe Harbor &#8212; The 18 Identifier Rule</h2>
+  <p>HIPAA provides two de-identification pathways. <strong>Safe Harbor</strong> lists exactly <span class="kt">18 categories of identifiers</span> that must be removed. No statistical expertise required &#8212; remove all 18 and the dataset is compliant. The second pathway, <strong>Expert Determination</strong>, allows a statistician to certify "very small" risk without removing every identifier, but requires formal analysis (Station 03).</p>
+  <h3>The 18 HIPAA Safe Harbor Categories</h3>
+  <div class="ig">
+    <div class="ii"><div class="in">01</div>Names</div>
+    <div class="ii"><div class="in">02</div>Geographic data smaller than state</div>
+    <div class="ii"><div class="in">03</div>Dates (other than year) for ages &#8804;89</div>
+    <div class="ii"><div class="in">04</div>Phone numbers</div>
+    <div class="ii"><div class="in">05</div>Fax numbers</div>
+    <div class="ii"><div class="in">06</div>Email addresses</div>
+    <div class="ii"><div class="in">07</div>Social Security Numbers</div>
+    <div class="ii"><div class="in">08</div>Medical Record Numbers (MRN)</div>
+    <div class="ii"><div class="in">09</div>Health plan beneficiary numbers</div>
+    <div class="ii"><div class="in">10</div>Account numbers</div>
+    <div class="ii"><div class="in">11</div>Certificate / license numbers</div>
+    <div class="ii"><div class="in">12</div>Vehicle identifiers &amp; serial numbers</div>
+    <div class="ii"><div class="in">13</div>Device identifiers &amp; serial numbers</div>
+    <div class="ii"><div class="in">14</div>URLs (web addresses)</div>
+    <div class="ii"><div class="in">15</div>IP addresses</div>
+    <div class="ii"><div class="in">16</div>Biometric identifiers</div>
+    <div class="ii"><div class="in">17</div>Full-face photographs</div>
+    <div class="ii"><div class="in">18</div>Any other unique identifying number or code</div>
+  </div>
+  <h3>Three Critical Safe Harbor Rules</h3>
+  <div class="cn"><div class="cnt">Rule 1 &#8212; ZIP Code Population Threshold</div><p>3-digit ZIP prefixes may be retained <strong>only if</strong> the area contains <strong>&#8805; 20,000 people</strong> (U.S. Census). If fewer than 20,000, the prefix must become <code>000</code>. Very rural ZIPs have so few residents that even a 3-digit prefix can uniquely identify someone.</p></div>
+  <div class="cn"><div class="cnt">Rule 2 &#8212; Date Generalization &amp; Age 90+ Rule</div><p>All patient-associated dates (admission, discharge, birth, death, procedure) must be reduced to <strong>year only</strong>. Patients <strong>aged 90 or older</strong> must also have their birth year removed, replaced with <code>Age 90+</code>. A rare birth year can uniquely identify a very long-lived individual.</p></div>
+  <div class="cn"><div class="cnt">Rule 3 &#8212; The Limited Data Set (LDS) Alternative</div><p>A <span class="kt">Limited Data Set</span> removes only 16 of the most identifying fields but <em>retains</em> dates and geographic units smaller than state. An LDS requires a signed <strong>Data Use Agreement (DUA)</strong> and is only for research, public health, or care operations. It is NOT Safe Harbor &#8212; less protection, greater utility.</p></div>
+
+  <button class="dt" onclick="toggleDemo('d02')"><span class="di">&#128218;</span><span class="dl">Focused Tutorial</span><span class="tt">Applying Safe Harbor to Margaret Chen &#8212; Field-by-Field Checklist</span><span class="da">&#9658;</span></button>
+  <div class="dc" id="d02">
+    <p style="color:var(--ts);font-size:15px;margin-bottom:14px;">ZIP prefix 980 covers ~420,000 people (above 20,000 threshold). Patient is age 72 &#8212; no Age 90+ rule triggered.</p>
+    <div class="sl slb">BEFORE &#8212; Raw Record with HIPAA Categories</div>
+    <div class="dp"><table class="ct"><thead><tr><th>Field</th><th>Raw Value</th><th>HIPAA Category</th></tr></thead><tbody>
+      <tr><td>Full Name</td><td class="cd">Margaret Chen</td><td class="cd">Category 1 &#8212; Name</td></tr>
+      <tr><td>Date of Birth</td><td class="cq">03/14/1952</td><td class="cq">Category 3 &#8212; Dates</td></tr>
+      <tr><td>SSN</td><td class="cd">524-43-9821</td><td class="cd">Category 7 &#8212; SSN</td></tr>
+      <tr><td>ZIP Code</td><td class="cq">98032</td><td class="cq">Category 2 &#8212; Geographic</td></tr>
+      <tr><td>Home Address</td><td class="cd">14821 Cedar Ridge Ln</td><td class="cd">Category 2 &#8212; Geographic (sub-state)</td></tr>
+      <tr><td>Primary Dx</td><td>Z21 &#8212; HIV/AIDS</td><td style="color:var(--tm);">Not a HIPAA identifier</td></tr>
+    </tbody></table></div>
+    <div class="sl slo">OPERATION &#8212; Safe Harbor Rules Applied</div>
+    <div class="dot">Name         &#8594; Cat.1  &#8594; REMOVE entirely<br>DOB 03/14/1952 &#8594; Cat.3 &#8594; REDUCE to year: 1952 (age 72, NOT &#8805;90 &#8212; birth year retained)<br>SSN          &#8594; Cat.7  &#8594; REMOVE entirely<br>ZIP 98032    &#8594; Cat.2  &#8594; 3-digit prefix 980; pop 420,000 &#8805; 20,000 &#10003; &#8594; RETAIN as 980**<br>Home Address &#8594; Cat.2  &#8594; REMOVE (street + city = sub-state geographic)<br>Primary Dx   &#8594; Not identifier &#8594; RETAIN</div>
+    <div class="sl sla">AFTER &#8212; Safe Harbor Compliant Record</div>
+    <div class="dp"><table class="ct"><thead><tr><th>Field</th><th>Safe Harbor Value</th><th>Rule</th></tr></thead><tbody>
+      <tr><td>Full Name</td><td class="cx">[REMOVED]</td><td style="font-size:12px;color:var(--co);">Cat.1 &#8212; suppressed</td></tr>
+      <tr><td>Date of Birth</td><td class="cg">1952</td><td style="font-size:12px;color:var(--cy);">Cat.3 &#8212; year only (age 72)</td></tr>
+      <tr><td>SSN</td><td class="cx">[REMOVED]</td><td style="font-size:12px;color:var(--co);">Cat.7 &#8212; suppressed</td></tr>
+      <tr><td>ZIP Code</td><td class="cg">980**</td><td style="font-size:12px;color:var(--cy);">Cat.2 &#8212; 3-digit, pop &#8805;20k &#10003;</td></tr>
+      <tr><td>Home Address</td><td class="cx">[REMOVED]</td><td style="font-size:12px;color:var(--co);">Cat.2 &#8212; sub-state suppressed</td></tr>
+      <tr><td>Primary Dx</td><td class="ck">Z21 &#8212; HIV/AIDS</td><td style="font-size:12px;color:var(--gn);">Not identifier &#8212; retained</td></tr>
+    </tbody></table></div>
+    <div class="dn">Safe Harbor compliant &#8212; all 18 identifier categories addressed. However, Safe Harbor is binary: it does not measure residual re-identification risk from remaining QIs {F, 1952, 980**}. Expert Determination (Station 03) quantifies that residual risk.</div>
+  </div>
+
+  <div class="ex" id="ex02a">
+    <div class="ext">Exercise 2A &#8212; Safe Harbor Rules &amp; Thresholds</div>
+    <div class="exd">&#9679; Difficulty: Beginner</div>
+    <p>Test your knowledge of core Safe Harbor rules before applying them to the full cohort.</p>
+    <button class="hb" onclick="toggleHint('h02a')">Show Hint</button>
+    <div class="hbx" id="h02a">Safe Harbor lists 18 identifier categories. ZIP threshold = 20,000 people for the 3-digit prefix; otherwise replace with 000. Dates reduce to year only. Age &#8805;90 &#8594; birth year also removed. Safe Harbor requires no statistical analysis; Expert Determination does.</div>
+    <div class="fl">Fill in:</div>
+    <div class="fi"><span class="ts">HIPAA Safe Harbor defines</span><span class="bw"><input class="bi" id="e2aa" style="width:60px" data-answer="18" placeholder="?"><button class="rb" onclick="revealAnswer('e2aa')">reveal</button></span><span class="ts">categories of identifiers that must be removed.</span></div>
+    <div class="fi"><span class="ts">A 3-digit ZIP may be retained only if the area has at least</span><span class="bw"><input class="bi" id="e2ab" style="width:88px" data-answer="20000" placeholder="?"><button class="rb" onclick="revealAnswer('e2ab')">reveal</button></span><span class="ts">residents; otherwise replace with</span><span class="bw"><input class="bi" id="e2ac" style="width:58px" data-answer="000" data-type="text" placeholder="?"><button class="rb" onclick="revealAnswer('e2ac')">reveal</button></span></div>
+    <div class="fi"><span class="ts">A full date of birth must be reduced to</span><span class="bw"><input class="bi" id="e2ad" style="width:78px" data-answer="year" data-type="text" placeholder="?"><button class="rb" onclick="revealAnswer('e2ad')">reveal</button></span><span class="ts">only.</span></div>
+    <div class="fi"><span class="ts">Patients aged</span><span class="bw"><input class="bi" id="e2ae" style="width:58px" data-answer="90" placeholder="?"><button class="rb" onclick="revealAnswer('e2ae')">reveal</button></span><span class="ts">or older must also have their birth year replaced with "Age 90+".</span></div>
+    <div class="fi"><span class="ts">Safe Harbor requires</span><span class="bw"><input class="bi" id="e2af" style="width:58px" data-answer="no" data-type="text" placeholder="?"><button class="rb" onclick="revealAnswer('e2af')">reveal</button></span><span class="ts">statistical analysis. Expert Determination</span><span class="bw"><input class="bi" id="e2ag" style="width:58px" data-answer="does" data-type="text" placeholder="?"><button class="rb" onclick="revealAnswer('e2ag')">reveal</button></span><span class="ts">require a qualified statistician.</span></div>
+    <div class="bg">
+      <button class="cb" onclick="subEx('ex02a',['e2aa','e2ab','e2ac','e2ad','e2ae','e2af','e2ag'])">Submit</button>
+      <button class="rab" onclick="revAll('ex02a',['e2aa','e2ab','e2ac','e2ad','e2ae','e2af','e2ag'])">Reveal All</button>
+    </div>
+    <div class="res" id="ex02ar"></div>
+    <div class="pa" id="ex02aa"><div class="od vs"><div class="ol">Key Facts</div>&#10003; 18 identifier categories &#8212; mechanical, no statistics required.<br>&#10003; ZIP: &#8805;20,000 for 3-digit prefix; otherwise 000.<br>&#10003; Dates &#8594; year only; Age 90+ &#8594; birth year also removed.<br>&#10003; Expert Determination: statistical, flexible, requires certified expert.</div></div>
+  </div>
+
+  <div class="ex" id="ex02b">
+    <div class="ext">Exercise 2B &#8212; Apply Safe Harbor to the Full Meridian Cohort</div>
+    <div class="exd">&#9679; Difficulty: Beginner</div>
+    <p>Apply Safe Harbor to all 6 patients. Population data: ZIP prefix 980 (covers 98032 &amp; 98055) &#8212; 420,000 &#10003;; ZIP prefix 981 (covers 98102) &#8212; 85,000 &#10003;. No patient is aged &#8805;90.</p>
+    <button class="hb" onclick="toggleHint('h02b')">Show Hint</button>
+    <div class="hbx" id="h02b">Both ZIP prefixes have populations above 20,000, so they stay as 3-digit codes. All DOBs reduce to year only. No "Age 90+" replacements. All names, SSNs, addresses, phone, fax, email, and employer must be removed.</div>
+    <div class="pb">
+      <div class="pl plb">BEFORE &#8212; Raw Cohort (Selected Fields)</div>
+      <div class="pbx"><table class="ct"><thead><tr><th>Patient</th><th>DOB</th><th>ZIP</th><th>Direct IDs Present</th></tr></thead><tbody>
+        <tr><td>P1 Margaret Chen</td><td>03/14/1952</td><td>98032</td><td>Name, SSN, Address</td></tr>
+        <tr><td>P2 David Okafor</td><td>07/22/1978</td><td>98102</td><td>Name, SSN, Employer</td></tr>
+        <tr><td>P3 Yolanda Reyes</td><td>11/09/1965</td><td>98032</td><td>Name, SSN, Race field</td></tr>
+        <tr><td>P4 Thomas Nakamura</td><td>02/28/1981</td><td>98102</td><td>Name, SSN, Phone</td></tr>
+        <tr><td>P5 Priya Subramanian</td><td>08/15/1972</td><td>98055</td><td>Name, SSN, Email</td></tr>
+        <tr><td>P6 James Holbrook</td><td>12/03/1989</td><td>98055</td><td>Name, SSN, Fax</td></tr>
+      </tbody></table></div>
+    </div>
+    <div class="fl">Fill in:</div>
+    <div class="fi"><span class="ts">P1 DOB 03/14/1952 &#8594; Safe Harbor date:</span><span class="bw"><input class="bi" id="e2ba" style="width:68px" data-answer="1952" placeholder="?"><button class="rb" onclick="revealAnswer('e2ba')">reveal</button></span></div>
+    <div class="fi"><span class="ts">P4 DOB 02/28/1981 &#8594; Safe Harbor date:</span><span class="bw"><input class="bi" id="e2bb" style="width:68px" data-answer="1981" placeholder="?"><button class="rb" onclick="revealAnswer('e2bb')">reveal</button></span></div>
+    <div class="fi"><span class="ts">ZIP 98032 &#8594; 3-digit prefix:</span><span class="bw"><input class="bi" id="e2bc" style="width:58px" data-answer="980" placeholder="?"><button class="rb" onclick="revealAnswer('e2bc')">reveal</button></span><span class="ts">Pop 420,000 &#8594; must replace with 000?</span><span class="bw"><input class="bi" id="e2bd" style="width:58px" data-answer="no" data-type="text" placeholder="?"><button class="rb" onclick="revealAnswer('e2bd')">reveal</button></span></div>
+    <div class="fi"><span class="ts">ZIP 98102 &#8594; 3-digit prefix:</span><span class="bw"><input class="bi" id="e2be" style="width:58px" data-answer="981" placeholder="?"><button class="rb" onclick="revealAnswer('e2be')">reveal</button></span><span class="ts">Pop 85,000 &#8594; must replace with 000?</span><span class="bw"><input class="bi" id="e2bf" style="width:58px" data-answer="no" data-type="text" placeholder="?"><button class="rb" onclick="revealAnswer('e2bf')">reveal</button></span></div>
+    <div class="fi"><span class="ts">How many patients trigger the Age 90+ rule?</span><span class="bw"><input class="bi" id="e2bg" style="width:50px" data-answer="0" placeholder="?"><button class="rb" onclick="revealAnswer('e2bg')">reveal</button></span></div>
+    <div class="fi"><span class="ts">How many of the 6 records contain at least one HIPAA direct identifier?</span><span class="bw"><input class="bi" id="e2bh" style="width:50px" data-answer="6" placeholder="?"><button class="rb" onclick="revealAnswer('e2bh')">reveal</button></span></div>
+    <div class="bg">
+      <button class="cb" onclick="subEx('ex02b',['e2ba','e2bb','e2bc','e2bd','e2be','e2bf','e2bg','e2bh'])">Submit</button>
+      <button class="rab" onclick="revAll('ex02b',['e2ba','e2bb','e2bc','e2bd','e2be','e2bf','e2bg','e2bh'])">Reveal All</button>
+    </div>
+    <div class="res" id="ex02br"></div>
+    <div class="pa" id="ex02ba">
+      <div class="pl pla">AFTER &#8212; Safe Harbor Compliant Cohort</div>
+      <div class="pbx"><table class="ct"><thead><tr><th>#</th><th>Name</th><th>Sex</th><th>Year</th><th>ZIP-3</th><th>Primary Dx</th></tr></thead><tbody>
+        <tr><td>P1</td><td class="cx">[REMOVED]</td><td>F</td><td class="cg">1952</td><td class="cg">980**</td><td class="ck">Z21 &#8212; HIV/AIDS</td></tr>
+        <tr><td>P2</td><td class="cx">[REMOVED]</td><td>M</td><td class="cg">1978</td><td class="cg">981**</td><td class="ck">F11.20 &#8212; OUD</td></tr>
+        <tr><td>P3</td><td class="cx">[REMOVED]</td><td>F</td><td class="cg">1965</td><td class="cg">980**</td><td class="ck">E11.9 &#8212; T2DM</td></tr>
+        <tr><td>P4</td><td class="cx">[REMOVED]</td><td>M</td><td class="cg">1981</td><td class="cg">981**</td><td class="ck">I10 &#8212; HTN</td></tr>
+        <tr><td>P5</td><td class="cx">[REMOVED]</td><td>F</td><td class="cg">1972</td><td class="cg">980**</td><td class="ck">F31.9 &#8212; Bipolar</td></tr>
+        <tr><td>P6</td><td class="cx">[REMOVED]</td><td>M</td><td class="cg">1989</td><td class="cg">980**</td><td class="ck">I25.10 &#8212; CAD</td></tr>
+      </tbody></table></div>
+      <div class="od vs"><div class="ol">Observation</div>Safe Harbor compliance achieved. ZIP prefixes retained (both areas &gt;20,000). All dates &#8594; year only. No Age 90+ cases. Safe Harbor is binary &#8212; it does not measure residual re-id risk from remaining QIs {Sex, Year, ZIP-3}. Station 03 addresses that.</div>
+    </div>
+  </div>
+</section><hr class="dv">
+
+<section class="sta" id="s03">
+  <div class="shd"><div class="sn">Station 03</div><span class="stg tgn">NEW</span></div>
+  <h2>Re-Identification Risk &#8212; Prosecutor, Journalist &amp; Marketer Models</h2>
+  <p>De-identification removes identifiers but does not prove the dataset is safe. <span class="kt">Re-identification risk quantification</span> proves it &#8212; by modeling what different adversaries could accomplish with released data. Three attacker models are standard in the field, and a dataset can appear low-risk under one model while failing another.</p>
+  <h3>Sweeney's 87% Finding</h3>
+  <div class="cn"><div class="cnt">Three Fields Can Identify 87% of Americans</div><p>In 1997, Latanya Sweeney (Harvard) demonstrated that <strong>87% of the U.S. population</strong> could be uniquely identified using only 5-digit ZIP + full date of birth + sex, cross-referenced against public voter registration rolls. Important caveats: this is <em>population uniqueness</em>, used 1990 census data, and used 5-digit ZIP &#8212; HIPAA's 3-digit prefix significantly reduces this risk. The lesson: quasi-identifiers combine explosively.</p></div>
+  <h3>Sample vs. Population Uniqueness</h3>
+  <p>A record unique within a released <em>sample</em> may not be unique in the full population. If sampling fraction = f, approximate population uniqueness &#8776; sample uniqueness &#215; f. Small samples of large populations are harder to re-identify because an attacker cannot know whether a sample-unique record corresponds to a population-unique individual.</p>
+  <h3>The Three Attacker Models</h3>
+  <div class="mg">
+    <div class="mc pr"><div class="mn">Prosecutor Model</div><p>Attacker already knows a <em>specific individual</em> is in the dataset and attempts to find their record. Worst case &#8212; targeted attack, litigation, or investigation.</p><div class="mf">Risk = 1 / min(k)</div><p>Even one k=1 record makes prosecutor risk = 1.0 (100%).</p></div>
+    <div class="mc jo"><div class="mn">Journalist Model</div><p>Attacker samples randomly from the dataset and tries to re-identify whoever they land on. Models investigative reporting or spot-check re-identification.</p><div class="mf">Risk = (#k=1 records) / N</div><p>Fraction of the dataset that is perfectly re-identifiable.</p></div>
+    <div class="mc ma"><div class="mn">Marketer Model</div><p>Attacker maximizes total re-identifications across the dataset. Models commercial data brokers or bulk linkage attacks.</p><div class="mf">Risk = (1/N) &#215; &#931;(1/k&#7522;)</div><p>Average success rate across all N records.</p></div>
+  </div>
+  <div class="cn"><div class="cnt">HIPAA Expert Determination Threshold</div><p>"Very small" risk is interpreted in practice as <strong>&#8804; 0.09 (9%)</strong> under the prosecutor model. This means min(k) &#8805; 12 (since 1/12 &#8776; 0.083 &lt; 0.09). Many organizations target k &#8805; 5 for research datasets.</p></div>
+
+  <button class="dt" onclick="toggleDemo('d03a')"><span class="di">&#128202;</span><span class="dl">Focused Tutorial &#8212; Demo A</span><span class="tt">Maximum Risk: Meridian Cohort Before Any Generalization</span><span class="da">&#9658;</span></button>
+  <div class="dc" id="d03a">
+    <p style="color:var(--ts);font-size:15px;margin-bottom:14px;">Before any transformation, every patient is k=1. All three risk metrics equal 1.0 &#8212; maximum possible risk.</p>
+    <div class="sl slb">BEFORE &#8212; Raw Cohort, All k=1</div>
+    <div class="dp"><table class="ct"><thead><tr><th>Patient</th><th>Sex</th><th>Full DOB</th><th>Full ZIP</th><th>k</th></tr></thead><tbody>
+      <tr><td>P1 Margaret Chen</td><td>F</td><td>03/14/1952</td><td>98032</td><td class="ck1">1 &#10060;</td></tr>
+      <tr><td>P2 David Okafor</td><td>M</td><td>07/22/1978</td><td>98102</td><td class="ck1">1 &#10060;</td></tr>
+      <tr><td>P3 Yolanda Reyes</td><td>F</td><td>11/09/1965</td><td>98032</td><td class="ck1">1 &#10060;</td></tr>
+      <tr><td>P4 Thomas Nakamura</td><td>M</td><td>02/28/1981</td><td>98102</td><td class="ck1">1 &#10060;</td></tr>
+      <tr><td>P5 Priya Subramanian</td><td>F</td><td>08/15/1972</td><td>98055</td><td class="ck1">1 &#10060;</td></tr>
+      <tr><td>P6 James Holbrook</td><td>M</td><td>12/03/1989</td><td>98055</td><td class="ck1">1 &#10060;</td></tr>
+    </tbody></table></div>
+    <div class="sl slo">RISK COMPUTATION &#8212; N=6, all k=1</div>
+    <div class="dot">Prosecutor = 1/1 = 1.000 FAIL &nbsp;|&nbsp; Journalist = 6/6 = 1.000 FAIL &nbsp;|&nbsp; Marketer = 6.0/6 = 1.000 FAIL</div>
+    <div style="margin-top:11px;">
+      <div class="rm"><span style="font-family:var(--fm);font-size:11px;color:var(--ts);min-width:100px;">Prosecutor</span><div class="rw"><div class="rb2 h"></div></div><span class="rl h">1.00 FAIL</span></div>
+      <div class="rm"><span style="font-family:var(--fm);font-size:11px;color:var(--ts);min-width:100px;">Journalist</span><div class="rw"><div class="rb2 h"></div></div><span class="rl h">1.00 FAIL</span></div>
+      <div class="rm"><span style="font-family:var(--fm);font-size:11px;color:var(--ts);min-width:100px;">Marketer</span><div class="rw"><div class="rb2 h"></div></div><span class="rl h">1.00 FAIL</span></div>
+    </div>
+    <div class="dn">Cannot release. Every patient is uniquely identifiable. An attacker with a voter roll can link all 6 records to named individuals with near certainty.</div>
+  </div>
+
+  <button class="dt" onclick="toggleDemo('d03b')"><span class="di">&#128202;</span><span class="dl">Focused Tutorial &#8212; Demo B</span><span class="tt">After First Generalization: Age Decade + 3-Digit ZIP</span><span class="da">&#9658;</span></button>
+  <div class="dc" id="d03b">
+    <p style="color:var(--ts);font-size:15px;margin-bottom:14px;">After DOB&#8594;Age Decade and ZIP&#8594;ZIP-3 prefix, some patients now share QI combinations. Two remain uniquely identifiable.</p>
+    <div class="dp"><table class="ct"><thead><tr><th>Patient</th><th>Sex</th><th>Age Dec.</th><th>ZIP-3</th><th>Group</th><th>k</th></tr></thead><tbody>
+      <tr><td>P1 Margaret</td><td>F</td><td>70s</td><td>980</td><td style="color:var(--co);">Alone</td><td class="ck1">1 &#10060;</td></tr>
+      <tr><td>P2 David</td><td>M</td><td>40s</td><td>981</td><td style="color:var(--gn);">Group &#945;</td><td class="ck2">2 &#10003;</td></tr>
+      <tr><td>P3 Yolanda</td><td>F</td><td>50s</td><td>980</td><td style="color:var(--tl);">Group &#946;</td><td class="ck2">2 &#10003;</td></tr>
+      <tr><td>P4 Thomas</td><td>M</td><td>40s</td><td>981</td><td style="color:var(--gn);">Group &#945;</td><td class="ck2">2 &#10003;</td></tr>
+      <tr><td>P5 Priya</td><td>F</td><td>50s</td><td>980</td><td style="color:var(--tl);">Group &#946;</td><td class="ck2">2 &#10003;</td></tr>
+      <tr><td>P6 James</td><td>M</td><td>30s</td><td>980</td><td style="color:var(--co);">Alone</td><td class="ck1">1 &#10060;</td></tr>
+    </tbody></table></div>
+    <div class="sl slo">RISK &#8212; N=6, min(k)=1, two k=1 records</div>
+    <div class="dot">Prosecutor = 1/1 = 1.000 FAIL &nbsp;|&nbsp; Journalist = 2/6 = 0.333 FAIL &nbsp;|&nbsp; Marketer = (1+.5+.5+.5+.5+1)/6 = 0.667 FAIL</div>
+    <div style="margin-top:11px;">
+      <div class="rm"><span style="font-family:var(--fm);font-size:11px;color:var(--ts);min-width:100px;">Prosecutor</span><div class="rw"><div class="rb2 h"></div></div><span class="rl h">1.00 FAIL</span></div>
+      <div class="rm"><span style="font-family:var(--fm);font-size:11px;color:var(--ts);min-width:100px;">Journalist</span><div class="rw"><div class="rb2 m"></div></div><span class="rl m">0.33 FAIL</span></div>
+      <div class="rm"><span style="font-family:var(--fm);font-size:11px;color:var(--ts);min-width:100px;">Marketer</span><div class="rw"><div class="rb2 h"></div></div><span class="rl h">0.67 FAIL</span></div>
+    </div>
+    <div class="dn">Journalist risk dropped from 1.0 to 0.33 &#8212; progress. But P1 (Margaret) and P6 (James) remain fully exposed at k=1. They cannot be generalized further without destroying utility. Solution: suppress those records.</div>
+  </div>
+
+  <button class="dt" onclick="toggleDemo('d03c')"><span class="di">&#128202;</span><span class="dl">Focused Tutorial &#8212; Demo C</span><span class="tt">After Suppressing k=1 Outliers &#8212; Risk Meter Improves</span><span class="da">&#9658;</span></button>
+  <div class="dc" id="d03c">
+    <p style="color:var(--ts);font-size:15px;margin-bottom:14px;">Suppress P1 and P6 (k=1). N=4, two groups of k=2. Small-cohort values illustrate the formulas &#8212; a real 2,000-patient dataset with min(k)=12 would easily pass all three thresholds.</p>
+    <div class="dp"><table class="ct"><thead><tr><th>Patient</th><th>Sex</th><th>Age Dec.</th><th>ZIP-3</th><th>k</th><th>Status</th></tr></thead><tbody>
+      <tr><td class="cx">P1 Margaret</td><td colspan="5" class="cx">SUPPRESSED (k=1 outlier)</td></tr>
+      <tr><td>P2 David</td><td>M</td><td class="cg">40s</td><td class="cg">981</td><td class="ck2">2</td><td class="ck">Retained &#10003;</td></tr>
+      <tr><td>P3 Yolanda</td><td>F</td><td class="cg">50s</td><td class="cg">980</td><td class="ck2">2</td><td class="ck">Retained &#10003;</td></tr>
+      <tr><td>P4 Thomas</td><td>M</td><td class="cg">40s</td><td class="cg">981</td><td class="ck2">2</td><td class="ck">Retained &#10003;</td></tr>
+      <tr><td>P5 Priya</td><td>F</td><td class="cg">50s</td><td class="cg">980</td><td class="ck2">2</td><td class="ck">Retained &#10003;</td></tr>
+      <tr><td class="cx">P6 James</td><td colspan="5" class="cx">SUPPRESSED (k=1 outlier)</td></tr>
+    </tbody></table></div>
+    <div class="sl slo">RISK &#8212; N=4, all k=2, suppression rate=2/6=33%</div>
+    <div class="dot">Prosecutor = 1/2 = 0.500 FAIL* &nbsp;|&nbsp; Journalist = 0/4 = 0.000 PASS &#10003; &nbsp;|&nbsp; Marketer = 2.0/4 = 0.500 FAIL*<br>*Small-cohort artifact. With N=2,000 and min(k)=12: Prosecutor = 1/12 = 0.083 PASS &#10003;</div>
+    <div style="margin-top:11px;">
+      <div class="rm"><span style="font-family:var(--fm);font-size:11px;color:var(--ts);min-width:100px;">Prosecutor</span><div class="rw"><div class="rb2 m"></div></div><span class="rl m">0.50 FAIL*</span></div>
+      <div class="rm"><span style="font-family:var(--fm);font-size:11px;color:var(--ts);min-width:100px;">Journalist</span><div class="rw"><div class="rb2 l"></div></div><span class="rl l">0.00 PASS &#10003;</span></div>
+      <div class="rm"><span style="font-family:var(--fm);font-size:11px;color:var(--ts);min-width:100px;">Marketer</span><div class="rw"><div class="rb2 m"></div></div><span class="rl m">0.50 FAIL*</span></div>
+    </div>
+    <div class="dn">Journalist model passes: zero records can be trivially singled out. Prosecutor and marketer failures are artifacts of the tiny cohort (N=4). The formulas are what matter &#8212; in practice with larger equivalence classes all three metrics pass.</div>
+  </div>
+
+  <div class="ex" id="ex03">
+    <div class="ext">Exercise 3 &#8212; Compute Re-Identification Risk Across Three Models</div>
+    <div class="exd">&#9679; Difficulty: Beginner</div>
+    <p>A community health data release contains <strong>N = 20 records</strong> in 4 equivalence groups. Compute all three risk metrics and determine which pass the &#8804;0.09 threshold.</p>
+    <div class="pb">
+      <div class="pl plb">BEFORE &#8212; Post-Generalization Equivalence Class Table</div>
+      <div class="pbx"><table class="rt"><thead><tr><th>Group</th><th>QI Combination</th><th>k (group size)</th><th>Records</th></tr></thead><tbody>
+        <tr><td>A</td><td>F + 65+ + rural</td><td class="fl2">1</td><td>1</td></tr>
+        <tr><td>B</td><td>M + 18-64 + urban</td><td class="ps">5</td><td>5</td></tr>
+        <tr><td>C</td><td>F + 18-64 + urban</td><td class="ps">7</td><td>7</td></tr>
+        <tr><td>D</td><td>M + 65+ + suburban</td><td class="ps">7</td><td>7</td></tr>
+      </tbody></table></div>
+    </div>
+    <button class="hb" onclick="toggleHint('h03')">Show Hint</button>
+    <div class="hbx" id="h03">Prosecutor: 1 / smallest k. Journalist: count k=1 records (only Group A = 1 record) / N=20. Marketer: each record contributes 1/k&#7522;. Group A: 1&#215;(1/1)=1. Group B: 5&#215;(1/5)=1. Group C: 7&#215;(1/7)=1. Group D: 7&#215;(1/7)=1. Total &#931; = 4. Divide by N=20.</div>
+    <div class="fl">Fill in:</div>
+    <div class="fi"><span class="ts">Minimum k in the table =</span><span class="bw"><input class="bi" id="e03a" style="width:50px" data-answer="1" placeholder="?"><button class="rb" onclick="revealAnswer('e03a')">reveal</button></span></div>
+    <div class="fi"><span class="ts">Prosecutor risk = 1 /</span><span class="bw"><input class="bi" id="e03b" style="width:50px" data-answer="1" placeholder="?"><button class="rb" onclick="revealAnswer('e03b')">reveal</button></span><span class="ts">=</span><span class="bw"><input class="bi" id="e03c" style="width:68px" data-answer="1.0" data-tolerance="0.01" placeholder="?"><button class="rb" onclick="revealAnswer('e03c')">reveal</button></span><span class="ts">&#8594; passes 0.09?</span><span class="bw"><input class="bi" id="e03d" style="width:58px" data-answer="no" data-type="text" placeholder="?"><button class="rb" onclick="revealAnswer('e03d')">reveal</button></span></div>
+    <div class="fi"><span class="ts">k=1 records:</span><span class="bw"><input class="bi" id="e03e" style="width:50px" data-answer="1" placeholder="?"><button class="rb" onclick="revealAnswer('e03e')">reveal</button></span><span class="ts">Journalist risk =</span><span class="bw"><input class="bi" id="e03f" style="width:50px" data-answer="1" placeholder="?"><button class="rb" onclick="revealAnswer('e03f')">reveal</button></span><span class="ts">/</span><span class="bw"><input class="bi" id="e03g" style="width:50px" data-answer="20" placeholder="?"><button class="rb" onclick="revealAnswer('e03g')">reveal</button></span><span class="ts">=</span><span class="bw"><input class="bi" id="e03h" style="width:68px" data-answer="0.05" data-tolerance="0.005" placeholder="?"><button class="rb" onclick="revealAnswer('e03h')">reveal</button></span><span class="ts">&#8594; passes?</span><span class="bw"><input class="bi" id="e03i" style="width:58px" data-answer="yes" data-type="text" placeholder="?"><button class="rb" onclick="revealAnswer('e03i')">reveal</button></span></div>
+    <div class="fi"><span class="ts">&#931;(1/k&#7522;) = 1&#215;(1/1)+5&#215;(1/5)+7&#215;(1/7)+7&#215;(1/7) =</span><span class="bw"><input class="bi" id="e03j" style="width:58px" data-answer="4" data-tolerance="0.1" placeholder="?"><button class="rb" onclick="revealAnswer('e03j')">reveal</button></span></div>
+    <div class="fi"><span class="ts">Marketer risk =</span><span class="bw"><input class="bi" id="e03k" style="width:50px" data-answer="4" data-tolerance="0.1" placeholder="?"><button class="rb" onclick="revealAnswer('e03k')">reveal</button></span><span class="ts">/</span><span class="bw"><input class="bi" id="e03l" style="width:50px" data-answer="20" placeholder="?"><button class="rb" onclick="revealAnswer('e03l')">reveal</button></span><span class="ts">=</span><span class="bw"><input class="bi" id="e03m" style="width:68px" data-answer="0.20" data-tolerance="0.01" placeholder="?"><button class="rb" onclick="revealAnswer('e03m')">reveal</button></span><span class="ts">&#8594; passes?</span><span class="bw"><input class="bi" id="e03n" style="width:58px" data-answer="no" data-type="text" placeholder="?"><button class="rb" onclick="revealAnswer('e03n')">reveal</button></span></div>
+    <div class="bg">
+      <button class="cb" onclick="subEx('ex03',['e03a','e03b','e03c','e03d','e03e','e03f','e03g','e03h','e03i','e03j','e03k','e03l','e03m','e03n'])">Submit</button>
+      <button class="rab" onclick="revAll('ex03',['e03a','e03b','e03c','e03d','e03e','e03f','e03g','e03h','e03i','e03j','e03k','e03l','e03m','e03n'])">Reveal All</button>
+    </div>
+    <div class="res" id="ex03r"></div>
+    <div class="pa" id="ex03a">
+      <div class="pl pla">AFTER &#8212; Risk Analysis Summary</div>
+      <div class="pbx"><table class="rt"><thead><tr><th>Model</th><th>Value</th><th>Pass &#8804;0.09?</th><th>Action</th></tr></thead><tbody>
+        <tr><td>Prosecutor</td><td class="fl2">1.00</td><td class="fl2">FAIL &#10060;</td><td class="fl2">Suppress Group A outlier</td></tr>
+        <tr><td>Journalist</td><td class="ps">0.05</td><td class="ps">PASS &#10003;</td><td class="ps">Only 5% of records exposed</td></tr>
+        <tr><td>Marketer</td><td class="fl2">0.20</td><td class="fl2">FAIL &#10060;</td><td class="fl2">Need larger groups (k&#8805;12 for all to pass)</td></tr>
+      </tbody></table></div>
+      <div class="od vs"><div class="ol">Key Insight</div>Journalist passes while prosecutor and marketer fail &#8212; a common real-world pattern. The single Group A outlier drives both failures. After suppression: N=19, min(k)=5, prosecutor=0.20. To reach 0.09 for prosecutor requires min(k)&#8805;12 &#8212; achieved in larger population datasets with coarser generalization.</div>
+    </div>
+  </div>
+</section><hr class="dv">
+
+<section class="sta" id="s04">
+  <div class="shd"><div class="sn">Station 04</div><span class="stg tgn">NEW</span></div>
+  <h2>k-Anonymity &#8212; Equivalence Classes</h2>
+  <p><span class="kt">k-Anonymity</span> ensures every record is indistinguishable from at least <strong>k&#8722;1 other records</strong> on all quasi-identifier fields. A group of k records sharing the same QI values is an <em>equivalence class</em>. An attacker who links someone to a class faces 1-in-k uncertainty.</p>
+  <div class="fb"><span class="lb">k-Anonymity Formal Definition</span>Dataset D satisfies k-anonymity iff for every record r&#7522;, equivalence class Q(r&#7522;) contains &#8805; k records.<br>Q(r&#7522;) = { r&#11388; &#8712; D : QI(r&#7522;) = QI(r&#11388;) }</div>
+  <div class="cn"><div class="cnt">Two Tools to Achieve k-Anonymity</div><p><strong>Generalization</strong> &#8212; Replace precise QI values with broader categories to merge records into the same class. DOB&#8594;decade, ZIP&#8594;3-digit. Cost: reduced data precision.<br><br><strong>Suppression</strong> &#8212; Remove records that cannot be merged into a group of size k by generalization. Last resort; costs an entire data point.</p></div>
+  <button class="dt" onclick="toggleDemo('d04')"><span class="di">&#128218;</span><span class="dl">Focused Tutorial</span><span class="tt">Forming Equivalence Classes from the Meridian Cohort</span><span class="da">&#9658;</span></button>
+  <div class="dc" id="d04">
+    <div class="sl slb">BEFORE &#8212; Raw QIs</div>
+    <div class="dp"><table class="ct"><thead><tr><th>Patient</th><th>Sex</th><th>DOB</th><th>ZIP</th></tr></thead><tbody>
+      <tr><td>P1 Margaret</td><td>F</td><td>03/14/1952</td><td>98032</td></tr><tr><td>P2 David</td><td>M</td><td>07/22/1978</td><td>98102</td></tr>
+      <tr><td>P3 Yolanda</td><td>F</td><td>11/09/1965</td><td>98032</td></tr><tr><td>P4 Thomas</td><td>M</td><td>02/28/1981</td><td>98102</td></tr>
+      <tr><td>P5 Priya</td><td>F</td><td>08/15/1972</td><td>98055</td></tr><tr><td>P6 James</td><td>M</td><td>12/03/1989</td><td>98055</td></tr>
+    </tbody></table></div>
+    <div class="sl slo">OPERATION &#8212; DOB &#8594; Age Decade, ZIP &#8594; ZIP-3 Prefix</div>
+    <div class="dot">P1: {F, 70s, 980} &#8594; ALONE (k=1) &#10060; must suppress<br>P2: {M, 40s, 981} &#8594; shares with P4 (k=2) &#10003;<br>P3: {F, 50s, 980} &#8594; shares with P5 (k=2) &#10003;<br>P4: {M, 40s, 981} &#8594; shares with P2 (k=2) &#10003;<br>P5: {F, 50s, 980} &#8594; shares with P3 (k=2) &#10003;<br>P6: {M, 30s, 980} &#8594; ALONE (k=1) &#10060; must suppress</div>
+    <div class="sl sla">AFTER &#8212; k=2 Achieved (P1 and P6 suppressed)</div>
+    <div class="dp"><table class="ct"><thead><tr><th>Patient</th><th>Sex</th><th>Age Dec.</th><th>ZIP-3</th><th>Group</th><th>k</th><th>Status</th></tr></thead><tbody>
+      <tr><td class="cx">P1 Margaret</td><td colspan="6" class="cx">SUPPRESSED</td></tr>
+      <tr><td>P2 David</td><td>M</td><td class="cg">40s</td><td class="cg">981</td><td style="color:var(--gn);">&#945;</td><td class="ck2">2</td><td class="ck">&#10003;</td></tr>
+      <tr><td>P3 Yolanda</td><td>F</td><td class="cg">50s</td><td class="cg">980</td><td style="color:var(--tl);">&#946;</td><td class="ck2">2</td><td class="ck">&#10003;</td></tr>
+      <tr><td>P4 Thomas</td><td>M</td><td class="cg">40s</td><td class="cg">981</td><td style="color:var(--gn);">&#945;</td><td class="ck2">2</td><td class="ck">&#10003;</td></tr>
+      <tr><td>P5 Priya</td><td>F</td><td class="cg">50s</td><td class="cg">980</td><td style="color:var(--tl);">&#946;</td><td class="ck2">2</td><td class="ck">&#10003;</td></tr>
+      <tr><td class="cx">P6 James</td><td colspan="6" class="cx">SUPPRESSED</td></tr>
+    </tbody></table></div>
+    <div class="dn">k=2 achieved. Every retained record is in a group of exactly 2. An attacker linking someone to Group &#945; knows only: David or Thomas &#8212; 50/50 uncertainty. k-anonymity does NOT protect against attribute inference &#8212; see Station 05.</div>
+  </div>
+  <div class="ex" id="ex04">
+    <div class="ext">Exercise 4 &#8212; k-Anonymity: Grouping and Suppression Rate</div>
+    <div class="exd">&#9679; Difficulty: Beginner</div>
+    <p>Using the post-generalization Meridian Cohort (DOB&#8594;Age Decade, ZIP&#8594;ZIP-3), identify equivalence class sizes and suppression needed to achieve k=2.</p>
+    <button class="hb" onclick="toggleHint('h04')">Show Hint</button>
+    <div class="hbx" id="h04">Look for records sharing all three QI values. P2 and P4 share {M, 40s, 981}. P3 and P5 share {F, 50s, 980}. P1 and P6 have no companions and must be suppressed to achieve k=2.</div>
+    <div class="pb">
+      <div class="pl plb">BEFORE &#8212; Generalized Cohort</div>
+      <div class="pbx"><table class="ct"><thead><tr><th>Patient</th><th>Sex</th><th>Age Decade</th><th>ZIP-3</th></tr></thead><tbody>
+        <tr><td>P1 Margaret</td><td>F</td><td class="cg">70s</td><td class="cg">980</td></tr>
+        <tr><td>P2 David</td><td>M</td><td class="cg">40s</td><td class="cg">981</td></tr>
+        <tr><td>P3 Yolanda</td><td>F</td><td class="cg">50s</td><td class="cg">980</td></tr>
+        <tr><td>P4 Thomas</td><td>M</td><td class="cg">40s</td><td class="cg">981</td></tr>
+        <tr><td>P5 Priya</td><td>F</td><td class="cg">50s</td><td class="cg">980</td></tr>
+        <tr><td>P6 James</td><td>M</td><td class="cg">30s</td><td class="cg">980</td></tr>
+      </tbody></table></div>
+    </div>
+    <div class="fl">Fill in:</div>
+    <div class="fi"><span class="ts">P2 and P4 share {M, 40s, 981} &#8594; group size k =</span><span class="bw"><input class="bi" id="e04a" style="width:50px" data-answer="2" placeholder="?"><button class="rb" onclick="revealAnswer('e04a')">reveal</button></span><span class="ts">&#8594; satisfies k&#8805;2?</span><span class="bw"><input class="bi" id="e04b" style="width:58px" data-answer="yes" data-type="text" placeholder="?"><button class="rb" onclick="revealAnswer('e04b')">reveal</button></span></div>
+    <div class="fi"><span class="ts">P3 and P5 share {F, 50s, 980} &#8594; group size k =</span><span class="bw"><input class="bi" id="e04c" style="width:50px" data-answer="2" placeholder="?"><button class="rb" onclick="revealAnswer('e04c')">reveal</button></span><span class="ts">&#8594; satisfies k&#8805;2?</span><span class="bw"><input class="bi" id="e04d" style="width:58px" data-answer="yes" data-type="text" placeholder="?"><button class="rb" onclick="revealAnswer('e04d')">reveal</button></span></div>
+    <div class="fi"><span class="ts">P1 alone has {F, 70s, 980} &#8594; k =</span><span class="bw"><input class="bi" id="e04e" style="width:50px" data-answer="1" placeholder="?"><button class="rb" onclick="revealAnswer('e04e')">reveal</button></span><span class="ts">&#8594; must be</span><span class="bw"><input class="bi" id="e04f" style="width:110px" data-answer="suppressed" data-type="text" placeholder="?"><button class="rb" onclick="revealAnswer('e04f')">reveal</button></span></div>
+    <div class="fi"><span class="ts">P6 also alone &#8594; also suppressed. Total records suppressed =</span><span class="bw"><input class="bi" id="e04g" style="width:50px" data-answer="2" placeholder="?"><button class="rb" onclick="revealAnswer('e04g')">reveal</button></span></div>
+    <div class="fi"><span class="ts">Suppression rate =</span><span class="bw"><input class="bi" id="e04h" style="width:50px" data-answer="2" placeholder="?"><button class="rb" onclick="revealAnswer('e04h')">reveal</button></span><span class="ts">/ 6 &#8776;</span><span class="bw"><input class="bi" id="e04i" style="width:60px" data-answer="33" data-tolerance="2" placeholder="?"><button class="rb" onclick="revealAnswer('e04i')">reveal</button></span><span class="ts">%</span></div>
+    <div class="bg">
+      <button class="cb" onclick="subEx('ex04',['e04a','e04b','e04c','e04d','e04e','e04f','e04g','e04h','e04i'])">Submit</button>
+      <button class="rab" onclick="revAll('ex04',['e04a','e04b','e04c','e04d','e04e','e04f','e04g','e04h','e04i'])">Reveal All</button>
+    </div>
+    <div class="res" id="ex04r"></div>
+    <div class="pa" id="ex04a">
+      <div class="pl pla">AFTER &#8212; k=2 Achieved</div>
+      <div class="pbx"><table class="ct"><thead><tr><th>Patient</th><th>Sex</th><th>Age Dec.</th><th>ZIP-3</th><th>Group</th><th>k</th></tr></thead><tbody>
+        <tr><td class="cx">P1 Margaret</td><td colspan="5" class="cx">SUPPRESSED</td></tr>
+        <tr><td>P2 David</td><td>M</td><td class="cg">40s</td><td class="cg">981</td><td style="color:var(--gn);">&#945;</td><td class="ck2">2 &#10003;</td></tr>
+        <tr><td>P3 Yolanda</td><td>F</td><td class="cg">50s</td><td class="cg">980</td><td style="color:var(--tl);">&#946;</td><td class="ck2">2 &#10003;</td></tr>
+        <tr><td>P4 Thomas</td><td>M</td><td class="cg">40s</td><td class="cg">981</td><td style="color:var(--gn);">&#945;</td><td class="ck2">2 &#10003;</td></tr>
+        <tr><td>P5 Priya</td><td>F</td><td class="cg">50s</td><td class="cg">980</td><td style="color:var(--tl);">&#946;</td><td class="ck2">2 &#10003;</td></tr>
+        <tr><td class="cx">P6 James</td><td colspan="5" class="cx">SUPPRESSED</td></tr>
+      </tbody></table></div>
+      <div class="od vs"><div class="ol">Interpretation</div>k=2 achieved. An attacker linking someone to Group &#945; knows only: David or Thomas &#8212; 50/50 uncertainty. But k-anonymity does not protect against attribute inference. See Station 05 for why Group &#946; may still expose sensitive information even with k=2.</div>
+    </div>
+  </div>
+</section><hr class="dv">
+
+<section class="sta" id="s05">
+  <div class="shd"><div class="sn">Station 05</div><span class="stg tgn">NEW</span></div>
+  <h2>l-Diversity &#8212; Protecting Sensitive Attributes Within Groups</h2>
+  <p>k-Anonymity ensures an attacker cannot single out a specific individual &#8212; but says nothing about what they can <em>infer</em> about that individual's sensitive attributes. <span class="kt">l-Diversity</span> plugs this gap: within each equivalence class, there must be at least <strong>l distinct values</strong> of every sensitive attribute.</p>
+  <div class="fb"><span class="lb">l-Diversity Definition</span>An equivalence class Q satisfies l-diversity if:<br>|{ distinct sensitive values in Q }| &#8805; l<br>A dataset is l-diverse if every equivalence class satisfies this.</div>
+  <div class="cn"><div class="cnt">The Homogeneity Attack &#8212; Why k-Anonymity Alone Fails</div><p>If all patients in an equivalence class share the same diagnosis &#8212; say, all five have Bipolar Disorder &#8212; an attacker linking a person to that group immediately knows their diagnosis, even without singling them out. k-Anonymity provided k=5 "protection" but zero attribute privacy. l-Diversity prevents this by demanding sensitive values be <em>spread</em> across the group.</p></div>
+  <button class="dt" onclick="toggleDemo('d05')"><span class="di">&#128218;</span><span class="dl">Focused Tutorial</span><span class="tt">Testing l-Diversity in Meridian Equivalence Classes</span><span class="da">&#9658;</span></button>
+  <div class="dc" id="d05">
+    <div class="sl slb">BEFORE &#8212; k=2 Dataset with Sensitive Attributes Revealed</div>
+    <div class="dp"><table class="ct"><thead><tr><th>Group</th><th>Patient</th><th>Sex</th><th>Age Dec.</th><th>ZIP-3</th><th>Sensitive Dx</th></tr></thead><tbody>
+      <tr><td rowspan="2" style="color:var(--gn);font-weight:600;">&#945;</td><td>P2 David</td><td>M</td><td>40s</td><td>981</td><td class="cs">F11.20 &#8212; Opioid Use Disorder</td></tr>
+      <tr><td>P4 Thomas</td><td>M</td><td>40s</td><td>981</td><td class="cs">I10 &#8212; Hypertension</td></tr>
+      <tr><td rowspan="2" style="color:var(--tl);font-weight:600;">&#946;</td><td>P3 Yolanda</td><td>F</td><td>50s</td><td>980</td><td class="cs">E11.9 &#8212; Type 2 Diabetes</td></tr>
+      <tr><td>P5 Priya</td><td>F</td><td>50s</td><td>980</td><td class="cs">F31.9 &#8212; Bipolar Disorder</td></tr>
+    </tbody></table></div>
+    <div class="sl slo">OPERATION &#8212; Count distinct sensitive values per group</div>
+    <div class="dot">Group &#945;: {OUD, HTN} &#8594; 2 distinct diagnoses &#8594; l=2 &#10003;<br>Group &#946;: {T2DM, Bipolar} &#8594; 2 distinct diagnoses &#8594; l=2 &#10003;<br><br>Both groups satisfy l=2. An attacker linking someone to Group &#945; has at most 50% certainty on diagnosis.</div>
+    <div class="sl sla">COUNTER-EXAMPLE &#8212; Homogeneity Failure</div>
+    <div class="dp"><div class="dot">If Group &#946; were {Yolanda=T2DM, Priya=T2DM}: l=1. Attacker knows with 100% certainty the patient has T2DM &#8212; even with k=2. Fix: generalize further to merge groups, or replace one record with a patient carrying a different diagnosis.</div></div>
+    <div class="dn">l=1 is a complete failure of attribute privacy despite k-anonymity. This is extremely common with prevalent conditions (hypertension, T2DM) that dominate certain demographic groups.</div>
+  </div>
+  <div class="ex" id="ex05">
+    <div class="ext">Exercise 5 &#8212; Evaluating l-Diversity and Identifying Failures</div>
+    <div class="exd">&#9679; Difficulty: Beginner</div>
+    <p>Three equivalence classes from a hospital dataset are shown. Compute l for each and determine whether l=2 is satisfied. Identify the attacker's inference probability when l=1.</p>
+    <button class="hb" onclick="toggleHint('h05')">Show Hint</button>
+    <div class="hbx" id="h05">l = count of DISTINCT sensitive attribute values in the group. All same diagnosis &#8594; l=1 &#8594; 100% attacker certainty. Two different diagnoses &#8594; l=2 &#8594; at most 50%. Three different &#8594; l=3 &#8594; at most 33%.</div>
+    <div class="pb">
+      <div class="pl plb">BEFORE &#8212; Three Equivalence Classes with Sensitive Diagnoses</div>
+      <div class="pbx"><table class="ct"><thead><tr><th>Class</th><th>Patient</th><th>Sensitive Diagnosis</th></tr></thead><tbody>
+        <tr><td rowspan="2" style="color:var(--co);">X</td><td>Px1</td><td class="cs">E11.9 &#8212; Type 2 Diabetes</td></tr>
+        <tr><td>Px2</td><td class="cs">E11.9 &#8212; Type 2 Diabetes</td></tr>
+        <tr><td rowspan="3" style="color:var(--gn);">Y</td><td>Py1</td><td class="cs">I10 &#8212; Hypertension</td></tr>
+        <tr><td>Py2</td><td class="cs">F31.9 &#8212; Bipolar Disorder</td></tr>
+        <tr><td>Py3</td><td class="cs">I25.10 &#8212; Coronary Artery Disease</td></tr>
+        <tr><td rowspan="2" style="color:var(--tl);">Z</td><td>Pz1</td><td class="cs">Z21 &#8212; HIV/AIDS</td></tr>
+        <tr><td>Pz2</td><td class="cs">F11.20 &#8212; Opioid Use Disorder</td></tr>
+      </tbody></table></div>
+    </div>
+    <div class="fl">Fill in:</div>
+    <div class="fi"><span class="ts">Class X: distinct dx values =</span><span class="bw"><input class="bi" id="e05a" style="width:50px" data-answer="1" placeholder="?"><button class="rb" onclick="revealAnswer('e05a')">reveal</button></span><span class="ts">&#8594; l =</span><span class="bw"><input class="bi" id="e05b" style="width:50px" data-answer="1" placeholder="?"><button class="rb" onclick="revealAnswer('e05b')">reveal</button></span><span class="ts">&#8594; satisfies l=2?</span><span class="bw"><input class="bi" id="e05c" style="width:58px" data-answer="no" data-type="text" placeholder="?"><button class="rb" onclick="revealAnswer('e05c')">reveal</button></span></div>
+    <div class="fi"><span class="ts">Attacker linking to Class X infers diagnosis with probability</span><span class="bw"><input class="bi" id="e05d" style="width:68px" data-answer="1.0" data-tolerance="0.01" placeholder="?"><button class="rb" onclick="revealAnswer('e05d')">reveal</button></span><span class="ts">(</span><span class="bw"><input class="bi" id="e05e" style="width:58px" data-answer="100" placeholder="?"><button class="rb" onclick="revealAnswer('e05e')">reveal</button></span><span class="ts">%)</span></div>
+    <div class="fi"><span class="ts">Class Y: distinct values =</span><span class="bw"><input class="bi" id="e05f" style="width:50px" data-answer="3" placeholder="?"><button class="rb" onclick="revealAnswer('e05f')">reveal</button></span><span class="ts">&#8594; l =</span><span class="bw"><input class="bi" id="e05g" style="width:50px" data-answer="3" placeholder="?"><button class="rb" onclick="revealAnswer('e05g')">reveal</button></span><span class="ts">&#8594; satisfies l=2?</span><span class="bw"><input class="bi" id="e05h" style="width:58px" data-answer="yes" data-type="text" placeholder="?"><button class="rb" onclick="revealAnswer('e05h')">reveal</button></span></div>
+    <div class="fi"><span class="ts">Class Z: l =</span><span class="bw"><input class="bi" id="e05i" style="width:50px" data-answer="2" placeholder="?"><button class="rb" onclick="revealAnswer('e05i')">reveal</button></span><span class="ts">&#8594; satisfies l=2?</span><span class="bw"><input class="bi" id="e05j" style="width:58px" data-answer="yes" data-type="text" placeholder="?"><button class="rb" onclick="revealAnswer('e05j')">reveal</button></span></div>
+    <div class="bg">
+      <button class="cb" onclick="subEx('ex05',['e05a','e05b','e05c','e05d','e05e','e05f','e05g','e05h','e05i','e05j'])">Submit</button>
+      <button class="rab" onclick="revAll('ex05',['e05a','e05b','e05c','e05d','e05e','e05f','e05g','e05h','e05i','e05j'])">Reveal All</button>
+    </div>
+    <div class="res" id="ex05r"></div>
+    <div class="pa" id="ex05a">
+      <div class="pl pla">AFTER &#8212; l-Diversity Analysis</div>
+      <div class="pbx"><table class="rt"><thead><tr><th>Class</th><th>l</th><th>Satisfies l=2?</th><th>Inference Prob.</th><th>Remedy</th></tr></thead><tbody>
+        <tr><td>X</td><td class="fl2">1</td><td class="fl2">NO &#10060;</td><td class="fl2">100%</td><td>Add patient with different dx or suppress</td></tr>
+        <tr><td>Y</td><td class="ps">3</td><td class="ps">YES &#10003;</td><td class="ps">&#8804;33%</td><td>No action needed</td></tr>
+        <tr><td>Z</td><td class="ps">2</td><td class="ps">YES &#10003;</td><td class="ps">&#8804;50%</td><td>No action needed</td></tr>
+      </tbody></table></div>
+      <div class="od vs"><div class="ol">Key Takeaway</div>Class X fails l-diversity despite possibly satisfying k-anonymity. Both patients have T2DM &#8212; any attacker linking to Class X infers the diagnosis with 100% certainty. This is the homogeneity attack. l-Diversity is not optional when sensitive diagnoses are present in the dataset.</div>
+    </div>
+  </div>
+</section>
+
+<hr class="dv">
+<div style="text-align:center;padding:40px 0 20px;">
+  <div style="font-family:var(--fm);font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--tm);margin-bottom:18px;">END OF PART 1 &#8212; STATIONS 01&#8211;05</div>
+  <a href="privacy_tutorial_part2.html" style="font-family:var(--fm);font-size:13px;color:var(--tl);text-decoration:none;padding:11px 26px;border:1px solid var(--tld);border-radius:6px;background:rgba(46,184,176,.06);">Continue to Part 2: Stations 06&#8211;11 + Journey Summary &#9654;</a>
+  <div style="margin-top:24px;font-family:var(--fm);font-size:11px;color:var(--tm);letter-spacing:1.5px;">HEALTHCARE PRIVACY EDUCATION SERIES &#8212; JOE WILLIAMS</div>
+</div>
+</div>
+<script>
+window.addEventListener('scroll',()=>{
+  const h=document.documentElement;
+  const p=(h.scrollTop/(h.scrollHeight-h.clientHeight))*100;
+  document.getElementById('pgb').style.width=p+'%';
+});
+function toggleDemo(id){
+  const c=document.getElementById(id);
+  const b=c.previousElementSibling;
+  c.classList.toggle('op');
+  b.classList.toggle('op');
+}
+function toggleHint(id){
+  document.getElementById(id).classList.toggle('vs');
+}
+function revealAnswer(id){
+  const el=document.getElementById(id);
+  el.value=el.getAttribute('data-answer');
+  el.classList.remove('no');
+  el.classList.add('ok');
+}
+function evalBlank(el){
+  const ans=el.getAttribute('data-answer');
+  const tol=parseFloat(el.getAttribute('data-tolerance')||'0');
+  const typ=el.getAttribute('data-type')||'number';
+  const val=el.value.trim();
+  if(!val)return'empty';
+  if(typ==='text')return val.toLowerCase().trim()===ans.toLowerCase().trim()?'ok':'no';
+  const nu=parseFloat(val),na=parseFloat(ans);
+  if(isNaN(nu))return'no';
+  const t=tol>0?tol:Math.max(Math.abs(na*0.05),0.005);
+  return Math.abs(nu-na)<=t?'ok':'no';
+}
+function subEx(id,ids){
+  let empty=0,wrong=0;
+  ids.forEach(i=>{
+    const el=document.getElementById(i);
+    const s=evalBlank(el);
+    if(s==='empty'){empty++;el.classList.remove('ok','no');}
+    else if(s==='ok'){el.classList.remove('no');el.classList.add('ok');}
+    else{el.classList.remove('ok');el.classList.add('no');wrong++;}
+  });
+  const rb=document.getElementById(id+'r');
+  const ap=document.getElementById(id+'a');
+  if(ap)ap.classList.remove('vs');
+  const tot=ids.length;
+  if(empty===tot){rb.className='res vs no';rb.innerHTML='All blanks are empty. Enter your answers then click Submit.';return;}
+  if(empty>0){rb.className='res vs no';rb.innerHTML='<strong>'+empty+'</strong> blank(s) still empty'+(wrong>0?' and <strong>'+wrong+'</strong> incorrect':'')+'. Complete all fields before submitting.';return;}
+  if(wrong===0){rb.className='res vs ok';rb.innerHTML='&#10003; Correct! All answers are right &#8212; well done.';if(ap)ap.classList.add('vs');}
+  else{rb.className='res vs no';rb.innerHTML='<strong>'+wrong+'</strong> of <strong>'+tot+'</strong> answers wrong (highlighted in red). Adjust and resubmit, or use <em>reveal</em> for individual blanks.';}
+}
+function revAll(id,ids){
+  ids.forEach(i=>{
+    const el=document.getElementById(i);
+    el.value=el.getAttribute('data-answer');
+    el.classList.remove('no');
+    el.classList.add('ok');
+  });
+  const rb=document.getElementById(id+'r');
+  const ap=document.getElementById(id+'a');
+  rb.className='res vs sl';
+  rb.innerHTML='<strong>Solution revealed</strong> &#8212; all blanks filled. See the result panel below.';
+  if(ap)ap.classList.add('vs');
+}
+</script>
+</body></html>

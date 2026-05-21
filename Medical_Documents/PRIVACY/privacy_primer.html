@@ -1,0 +1,1443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Healthcare Privacy Primer — Before You Begin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;600;700&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#7a9ab5;--header-bg:#1e4670;
+  --surface:#d3dde8;--surface-raised:#c8d3e0;--surface-inset:#a8b4c2;
+  --border:#8693a3;--border-accent:#5d6e85;--border-focus:#1a4a7a;
+  --text:#111111;--text-muted:#1a2a3a;--text-dim:#3a4a5a;
+  --accent:#7a5418;--accent-glow:rgba(184,134,42,.12);--accent-dim:#5d3f10;--accent-badge:#b8862a;
+  --green:#1f6843;--green-bg:rgba(31,104,67,.12);
+  --red:#9c382d;--red-bg:rgba(156,56,45,.10);
+  --orange:#8e4d10;--orange-bg:rgba(142,77,16,.10);
+  --blue:#1a4a7a;--blue-bg:rgba(26,74,122,.10);
+  --purple:#553a80;--purple-bg:rgba(85,58,128,.10);
+  --radius:8px;--radius-lg:12px;
+  --mono:'JetBrains Mono',monospace;--serif:'Crimson Pro',Georgia,serif;--sans:'DM Sans',system-ui,sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15px;line-height:1.7;min-height:100vh}
+.header{background:var(--header-bg);border-bottom:2px solid var(--accent-badge);padding:18px 28px 0;color:#f0f4fa}
+.header-top{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;padding-bottom:14px}
+.header-brand{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.header-brand h1{font-family:var(--serif);font-size:24px;font-weight:700;color:#f4c97c;letter-spacing:.3px}
+.header-brand .pipe-motif{font-family:var(--mono);color:#a8b8c8;font-size:11px;opacity:.75}
+.header-brand .subtitle{font-size:13px;color:#cfd8e3;font-weight:400;margin-left:4px}
+.header-credit{font-size:11px;color:#a8b8c8;font-family:var(--mono)}
+.welcome-back{background:rgba(184,134,42,.18);border:1px solid var(--accent-badge);padding:10px 18px;margin-bottom:14px;border-radius:var(--radius);display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.welcome-back-text{color:#f0f4fa;font-size:13px}.welcome-back-text strong{color:#f4c97c}
+.progress-bar{position:sticky;top:0;z-index:90;background:rgba(105,125,148,.97);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:10px 20px;overflow-x:auto;white-space:nowrap;display:flex;gap:5px;align-items:center;scrollbar-width:thin}
+.seg-pill{display:inline-flex;align-items:center;gap:5px;padding:5px 11px;border-radius:18px;font-family:var(--mono);font-size:10px;font-weight:600;cursor:pointer;background:#73798a;color:#000;border:1px solid #525861;transition:all .15s;flex-shrink:0}
+.seg-pill .seg-num{font-size:10px;color:#000;font-weight:700}.seg-pill .seg-icon{font-size:13px}
+.seg-pill:hover{background:#8a92a0;color:#000}.seg-pill.done{background:#5cae6a;color:#000;border-color:#3d9555}
+.seg-pill.active{background:#4a90c2;color:#000;border-color:#3a7aa6}
+.seg-pill.done.active{background:#4a90c2;color:#000;border-color:#3a7aa6}
+.seg-pill.locked{background:#5d6470;color:#3a3a3a;border-color:#4a5058;cursor:not-allowed;opacity:.5}
+.time-remaining{margin-left:auto;font-family:var(--mono);font-size:10px;color:#0d2640;padding:4px 10px;background:rgba(255,255,255,.15);border-radius:10px;flex-shrink:0}
+main{max-width:1160px;margin:0 auto;padding:22px 24px;display:grid;grid-template-columns:1fr 270px;gap:24px}
+@media(max-width:900px){main{grid-template-columns:1fr;padding:14px}}
+.content-col{min-width:0}.sidebar-col{position:relative}
+.hero{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:30px 28px;margin-bottom:22px}
+.hero h1{font-family:var(--serif);font-size:32px;font-weight:700;color:var(--text);margin-bottom:8px}
+.hero .hero-sub{font-family:var(--mono);font-size:11px;color:var(--accent-dim);letter-spacing:1px;text-transform:uppercase;margin-bottom:14px}
+.hero p{color:var(--text-muted);margin-bottom:12px;font-size:15px;line-height:1.75;font-weight:600}
+.hero-cta{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap}
+.action-bar{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:18px;padding:10px 14px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius)}
+.action-bar .left-actions,.action-bar .right-actions{display:flex;gap:8px;flex-wrap:wrap}
+.btn{font-family:var(--mono);font-size:12px;font-weight:700;padding:8px 18px;border-radius:var(--radius);border:1px solid var(--accent-badge);cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:6px;background:var(--accent-badge);color:#000}
+.btn:hover{background:#cc9633;border-color:#cc9633}.btn:disabled{opacity:.35;cursor:not-allowed}
+.btn.ghost{background:transparent;color:var(--text-muted);border-color:var(--border-accent)}
+.btn.ghost:hover{background:var(--surface-inset);color:var(--text)}
+.segment{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:26px 30px;margin-bottom:22px}
+@media(max-width:900px){.segment{padding:18px 16px}}
+.segment-header{margin-bottom:18px;padding-bottom:16px;border-bottom:1px solid var(--border)}
+.segment-meta{font-family:var(--mono);font-size:11px;color:var(--text-dim);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;display:flex;gap:14px;flex-wrap:wrap}
+.segment-meta .seg-step{color:var(--accent-dim);font-weight:700}
+.segment-title{font-family:var(--serif);font-size:26px;font-weight:700;color:var(--text);margin-bottom:6px;display:flex;align-items:center;gap:12px}
+.segment-subtitle{color:var(--text-muted);font-size:14px;margin-bottom:12px;font-weight:600}
+.end-goal{background:var(--accent-glow);border-left:3px solid var(--accent-badge);padding:11px 16px;margin-top:12px;border-radius:0 var(--radius) var(--radius) 0}
+.end-goal-label{font-family:var(--mono);font-size:10px;color:var(--accent-dim);letter-spacing:1.2px;text-transform:uppercase;font-weight:700;margin-bottom:4px}
+.end-goal-text{color:var(--text);font-size:14px;font-style:italic;font-weight:600}
+.lecture{font-size:15px;color:var(--text);line-height:1.8}
+.lecture h3{font-family:var(--serif);font-size:20px;font-weight:700;color:var(--text);margin:22px 0 10px}
+.lecture h4{font-family:var(--sans);font-size:15px;font-weight:700;color:var(--accent-dim);margin:16px 0 7px;letter-spacing:.2px}
+.lecture p{margin-bottom:13px;color:var(--text-muted);font-weight:600}
+.lecture p strong{color:var(--text)}
+.lecture ul,.lecture ol{margin:10px 0 13px 22px;color:var(--text-muted)}
+.lecture li{margin-bottom:7px;font-weight:600}
+.lecture code{font-family:var(--mono);font-size:12.5px;background:var(--surface-inset);color:#1a4a7a;padding:2px 6px;border-radius:4px;border:1px solid var(--border);font-weight:600}
+.callout{background:#dde5ee;border:1px solid #aab5c5;border-radius:var(--radius);padding:13px 18px;margin:14px 0;font-size:14px;color:#0a1828;font-weight:600}
+.callout strong{color:#0a1828}
+.card-link{color:var(--accent);cursor:pointer;border-bottom:1px dotted var(--accent);font-weight:700;background:none;border-top:none;border-left:none;border-right:none;font-family:inherit;font-size:inherit;padding:0;display:inline}
+.card-link:hover{color:var(--accent-dim);border-bottom-style:solid}
+.ba-block{display:grid;grid-template-columns:1fr auto 1fr;gap:12px;margin:16px 0;align-items:stretch}
+@media(max-width:640px){.ba-block{grid-template-columns:1fr;gap:8px}}
+.ba-panel{background:var(--surface-raised);border:1px solid var(--border);border-radius:var(--radius);padding:13px;display:flex;flex-direction:column}
+.ba-label{font-family:var(--mono);font-size:10px;color:var(--text-dim);letter-spacing:1.5px;text-transform:uppercase;font-weight:700;margin-bottom:7px}
+.ba-before .ba-label{color:var(--red)}.ba-after .ba-label{color:var(--green)}
+.ba-content{font-size:13px;color:var(--text-muted);line-height:1.7;flex:1;font-weight:600}
+.ba-arrow{display:flex;align-items:center;justify-content:center;color:var(--accent-badge);font-size:22px;font-weight:700}
+@media(max-width:640px){.ba-arrow{transform:rotate(90deg);padding:4px 0}}
+.pulse-check{background:#dde5ee;border:1px solid #aab5c5;border-radius:var(--radius-lg);padding:16px 20px;margin:20px 0;color:#0a1828}
+.pulse-header{display:flex;align-items:center;gap:8px;margin-bottom:9px}
+.pulse-icon{font-size:17px}
+.pulse-label{font-family:var(--mono);font-size:11px;color:#0a1828;letter-spacing:1.5px;text-transform:uppercase;font-weight:700}
+.pulse-question{font-size:15px;color:#0a1828;margin-bottom:13px;line-height:1.6;font-weight:600}
+.pulse-question code{font-family:var(--mono);font-size:12.5px;background:#fff;color:#7a5418;padding:2px 5px;border-radius:3px;border:1px solid #aab5c5;font-weight:700}
+.pulse-options{display:flex;flex-direction:column;gap:7px;margin-bottom:10px}
+.pulse-option{display:flex;align-items:flex-start;gap:10px;padding:10px 13px;background:var(--surface-raised);border:1px solid var(--border);border-radius:var(--radius);cursor:pointer;transition:all .15s;color:#0a1828;font-size:13.5px;line-height:1.5;text-align:left;width:100%;font-family:var(--sans);font-weight:600}
+.pulse-option:hover{background:var(--surface);border-color:var(--border-accent)}
+.pulse-option.correct{background:rgba(31,104,67,.18);border-color:var(--green)}
+.pulse-option.wrong{background:rgba(156,56,45,.15);border-color:var(--red)}
+.pulse-option.disabled{cursor:not-allowed;opacity:.6}
+.pulse-option.disabled.correct,.pulse-option.disabled.wrong{opacity:1}
+.pulse-key{font-family:var(--mono);font-weight:700;font-size:12px;color:#0a1828;min-width:22px;height:22px;display:flex;align-items:center;justify-content:center;border:1px solid var(--border);border-radius:4px;flex-shrink:0;background:var(--surface)}
+.pulse-feedback{padding:11px 13px;border-radius:var(--radius);font-size:13.5px;line-height:1.6;margin-top:9px;color:#0a1828;display:none;font-weight:600}
+.pulse-feedback.visible{display:block}.pulse-feedback.correct{background:rgba(31,104,67,.15);border:1px solid var(--green)}
+.pulse-feedback.incorrect{background:rgba(156,56,45,.12);border:1px solid var(--red)}
+.pulse-feedback.revealed{background:rgba(26,74,122,.12);border:1px solid var(--blue)}
+.pulse-feedback strong{color:#0a1828}
+.pulse-actions{display:flex;gap:10px;margin-top:9px;flex-wrap:wrap}
+.pulse-link{font-family:var(--mono);font-size:11px;color:var(--accent-dim);font-weight:700;background:none;border:none;cursor:pointer;text-decoration:underline;padding:4px 0}
+.pulse-link:hover{color:var(--accent)}
+.fill-exercise{background:#dde5ee;border:1px solid #aab5c5;border-left:4px solid var(--blue);border-radius:var(--radius);padding:16px 20px;margin:18px 0}
+.fill-ex-label{font-family:var(--mono);font-size:10px;color:var(--blue);letter-spacing:1.5px;text-transform:uppercase;font-weight:700;margin-bottom:8px}
+.fill-ex-prompt{font-size:14.5px;color:#0a1828;margin-bottom:12px;line-height:1.7;font-weight:600}
+.fill-row{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:10px 0;font-size:14.5px;color:#0a1828;font-weight:700;line-height:2.4}
+.fill-input{background:#fff;border:1px solid var(--border-accent);border-bottom:2px solid var(--blue);border-radius:4px 4px 0 0;font-family:var(--mono);font-size:13.5px;padding:4px 8px;text-align:center;width:80px;color:#111;transition:border-color .2s;font-weight:600}
+.fill-input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 2px rgba(26,74,122,.18)}
+.fill-input.ok{border-color:var(--green);border-bottom-color:var(--green);background:rgba(31,104,67,.10)}
+.fill-input.no{border-color:var(--red);border-bottom-color:var(--red);background:rgba(156,56,45,.08)}
+.fill-input.wide{width:110px}.fill-input.sm{width:58px}
+.fill-fb{font-size:13.5px;margin-top:8px;min-height:20px;font-weight:700;padding:2px 0}
+.fill-fb.ok{color:var(--green)}.fill-fb.no{color:var(--red)}
+.fill-actions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.fill-solution{background:rgba(26,74,122,.08);border:1px solid rgba(26,74,122,.2);border-radius:var(--radius);padding:11px 15px;margin-top:8px;font-size:13.5px;color:#0a1828;line-height:1.8;font-weight:600;display:none}
+.demo-block{background:var(--surface-raised);border:1px solid var(--border-accent);border-left:4px solid var(--blue);border-radius:var(--radius);margin:16px 0;overflow:hidden}
+.demo-summary{padding:12px 16px;cursor:pointer;font-family:var(--mono);font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--blue);font-weight:700;list-style:none;display:flex;align-items:center;gap:8px;user-select:none}
+.demo-summary::-webkit-details-marker{display:none}
+details[open] .demo-summary{border-bottom:1px solid var(--border)}
+.demo-body{padding:16px}
+.demo-step{display:flex;gap:10px;margin:10px 0;align-items:flex-start}
+.demo-num{background:var(--blue);color:#fff;font-family:var(--mono);font-size:11px;font-weight:700;min-width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
+.demo-text{font-size:14px;color:var(--text-muted);line-height:1.75;font-weight:600}
+.demo-formula{font-family:var(--mono);font-size:12.5px;background:var(--surface-inset);padding:8px 12px;border-radius:4px;margin:6px 0;color:#0a1828;border-left:3px solid var(--blue);font-weight:700;line-height:1.9}
+.greek-table{width:100%;border-collapse:collapse;margin:12px 0;font-size:14px}
+.greek-table th{padding:7px 12px;background:#1e4670;color:#f4c97c;font-family:var(--mono);font-size:10px;letter-spacing:1px;text-transform:uppercase;border-bottom:2px solid var(--border-accent);text-align:left}
+.greek-table td{padding:8px 12px;border-bottom:1px solid var(--border);font-weight:600;color:var(--text-muted)}
+.greek-table td:first-child{font-family:var(--mono);font-size:18px;color:var(--blue);font-weight:700;width:50px}
+.greek-table td:nth-child(2){font-family:var(--mono);font-size:12px;color:var(--accent);font-weight:700}
+.greek-table tr:last-child td{border-bottom:none}
+.cards-panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px;position:sticky;top:78px}
+.cards-panel h3{font-family:var(--mono);font-size:11px;color:var(--accent-dim);letter-spacing:1.5px;text-transform:uppercase;font-weight:700;margin-bottom:5px}
+.cards-panel .cards-sub{font-size:11.5px;color:var(--text-dim);margin-bottom:12px;line-height:1.5;font-weight:600}
+.card-item{padding:8px 11px;background:var(--surface-raised);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:5px;cursor:pointer;transition:all .15s;font-size:13px;color:var(--text);display:flex;justify-content:space-between;align-items:center;gap:8px;font-weight:600}
+.card-item:hover{background:var(--surface-inset);border-color:var(--border-accent)}
+.card-item-expand{font-size:10px;color:var(--text-dim);font-family:var(--mono)}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;display:none;align-items:center;justify-content:center;padding:20px}
+.modal-overlay.open{display:flex}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);max-width:660px;width:100%;max-height:84vh;display:flex;flex-direction:column;box-shadow:0 8px 32px rgba(0,0,0,.4)}
+.modal-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;background:#1e4670;border-radius:var(--radius-lg) var(--radius-lg) 0 0}
+.modal-title{font-family:var(--serif);font-size:19px;font-weight:700;color:#f4c97c}
+.modal-close{background:none;border:1px solid rgba(255,255,255,.3);color:#e0e8f0;font-size:18px;width:30px;height:30px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.modal-close:hover{background:rgba(255,255,255,.15)}
+.modal-body{padding:18px 20px;overflow-y:auto;flex:1}
+.modal-body .card-modal-term{font-family:var(--mono);font-size:11px;color:var(--accent-dim);letter-spacing:1.5px;text-transform:uppercase;font-weight:700;margin-bottom:5px}
+.modal-body .card-modal-def{font-size:14.5px;color:var(--text);line-height:1.7;margin-bottom:11px;font-weight:600}
+.modal-body .card-modal-long{font-size:13.5px;color:var(--text-muted);line-height:1.75;padding-top:11px;border-top:1px solid var(--border);font-weight:600}
+.modal-search{margin-bottom:12px}
+.modal-search input{width:100%;padding:7px 11px;font-family:var(--sans);font-size:14px;background:var(--surface-raised);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-weight:600}
+.modal-search input:focus{outline:none;border-color:var(--border-focus)}
+.lib-segment-header{font-family:var(--mono);font-size:11px;color:var(--accent-dim);letter-spacing:1.2px;text-transform:uppercase;font-weight:700;margin:14px 0 7px;padding-bottom:5px;border-bottom:1px solid var(--border)}
+.lib-card{background:var(--surface-raised);border:1px solid var(--border);border-radius:var(--radius);padding:11px 13px;margin-bottom:7px}
+.lib-card-term{font-weight:700;font-size:14px;color:var(--text);margin-bottom:3px}
+.lib-card-def{font-size:13px;color:var(--text-muted);line-height:1.6;font-weight:600}
+.seg-nav{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:22px;padding-top:16px;border-top:1px solid var(--border);flex-wrap:wrap}
+.footer{padding:28px;text-align:center;border-top:1px solid rgba(255,255,255,.1)}
+.footer-actions{display:flex;gap:12px;justify-content:center;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+.footer-credit{font-family:var(--mono);font-size:11px;color:#a8b8c8}
+</style>
+</head>
+<body>
+<header class="header">
+  <div class="header-top">
+    <div class="header-brand">
+      <h1>Healthcare Privacy Primer</h1>
+      <span class="pipe-motif">&#x2502; Before You Begin</span>
+      <span class="subtitle">Foundation for the Healthcare Privacy &amp; De-Identification Tutorial</span>
+    </div>
+    <div class="header-credit">Developed by: Joe Williams</div>
+  </div>
+  <div id="welcomeBackBanner" style="display:none"></div>
+  <div class="progress-bar" id="progressBar"></div>
+</header>
+<main>
+  <div class="content-col">
+    <div id="heroSection"></div>
+    <div id="actionBar"></div>
+    <div id="segmentContainer"></div>
+  </div>
+  <aside class="sidebar-col"><div id="cardsSidebar"></div></aside>
+</main>
+<footer class="footer">
+  <div class="footer-actions">
+    <button class="btn ghost" onclick="resetProgress()">&#8635; Start over</button>
+    <button class="btn" id="beginTutBtn" disabled onclick="window.location.href='privacy_tutorial_integrated.html'">Begin Privacy Tutorial &#8594;</button>
+  </div>
+  <div class="footer-credit">Healthcare Privacy Primer &middot; Developed by: Joe Williams</div>
+</footer>
+<div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modalTitle">Definition</div>
+      <button class="modal-close" onclick="closeModal()" aria-label="Close">&times;</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+<script>
+// ═══════════════════════════════════════════════════
+//  CARDS — key terms, one per concept
+// ═══════════════════════════════════════════════════
+const CARDS = {
+  probability:{term:'Probability',def:'A number between 0 and 1 measuring how likely an event is. P = 0 means impossible; P = 1 means certain. Computed as: favorable outcomes ÷ total outcomes.',long:'In privacy work, probability appears constantly. "The probability that this record belongs to Margaret Chen" = 1 / (number of people sharing her quasi-identifier values). If 3 people share the same combination, probability = 1/3 ≈ 0.333. If she is the only one, probability = 1/1 = 1.0 — certain identification. The closer to 1, the more dangerous the re-identification risk.'},
+  fraction_ratio:{term:'Fraction / Ratio',def:'A fraction is one number divided by another: numerator ÷ denominator. A ratio compares two quantities. Both express the same idea: "how much of one thing per unit of another."',long:'5/100 = 0.05 = 5%. In privacy: "3 records with k=1 out of 20 total" is the fraction 3/20 = 0.15, which is the Journalist re-identification risk. Reading a fraction: the top (numerator) is the part you care about; the bottom (denominator) is the whole. Division is always: how many times does the bottom fit into the top?'},
+  multiplication_rule:{term:'Counting by Multiplication',def:'When combining independent categories, the total number of combinations = product of the number of options in each category. Example: 2 sexes × 8 age groups × 50 ZIPs = 800 possible QI combinations.',long:'This is also called the "multiplication principle" or "counting rule." It underlies the Unicity formula: total cells = S₁ × S₂ × ... × Sₖ where each Sᵢ is the number of distinct values for quasi-identifier field i. Why multiply? Because every combination of (one value from field 1) × (one value from field 2) × ... creates a unique cell. 2 × 3 = 6 total cells when field A has 2 options and field B has 3.'},
+  log_base2:{term:'Logarithm (log₂)',def:'log₂(x) asks: "How many times must I multiply 2 by itself to get x?" log₂(2)=1, log₂(4)=2, log₂(8)=3, log₂(1)=0. Used in Fellegi-Sunter to measure how much information a field match provides.',long:'Think of log₂ as "doublings." log₂(8) = 3 because 2³ = 8. If a ratio m/u = 16, then log₂(16) = 4 — matching this field gives 4 "bits" of evidence for a true match. Larger log₂(m/u) means the field is more diagnostic. A field where random records agree 50% of the time (u=0.5) and true matches agree 99% of the time (m=0.99) contributes only log₂(0.99/0.5) ≈ 0.98 bits — barely helpful, because chance agreement is so common. Always: log₂(1) = 0 (neutral), log₂(>1) > 0 (evidence FOR match).'},
+  summation_sigma:{term:'Summation (Σ — capital Sigma)',def:'The Greek capital letter Sigma (Σ) is shorthand for "add all of these up." Σ(1/kᵢ) means: compute 1/kᵢ for each record i, then add all results together.',long:'Σ is one of the most useful notations in statistics. Instead of writing 1/k₁ + 1/k₂ + 1/k₃ + ... for every record, you write Σ(1/kᵢ). The subscript i just means "for each record." In the Marketer risk formula: Marketer = (1/N) × Σ(1/kᵢ). That says: for every record, compute 1/(its group size), add all those fractions together, then divide by N. This gives the average re-identification success rate across all records.'},
+  product_pi:{term:'Product Notation (Π — capital Pi)',def:'The Greek capital letter Pi (Π) means "multiply all of these together." Π(Sᵢ) = S₁ × S₂ × S₃ × ... — multiply the number of distinct values for each quasi-identifier field.',long:'Just as Σ is shorthand for a long sum, Π is shorthand for a long product. In the Unicity formula: total cells = Π(Sᵢ). If you have 3 QI fields with 2, 8, and 50 distinct values: Π(Sᵢ) = 2 × 8 × 50 = 800 cells. Pi (Π) is the same letter as the mathematical constant π ≈ 3.14159, but here it is used as a capital letter for the product operation — not the circle ratio.'},
+  epsilon_symbol:{term:'ε — Epsilon (lowercase)',def:'In this tutorial, ε (epsilon) is the differential privacy "budget" — a number controlling how much noise is added to protect individual records. Smaller ε = stronger privacy, more noise.',long:'ε is NOT the summation symbol (that is Σ, capital Sigma). Epsilon (ε) appears in: noise scale = Δf / ε. When ε = 1.0: standard research-grade privacy. When ε = 0.1: very strong privacy (a lot of noise). When ε = 10: weak privacy (little noise). The name "budget" is apt: each query you publish consumes from the total ε budget. Publish too many queries and the budget runs out — each additional query reduces protection.'},
+  delta_symbol:{term:'Δ — Delta (capital)',def:'Capital delta (Δ) in this tutorial means "sensitivity" — the maximum amount by which one person\'s data can change the query output. For count queries, Δf = 1 always.',long:'Δ comes from "difference" — it represents the maximum change. For a query f that counts patients: adding or removing one patient changes the count by at most 1. So Δf = 1. This is true for ANY count query, regardless of the total number of patients. In the Laplace mechanism: noise scale = Δf / ε = 1 / ε. The sensitivity Δ appears in many places in statistics — it always means "the maximum possible change."'},
+  subscript_notation:{term:'Subscript Notation (kᵢ, Sᵢ)',def:'A small number or letter written below and to the right of a variable. kᵢ means "the value of k for record number i." Sᵢ means "the number of distinct values for quasi-identifier field number i."',long:'Subscripts are just a labeling system — they distinguish multiple instances of the same variable type. k₁ is the group size for record 1; k₂ for record 2, etc. You can also see: S₁ = distinct values for field 1 (e.g., Sex has S₁ = 2), S₂ = distinct values for field 2 (e.g., Age Decade has S₂ = 8). The subscript i is a placeholder meaning "for whichever one we are currently considering."'},
+  formula_anatomy:{term:'Anatomy of a Formula',def:'Every formula has the form: OUTPUT = COMPUTATION. The left side names what you are computing. The right side describes how. The "/" symbol means divide. Parentheses group operations that must happen first.',long:'Example: Journalist Risk = (# records with k=1) / N. Reading left to right: "Journalist Risk equals the count of records whose group size is 1, divided by the total number of records N." Order of operations: parentheses first, then multiplication and division (left to right), then addition and subtraction. When you see a formula, identify: (1) what is the left side computing? (2) What are the inputs on the right? (3) What operation connects them?'},
+  de_identification:{term:'De-Identification',def:'The process of removing or transforming data fields so that individuals cannot be readily identified. It reduces re-identification risk to an acceptable level — not necessarily zero.',long:'De-identification ≠ anonymization. Anonymization implies identity can never be recovered. De-identification only reduces risk below a threshold. HIPAA provides two pathways: Safe Harbor (remove 18 specific identifier types — mechanical) and Expert Determination (a statistician certifies risk ≤ 0.09 using a formal analysis). De-identified data can still be re-identified if an attacker has access to auxiliary data containing the same quasi-identifiers — this is called a linkage attack.'},
+  direct_identifier:{term:'Direct Identifier',def:'A data field that, alone or nearly alone, identifies a specific individual. Examples: full name, Social Security Number, date of birth + full address combined, medical record number.',long:'HIPAA Safe Harbor lists 18 direct identifier categories. The action for direct identifiers is always: SUPPRESS (remove the value entirely). There is no "generalize" option for names or SSNs — they must be deleted. This contrasts with quasi-identifiers (which can be generalized rather than deleted). Biometric data (fingerprints, retinal scans, voice prints) are also direct identifiers under HIPAA Category 16.'},
+  quasi_identifier:{term:'Quasi-Identifier (QI)',def:'A data field that is not directly identifying alone, but can combine with other quasi-identifiers to re-identify individuals. Examples: ZIP code, date of birth (year only), sex, age, race/ethnicity.',long:'Sweeney (1997) showed that 87% of the U.S. population could be uniquely identified using just three fields: ZIP code + full date of birth + sex. This finding motivated HIPAA\'s QI rules. The danger of QIs is combinatorial: each additional QI field multiplies re-identification risk. The action for QIs is: GENERALIZE (make less precise — replace exact DOB with birth year, replace 5-digit ZIP with 3-digit prefix).'},
+  sensitive_attribute:{term:'Sensitive Attribute',def:'The clinical data you actually want to analyze: diagnoses, lab results, medications, procedures. These are retained in de-identified datasets but must be protected from inference via k-anonymity and l-diversity.',long:'Protecting sensitive attributes requires two layers: (1) k-anonymity so identity cannot be singled out, and (2) l-diversity so the attribute cannot be inferred just from knowing the equivalence class. Example: if all 5 patients in a k=5 group have the same HIV diagnosis, an attacker who links anyone to that group learns the diagnosis with 100% certainty — this is the homogeneity attack. l-diversity requires at least l distinct sensitive values per group.'},
+  generalization:{term:'Generalization',def:'Replacing a precise quasi-identifier value with a broader, less specific category to reduce linkability while preserving analytical utility.',long:'Examples: exact date of birth (03/14/1952) → birth year only (1952). 5-digit ZIP code (98032) → 3-digit prefix (980**). Exact age (72) → decade (70s). The 3-digit prefix contains roughly 100× more people than the 5-digit ZIP, making any specific combination much harder to link. Generalization is preferred over suppression because it keeps a data point in the dataset — you lose precision but not the record.'},
+  suppression:{term:'Suppression',def:'Completely removing a data field value or an entire record from the dataset. Applied to direct identifiers (always) and to records whose quasi-identifier combination is so unique that generalization cannot make it private.',long:'A record with k=1 (it is the only record in its equivalence class) must be suppressed if more aggressive generalization cannot merge it into a group. Suppression costs one full data point. In a 6-patient cohort requiring k=2, suppressing 2 records means 33% data loss — painful. In a 2,000-patient dataset the same situation might produce only 1-2% suppression rate, because there are enough records to form natural groups.'},
+  safe_harbor:{term:'HIPAA Safe Harbor',def:'One of two HIPAA de-identification methods. Remove all 18 identifier categories from the dataset. Mechanical — no statistical analysis required. Compliance is binary: either all 18 are removed or they are not.',long:'Safe Harbor is a rules-based checklist. An organization can declare a dataset de-identified under Safe Harbor without any statistician or risk calculation, as long as all 18 identifier types have been removed or generalized according to the specific rules. The advantage: simple, legally clear, no expert needed. The disadvantage: it does not actually measure residual risk — a Safe Harbor dataset might still carry substantial re-identification risk from remaining quasi-identifiers. Expert Determination measures that residual risk directly.'},
+  expert_determination:{term:'Expert Determination',def:'The second HIPAA de-identification method. A qualified statistician applies methods to certify that the re-identification risk is "very small" — interpreted in practice as ≤ 0.09 (9%) under the prosecutor model.',long:'Expert Determination is more flexible than Safe Harbor — it allows retaining fields that Safe Harbor would require removing, as long as the statistician can prove overall risk stays below threshold. The documentation requirement: the expert must write up their methodology and conclusions. This is the basis of the three attacker model calculations (Prosecutor, Journalist, Marketer) in the privacy tutorial. The 0.09 threshold implies a minimum k ≥ 12, because 1/12 ≈ 0.083 < 0.09.'},
+  zip_threshold:{term:'ZIP Code Population Threshold',def:'Under HIPAA Safe Harbor, a 3-digit ZIP prefix may be retained only if the geographic area it covers contains ≥ 20,000 residents (per U.S. Census). Otherwise, replace with 000.',long:'Why 20,000? The threshold was set to ensure that a 3-digit ZIP area contains enough people that any QI combination will have many potential matches. Rural ZIP areas with fewer residents would be too identifying even at the 3-digit prefix level. To check: look up the population covered by the 3-digit prefix using Census data. If pop < 20,000, the field must become 000**. Note: this is a Safe Harbor rule — under Expert Determination, a statistician might allow a smaller-population prefix if the full risk calculation still passes the 0.09 threshold.'},
+  age_90_rule:{term:'Age 90+ Rule (HIPAA)',def:'Under Safe Harbor, all dates must be reduced to year only. Additionally, patients aged 90 or older must have their birth year replaced with the label "Age 90+" — their birth year alone is considered too identifying.',long:'Why? Extremely long-lived individuals are statistically rare. A birth year of 1929 in a dataset, combined with other QIs, could uniquely identify one of a very small group of centenarians. The age 90+ rule collapses all ages ≥ 90 into a single category, preventing unique identification of very old patients. This rule applies to the birth date, not the current age field. If a patient is 92, their birth year is replaced with "Age 90+" regardless of how many other 90+ patients are in the dataset.'},
+  prosecutor_model:{term:'Prosecutor Model',def:'An attacker who already knows a specific individual is in the dataset and tries to find their record. Models targeted attacks. Formula: Prosecutor Risk = 1 / min(k). Even one k=1 record makes risk = 1.0.',long:'The prosecutor model is the most conservative of the three. It assumes a worst-case adversary with specific intent. One record with k=1 (completely unique QI combination) means: risk = 1/1 = 1.0 = 100%. This single record fails, regardless of how many other records have k=10 or k=50. The fix: suppress or further generalize until min(k) ≥ 12 (giving risk ≈ 0.083, below the 0.09 threshold).'},
+  journalist_model:{term:'Journalist Model',def:'An attacker who randomly selects a record and tries to identify the person it belongs to. Models investigative journalism or spot-check attacks. Formula: Journalist Risk = (# records with k=1) / N.',long:'Unlike the prosecutor model, the journalist does not have a specific target — they pick any record and ask "who is this?" The risk measures what fraction of the dataset is trivially exposable. If 3 records out of 20 have k=1, journalist risk = 3/20 = 0.15 = 15%, which exceeds the 0.09 threshold. If those 3 records are suppressed, journalist risk = 0/17 = 0.0 — perfect score. The journalist model is the easiest to satisfy of the three.'},
+  marketer_model:{term:'Marketer Model',def:'An attacker trying to maximize total successful re-identifications across the entire dataset. Models bulk data broker attacks. Formula: Marketer Risk = (1/N) × Σ(1/kᵢ) summed over all records.',long:'The marketer treats the dataset as a commodity and wants to correctly identify as many records as possible. For each record, the probability of correct identification = 1/kᵢ (one in its group size). Adding these up and dividing by N gives the average success rate across all records. A record with k=1 contributes 1/1 = 1.0 to the sum; one with k=10 contributes 0.1. This is the "average expected re-identification rate" — the expected fraction of the dataset the attacker successfully links.'},
+  k_anonymity:{term:'k-Anonymity',def:'A dataset property guaranteeing that every record is indistinguishable from at least k−1 other records on all quasi-identifier fields. Every individual "hides in a crowd" of k people.',long:'Formally: for every record r, the number of records sharing identical quasi-identifier values must be ≥ k. The group of records sharing the same QI values is called an equivalence class. If a class contains only 2 records, k=2 for those records. The dataset\'s k = min(k across all classes). k=2 means the best an attacker can do is 50% certainty on identity. k=12 means the best is 1/12 ≈ 8.3% — below the 0.09 prosecutor threshold.'},
+  equivalence_class:{term:'Equivalence Class',def:'A group of records in a k-anonymized dataset that share identical values on every quasi-identifier field. All members of the class are indistinguishable from each other on QI fields.',long:'Example: if Sex=M, Age Decade=40s, ZIP-3=981 describes both David Okafor and Thomas Nakamura, they form an equivalence class with k=2. An attacker who links either person to this class knows only "it is David or Thomas" — 50/50 uncertainty. The attacker cannot know which one without additional information. Equivalence classes are the building block of k-anonymity — the goal of the generalization step is to produce classes large enough to meet the required k.'},
+  l_diversity:{term:'l-Diversity',def:'An extension of k-anonymity requiring that each equivalence class contains at least l distinct values of every sensitive attribute. Protects against attribute inference even when identity cannot be singled out.',long:'k-Anonymity alone is insufficient if all members of a class share the same sensitive attribute value. If all 5 patients in a class have HIV, an attacker linking anyone to that class learns the diagnosis with 100% certainty — despite perfect identity protection. l-Diversity requires: distinct sensitive attribute values per class ≥ l. l=2 means at most 50% certainty for the attacker. l=3 means at most 33%. Required l is specified in the Data Use Agreement alongside required k.'},
+  homogeneity_attack:{term:'Homogeneity Attack',def:'A re-identification attack exploiting l-diversity failure: all members of an equivalence class share the same sensitive attribute value. The attacker infers the attribute with 100% certainty despite k-anonymity protecting identity.',long:'This is why k-anonymity alone is considered insufficient for sensitive health data. "Homogeneous" means "all the same." If a k=5 class contains five patients all with HIV, the class is homogeneous on the sensitive attribute — anyone linked to it is known to have HIV regardless of which of the 5 they are. l-Diversity prevents this by requiring diversity (distinctness) of sensitive values within every class. The minimum l to prevent homogeneity attacks is l ≥ 2.'},
+  conditional_probability:{term:'Conditional Probability',def:'P(A | B) — the probability of event A given that event B has already occurred. Read as "probability of A given B." Computed as P(A and B) / P(B).',long:'The vertical bar "|" means "given." P(re-id | Female, 1952, 980**) means: "given we know the person is Female, born in 1952, with ZIP prefix 980, what fraction of such people can we uniquely identify?" This is foundational to understanding re-identification risk. Each quasi-identifier field acts as a "given" that narrows the candidate population. The more fields known, the smaller the remaining population — the higher the re-identification probability.'},
+  anonymity_set:{term:'Anonymity Set',def:'The number of real people in the external population who share all the same quasi-identifier values as a specific de-identified record. Re-ID probability ≈ 1 / anonymity set size.',long:'If Priya\'s record shows {Female, born 1972, ZIP prefix 980}, the anonymity set = all women born in 1972 living in the 980 ZIP area. If Census data shows 3,120 such women, her re-id probability = 1/3,120 ≈ 0.032%. Adding a 4th QI field (diagnosis: Bipolar, prevalence 0.5% in this group) shrinks the set to 3,120 × 0.005 ≈ 15 people — re-id probability jumps to 6.7%. This is the QI intersection collapse effect: each additional field multiplies risk.'},
+  unicity:{term:'Unicity',def:'u = N / (S₁ × S₂ × ... × Sₖ). Measures average records per QI combination cell. u >> 1 = low unicity (safe). u << 1 = high unicity (dangerous). Critical threshold: u ≈ 1.',long:'Unicity answers: "Are most QI combination cells occupied by many records (good) or by singletons (dangerous)?" When u < 1, more cells are empty than occupied — the occupied ones are mostly singletons, meaning most records are unique fingerprints. Applying generalization (e.g., ZIP-5 → ZIP-3) reduces the number of cells (fewer S values), increasing u and improving safety. The critical insight: u = 1 is the boundary where the average cell contains exactly one record.'},
+  prior_probability:{term:'Prior Probability — P(H)',def:'The probability of a hypothesis before seeing any evidence. The "starting belief." In Bayes\' theorem: P(H) is whatever you believe is true before the test or observation.',long:'In clinical context: P(sepsis) before running any test might be 0.20 — 20% of fever patients who present to the ED turn out to have sepsis. In re-identification context: P(this record belongs to Person X) = 1/N before any QI matching. The prior is your baseline. Bayes\' theorem updates the prior using evidence. A low prior (rare condition) means even a positive test may not be very convincing — the posterior stays low because false positives dominate when the condition is rare.'},
+  likelihood:{term:'Likelihood — P(E|H)',def:'The probability of observing the evidence E given that the hypothesis H is true. If the test is very sensitive, P(positive test | truly has disease) is high — close to 1.',long:'P(E|H) is NOT "the probability of H given E" — that is the posterior. Likelihood is the probability of the data, not the hypothesis. A sensitivity of 0.90 means: if you truly have the disease, the test correctly identifies you 90% of the time. A sensitivity of 1.0 would mean the test never misses a true case. The likelihood is the upward pull in Bayes\' theorem — it rewards the hypothesis for predicting the observed evidence.'},
+  false_positive_rate:{term:'False Positive Rate — P(E|¬H)',def:'The probability of seeing the evidence E even when the hypothesis H is FALSE. If the test shows positive for someone who does NOT have the disease, that is a false positive.',long:'P(E|¬H) = 1 − specificity. A test with 90% specificity produces false positives 10% of the time. The false positive rate is the "noise" that dilutes the signal of a positive result. When the prior P(H) is very low (rare condition) and P(E|¬H) is not extremely low, the denominator of Bayes\' theorem gets dominated by false positives — making the posterior surprisingly low even for a positive test.'},
+  bayes_theorem:{term:'Bayes\' Theorem',def:'P(H|E) = [P(E|H) × P(H)] / [P(E|H)×P(H) + P(E|¬H)×P(¬H)]. Updates a prior belief after observing evidence. The denominator is the law of total probability.',long:'Step by step: (1) Numerator = P(E|H) × P(H): how likely is the evidence if H is true, times how probable H was before the test. (2) False-alarm term = P(E|¬H) × P(¬H): how likely is the evidence even if H is false, times how probable H-is-false was. (3) Denominator = numerator + false-alarm term: total probability of seeing this evidence regardless of truth. (4) Posterior = numerator / denominator. Bayes\' theorem is not just a medical formula — it is the foundation of all rational belief updating.'},
+  record_linkage:{term:'Record Linkage',def:'The process of connecting records from two different databases that refer to the same real person, even when no shared unique identifier (like SSN or MRN) exists across both systems.',long:'Record linkage is necessary when health systems exchange data but use incompatible patient ID systems. Without a shared ID, the algorithm must compare field values (name, DOB, address, ZIP) and decide probabilistically whether two records belong to the same person. Fellegi-Sunter is the dominant probabilistic framework. Privacy-Preserving Record Linkage (PPRL) solves the additional problem of linking without revealing the raw PII to either organization.'},
+  m_rate:{term:'m-rate (mᵢ)',def:'In Fellegi-Sunter linkage, the probability that field i agrees between two records that ARE a true match. A high m-rate means true pairs almost always agree on this field.',long:'m = P(field agrees | true match). Date of birth has a very high m-rate (~0.97) because people almost always enter their own DOB correctly. Last name has m ~0.95 (some variation from transcription errors, name changes). Sex has m ~0.99 (almost always consistent). The m-rate is determined by the quality of the field — fields with frequent errors (like middle names, which people sometimes omit) have lower m-rates. A higher m-rate contributes to a larger positive weight for that field.'},
+  u_rate:{term:'u-rate (uᵢ)',def:'In Fellegi-Sunter linkage, the probability that field i agrees between two records that are NOT a true match — pure coincidence agreement. A very low u-rate makes a field more diagnostic.',long:'u = P(field agrees | random non-match). For last name: u ≈ 0.003 — only 0.3% of random non-matching record pairs share the same last name. For sex: u ≈ 0.50 — roughly half of random pairs share the same sex (because the population is roughly half male, half female). The log₂(m/u) weight is large when u is very small — DOB agreement is strong evidence of a match because the chance of two non-matching people sharing a DOB is tiny (u ≈ 0.003).'},
+  bloom_filter:{term:'Bloom Filter (PPRL)',def:'A compact bit array where each data element (e.g., a name bigram) is mapped to bit positions by hash functions. Used in PPRL to compare records without revealing the original PII.',long:'The Bloom filter approach: take a name like "PRIYA", generate its bigrams (_P, PR, RI, IY, YA, A_), hash each bigram to specific bit positions in an array, set those bits to 1. Two organizations do this independently for their version of the same name. They exchange only the bit arrays — not the names. Similarity between bit arrays (measured by Dice coefficient) estimates whether the underlying names are the same. The original names cannot be recovered from the bit arrays as long as the hash salt is kept secret.'},
+  bigram:{term:'Bigram',def:'A two-character overlapping substring extracted from a name for Bloom filter hashing. "PRIYA" → {_P, PR, RI, IY, YA, A_} where _ is a padding character added at start and end.',long:'Bigrams capture the local character structure of a name. Similar names share many bigrams: "PRIYA" and "PRIYAH" share {_P, PR, RI, IY, YA} — 5 of 6 bigrams. Very different names share few: "PRIYA" and "JAMES" share only bigrams that happen to have the same two characters by chance. Using bigrams instead of raw characters makes the Bloom filter robust to minor spelling variations — a one-character typo changes at most 2 bigrams out of n.'},
+  dice_similarity:{term:'Dice Similarity',def:'Dice = 2 × |shared bits| / (|bits in A| + |bits in B|). Ranges from 0 (no overlap) to 1 (identical). Threshold: ≥ 0.75 probable match, 0.5–0.74 human review, < 0.5 non-match.',long:'The Dice coefficient measures the overlap between two sets (here, two bit arrays). It rewards shared bits and penalizes extra bits in either array. Dice = 0 means no common bits — completely different names. Dice = 1.0 means every bit set in A is also set in B and vice versa — identical names. The threshold of 0.75 was calibrated empirically to balance sensitivity (catching true matches) against specificity (avoiding false links). Short names (3 letters) have very few bigrams and can produce artificially high Dice scores — a limitation of the method.'},
+  differential_privacy:{term:'Differential Privacy (DP)',def:'A mathematical guarantee that an algorithm\'s output is essentially indistinguishable whether or not any single individual\'s data was included. Achieved by adding precisely calibrated random noise before releasing statistics.',long:'DP is the only privacy technique in this tutorial that provides protection against attackers with unlimited background knowledge. k-Anonymity, l-diversity, and Safe Harbor all assume a bounded attacker. DP provides protection even against an attacker who knows everything about everyone else in the dataset. The formal guarantee: |P(output with person X) - P(output without person X)| ≤ ε. A smaller ε makes these two probabilities closer — stronger protection.'},
+  membership_inference:{term:'Membership Inference Attack',def:'An attack determining whether a specific named individual\'s data was included in a dataset or model. Even aggregate statistics can leak membership — if a count changes by 1 between two releases, the attacker may infer whose record was added.',long:'Example: A hospital publishes "342 patients with mental health diagnoses." An attacker who previously observed "341" (before one new patient was added) can infer that a specific person was added to the dataset if they know of only one new mental health patient admitted during that period. Differential privacy prevents this by adding enough noise that the count could be 341, 342, or 343 regardless of whether the specific person is included — making the inference impossible.'},
+  sensitivity_delta:{term:'Sensitivity (Δf)',def:'The maximum change in a query result when one individual\'s data is added or removed. For count queries: Δf = 1 always. For average queries: Δf = (max value − min value) / N.',long:'Sensitivity determines how much noise to add. If adding/removing one person changes the count by at most 1 (Δf=1), then the noise scale = 1/ε. If the query is "average age" and ages range from 18 to 90: Δf = (90−18)/N. Large sensitivity requires more noise to achieve the same ε protection level. Count queries are preferred for DP release because Δf=1 is guaranteed — no matter how many patients are in the dataset, adding/removing one changes the count by exactly ±1.'},
+  laplace_mechanism:{term:'Laplace Mechanism',def:'M(D) = f(D) + Laplace(0, Δf/ε). The most common differential privacy mechanism for numeric queries. Adds noise drawn from a Laplace distribution with scale = Δf/ε.',long:'The Laplace distribution is bell-shaped (like a normal distribution) but with heavier tails and a peak at 0. Scale parameter b = Δf/ε controls the spread: larger b = more noise = stronger privacy. The expected absolute noise magnitude ≈ b = Δf/ε. For Δf=1, ε=0.5: b = 2.0, expected noise ≈ ±2 counts. For Δf=1, ε=1.0: b = 1.0, expected noise ≈ ±1. For Δf=1, ε=10: b = 0.1, expected noise ≈ ±0.1. Post-processing: negative published counts are typically clamped to 0, and non-integers rounded to the nearest integer.'}
+};
+
+// ═══════════════════════════════════════════════════
+//  SEGMENTS
+// ═══════════════════════════════════════════════════
+const SEGMENTS = [
+
+// ─── SEGMENT 1: Math Refresher ───
+{id:1,icon:'🧮',title:'The Math Behind Privacy',subtitle:'Fractions, probability, counting, and reading formulas without fear',minutes:12,
+cards:['probability','fraction_ratio','multiplication_rule','log_base2','summation_sigma','product_pi'],
+endGoal:'You can compute a basic probability from a fraction, count QI combinations by multiplication, and read the Σ notation in a formula without skipping it.',
+lecture:`
+<p><strong>Alex Chen</strong> is a data analyst at Riverside Medical Center. He has just been handed a project: prepare the Meridian Cohort dataset for an external research partner. Before he can run a single de-identification formula, he needs to be comfortable with the math those formulas use.</p>
+<p>This segment covers every mathematical concept you need for the entire privacy tutorial — nothing more, nothing less. If you have taken a high school statistics course or remember basic algebra, most of this will be familiar. We are shaking off rust, not learning from scratch.</p>
+
+<h3>Probability — the core idea</h3>
+<p><button class="card-link" onclick="openCardModal('probability')">Probability</button> measures <em>how likely</em> something is. It is always a number between 0 and 1:</p>
+<ul>
+<li>P = 0 means <strong>impossible</strong> (it will never happen)</li>
+<li>P = 1 means <strong>certain</strong> (it always happens)</li>
+<li>P = 0.25 means a <strong>25% chance</strong> (1 in 4)</li>
+</ul>
+<p>The formula is simply a <button class="card-link" onclick="openCardModal('fraction_ratio')">fraction</button>:</p>
+<div style="background:var(--surface-inset);border-left:4px solid var(--blue);padding:12px 16px;margin:10px 0;border-radius:0 6px 6px 0;font-family:var(--mono);font-size:14px;font-weight:700;color:#0a1828">
+P = (favorable outcomes) ÷ (total possible outcomes)
+</div>
+<p><strong>Example:</strong> A bowl holds 4 red marbles and 16 blue ones (20 total). The probability of picking a red marble = 4 ÷ 20 = 0.20 = 20%.</p>
+<p>In privacy work: <em>"What is the probability that this record belongs to Margaret Chen?"</em> The favorable outcome is "it is Margaret's record." The total outcomes are all records sharing her quasi-identifier values. If 3 records share her combination: P = 1/3 ≈ 0.333.</p>
+
+<h3>Counting combinations — multiply, don't add</h3>
+<p>When you combine categories, the number of unique <em>combinations</em> grows by multiplication, not addition. This is the <button class="card-link" onclick="openCardModal('multiplication_rule')">multiplication rule</button>.</p>
+<p><strong>Example:</strong> A dataset has 3 quasi-identifier fields: Sex (2 values: M/F), Age Decade (8 values: 10s through 80s+), and 3-digit ZIP (50 distinct prefixes). How many unique QI combinations exist?</p>
+<div style="background:var(--surface-inset);border-left:4px solid var(--blue);padding:12px 16px;margin:10px 0;border-radius:0 6px 6px 0;font-family:var(--mono);font-size:13px;font-weight:700;color:#0a1828">
+Total cells = 2 × 8 × 50 = 800 possible combinations
+</div>
+<p>Each cell is a unique (Sex, Age, ZIP) combination. The dataset has 500 records. 500 records spread across 800 cells means most cells contain fewer than 1 record — many records will be unique. This is the <em>unicity</em> problem, which Station 07 addresses.</p>
+
+<h3>Logarithm base 2 — a gentle introduction</h3>
+<p>The <button class="card-link" onclick="openCardModal('log_base2')">logarithm base 2</button>, written log₂, appears in the Fellegi-Sunter record linkage formula. Here is the core idea without algebra:</p>
+<p><strong>log₂(x) asks: "How many times must I double the number 1 to reach x?"</strong></p>
+<ul>
+<li>log₂(2) = 1 &nbsp;(double 1 once: 1 → 2)</li>
+<li>log₂(4) = 2 &nbsp;(double 1 twice: 1 → 2 → 4)</li>
+<li>log₂(8) = 3 &nbsp;(three doublings: 1 → 2 → 4 → 8)</li>
+<li>log₂(1) = 0 &nbsp;(no doublings needed; already at 1)</li>
+<li>log₂(100) ≈ 6.64 (about 6.64 doublings to reach 100)</li>
+</ul>
+<p>In Fellegi-Sunter: log₂(m ÷ u) measures how many "bits of evidence" a field agreement provides. A ratio m/u = 100 gives log₂(100) ≈ 6.64 bits — strong evidence. A ratio of 2 gives log₂(2) = 1 bit — weak evidence. You do not need to compute this by hand; the key is to <em>understand what larger values mean</em>: more evidence that the records match.</p>
+
+<h3>Summation (Σ) and Products (Π)</h3>
+<p>Two Greek capital letters appear as shorthand for long arithmetic operations:</p>
+<p><button class="card-link" onclick="openCardModal('summation_sigma')"><strong>Σ (capital Sigma)</strong></button> means "add all of these up." Instead of writing a₁ + a₂ + a₃ + a₄ + a₅, you write Σ aᵢ. The subscript i just means "for each one."</p>
+<p><button class="card-link" onclick="openCardModal('product_pi')"><strong>Π (capital Pi)</strong></button> means "multiply all of these together." Instead of S₁ × S₂ × S₃ × ... you write Π Sᵢ.</p>
+<p>In the Marketer risk formula: Marketer Risk = (1/N) × Σ(1/kᵢ). That says: for each record i, compute 1 divided by its group size kᵢ. Add all those fractions together. Multiply by 1/N. Nothing more intimidating than a long addition problem.</p>
+
+<div class="callout">💡 <strong>Pattern to memorize:</strong> In every privacy formula, the denominator (bottom of the fraction) represents the crowd that protects an individual's identity. A bigger denominator = more people = lower probability = better privacy.</div>
+
+<details class="demo-block">
+<summary class="demo-summary">📊 Worked Example — Reading the Journalist Risk Formula</summary>
+<div class="demo-body">
+<p style="font-size:14px;color:var(--text-muted);margin-bottom:12px;font-weight:600"><strong>Scenario:</strong> A 20-patient dataset has been generalized. After grouping, 3 records have group size k=1 (unique), 10 have k=2, and 7 have k=3. Compute Journalist Risk.</p>
+<div class="demo-step"><div class="demo-num">1</div><div class="demo-text"><strong>Identify the formula:</strong> Journalist Risk = (# records with k=1) ÷ N<br>This says: count how many records are completely alone in their group, then divide by total records.</div></div>
+<div class="demo-step"><div class="demo-num">2</div><div class="demo-text"><strong>Count records with k=1:</strong> We are told 3 records have k=1. Numerator = 3.</div></div>
+<div class="demo-step"><div class="demo-num">3</div><div class="demo-text"><strong>Count total records N:</strong> 3 + 10 + 7 = 20. Denominator = 20.</div></div>
+<div class="demo-step"><div class="demo-num">4</div><div class="demo-text"><strong>Divide:</strong> Journalist Risk = 3 ÷ 20 = 0.15</div></div>
+<div class="demo-step"><div class="demo-num">5</div><div class="demo-text"><strong>Interpret:</strong> 0.15 = 15%. This exceeds the 0.09 (9%) threshold — the dataset fails the Journalist test. The 3 unique records must be suppressed or their QI values further generalized before release.</div></div>
+<div class="demo-formula">Journalist Risk = 3 / 20 = 0.15 → FAIL (threshold is ≤ 0.09)</div>
+</div>
+</details>
+
+<div class="fill-exercise">
+<div class="fill-ex-label">📝 Try It — Probability From a Count</div>
+<div class="fill-ex-prompt">A 30-patient dataset has been generalized. After grouping, 6 records have group size k=1. Fill in the blanks to compute the Journalist Risk, then determine whether it passes the ≤ 0.09 threshold.</div>
+<div class="fill-actions" style="margin-bottom:8px"><button class="pulse-link" onclick="toggleSolution('s1_hint')">💡 Hint</button></div>
+<div id="s1_hint" class="fill-solution">Journalist Risk = (records with k=1) ÷ N. The numerator is the count of k=1 records (given). The denominator is the total record count N. Then compare your result to 0.09.</div>
+<div class="fill-row">Journalist Risk = <input class="fill-input sm" id="s1_f1" data-ans="6" placeholder="?"> / <input class="fill-input sm" id="s1_f2" data-ans="30" placeholder="?"> = <input class="fill-input" id="s1_f3" data-ans="0.2" data-tol="0.01" placeholder="?"> → Passes ≤ 0.09? <input class="fill-input" id="s1_f4" data-ans="no" placeholder="?"></div>
+<div class="fill-actions">
+<button class="btn" onclick="checkFill('s1_ex1',['s1_f1','s1_f2','s1_f3','s1_f4'])">Check</button>
+<button class="btn ghost" onclick="revealFill(['s1_f1','s1_f2','s1_f3','s1_f4'])">Show answers</button>
+<button class="pulse-link" onclick="toggleSolution('s1_sol')">Show solution</button>
+</div>
+<div class="fill-fb" id="s1_ex1_fb"></div>
+<div id="s1_sol" class="fill-solution">
+<strong>Step 1 — Numerator:</strong> 6 records have k=1 → numerator = 6.<br>
+<strong>Step 2 — Denominator:</strong> Total records N = 30.<br>
+<strong>Step 3 — Compute:</strong> 6 ÷ 30 = 0.20 = 20%.<br>
+<strong>Step 4 — Compare:</strong> 0.20 &gt; 0.09 → FAILS the threshold. The 6 unique records must be suppressed or further generalized before this dataset can be released under HIPAA Expert Determination standards.
+</div>
+</div>
+`,
+pulseChecks:[
+{question:'A dataset has 4 records with k=1 and 16 records with k=4. N=20. What is the Journalist Risk?',options:[{key:'A',text:'0.04 (4 ÷ 100)'},{key:'B',text:'0.20 (4 ÷ 20)'},{key:'C',text:'0.80 (16 ÷ 20)'},{key:'D',text:'0.25 (1 ÷ 4)'}],correctKey:'B',feedback:{correct:'Journalist Risk = (records with k=1) ÷ N = 4 ÷ 20 = 0.20. The denominator is always total records N, not something else. 0.20 exceeds the 0.09 threshold — the dataset fails.',incorrect:'Journalist Risk = (records with k=1) ÷ N. Numerator = 4 (the k=1 records). Denominator = 20 (all records). Result = 4/20 = 0.20.'}},
+{question:'A dataset has 3 QI fields: Sex (2 values), Age Decade (8 values), Race (5 values). How many unique QI combination cells exist?',options:[{key:'A',text:'15 (2 + 8 + 5)'},{key:'B',text:'80 (2 × 8 × 5)'},{key:'C',text:'40 (2 × 8 × 5 ÷ 2)'},{key:'D',text:'48 (8 × 5 + 8)'}],correctKey:'B',feedback:{correct:'Combinations multiply: 2 × 8 × 5 = 80 cells. This is the multiplication rule — each field adds a multiplier, not an addend. 80 cells for N patients means: if N < 80, unicity u < 1 and most records are singletons.',incorrect:'When combining categories, you multiply the number of options per field: 2 × 8 × 5 = 80. Adding (2+8+5=15) counts how many distinct values exist total, not how many combinations.'}}
+]},
+
+// ─── SEGMENT 2: Symbols and Notation ───
+{id:2,icon:'🔤',title:'Decoding the Symbols',subtitle:'Greek letters, subscripts, and how to read any privacy formula',minutes:8,
+cards:['epsilon_symbol','delta_symbol','subscript_notation','formula_anatomy'],
+endGoal:'You can look at any formula in the privacy tutorial and identify what each symbol means, what is being computed on the left, and what operations are performed on the right.',
+lecture:`
+<p>Alex opens his statistics reference and is immediately confronted by Greek letters: Σ, ε, Δ, Π. He pauses. "I remember these from school," he thinks, "but I cannot remember what they all mean."</p>
+<p>This segment is a symbol decoder. You will encounter all of these in the privacy tutorial. By the end, none will be mysterious.</p>
+
+<h3>The Greek letters used in this tutorial</h3>
+<p>Below is every Greek letter you will encounter, what it looks like, and exactly what it means in the context of healthcare privacy. You do <strong>not</strong> need to know the full Greek alphabet — only these:</p>
+<table class="greek-table">
+<thead><tr><th>Symbol</th><th>Name</th><th>In this tutorial it means...</th></tr></thead>
+<tbody>
+<tr><td>Σ</td><td>Capital Sigma</td><td>Add everything up: Σ(1/kᵢ) = 1/k₁ + 1/k₂ + 1/k₃ + ...</td></tr>
+<tr><td>Π</td><td>Capital Pi</td><td>Multiply everything together: Π Sᵢ = S₁ × S₂ × S₃ × ...</td></tr>
+<tr><td>ε</td><td>Lowercase Epsilon</td><td>The differential privacy budget — controls how much noise is added</td></tr>
+<tr><td>Δ</td><td>Capital Delta</td><td>Sensitivity — the maximum change one person can cause in a query result</td></tr>
+<tr><td>α, β</td><td>Alpha, Beta</td><td>Just labels for groups (Group α, Group β) — no mathematical meaning beyond a name</td></tr>
+</tbody>
+</table>
+
+<div class="callout">⚠️ <strong>Common confusion:</strong> The summation symbol is Σ (capital Sigma), NOT ε (epsilon). Epsilon (ε) is a different letter used specifically for the differential privacy budget. If you see ε in a privacy formula, it means privacy budget — not summation.</div>
+
+<h3>Subscripts — the labeling system</h3>
+<p><button class="card-link" onclick="openCardModal('subscript_notation')">Subscript notation</button> uses a small number or letter below and to the right of a variable to label which instance you are referring to.</p>
+<ul>
+<li><strong>kᵢ</strong> — the group size (k) for record number i. k₁ is record 1's group size; k₅ is record 5's group size.</li>
+<li><strong>Sᵢ</strong> — the number of distinct values for QI field number i. S₁ = 2 for Sex; S₂ = 8 for Age Decade; S₃ = 50 for ZIP codes.</li>
+<li><strong>mᵢ, uᵢ</strong> — the m-rate and u-rate for field i in Fellegi-Sunter linkage.</li>
+<li><strong>wᵢ</strong> — the weight assigned to field i in Fellegi-Sunter linkage.</li>
+</ul>
+<p>The subscript i is a placeholder. When a formula says Σ(1/kᵢ), it means: "evaluate 1/k for every record i in the dataset, then add all results together." Replace i with 1, then 2, then 3... until you have gone through every record.</p>
+
+<h3>Anatomy of a formula — reading left to right</h3>
+<p>Every formula in this tutorial follows the same pattern: <strong>OUTPUT = COMPUTATION</strong>.</p>
+<p>The <button class="card-link" onclick="openCardModal('formula_anatomy')">left side</button> names what you are computing. The right side describes how to compute it using the inputs.</p>
+
+<p><strong>Example 1 — Marketer Risk:</strong></p>
+<div class="demo-formula">Marketer Risk = (1/N) × Σ(1/kᵢ)</div>
+<p>Left side: <em>Marketer Risk</em> — the number we want to find.<br>
+Right side: (1 divided by N) multiplied by (the sum of 1/k for every record i).</p>
+
+<p><strong>Example 2 — Unicity:</strong></p>
+<div class="demo-formula">u = N / (S₁ × S₂ × ... × Sₖ)</div>
+<p>Left side: u — the unicity score we want.<br>
+Right side: total records (N) divided by the total number of QI cells (the product of all Sᵢ values).</p>
+
+<p><strong>Example 3 — Fellegi-Sunter weight:</strong></p>
+<div class="demo-formula">wᵢ = log₂(mᵢ / uᵢ)</div>
+<p>Left side: wᵢ — the weight for field i.<br>
+Right side: log base 2 of (the m-rate divided by the u-rate) for field i.</p>
+
+<h3>The "/" symbol always means divide</h3>
+<p>In every formula in this tutorial, "/" means division. Always. 1/N = 1 divided by N. Δf/ε = delta-f divided by epsilon. m/u = m divided by u. When you see a fraction in a formula, ask yourself: "What is on top? What is on bottom? What does dividing them give me?"</p>
+
+<div class="callout">📌 <strong>Practice habit:</strong> Before computing any formula, write out in plain English what the left side is computing and what each term on the right side represents. This prevents arithmetic errors and builds genuine understanding of what the formula is measuring.</div>
+
+<details class="demo-block">
+<summary class="demo-summary">📊 Worked Example — Decoding the Bayes' Theorem Formula</summary>
+<div class="demo-body">
+<p style="font-size:14px;color:var(--text-muted);margin-bottom:12px;font-weight:600">Let's decode this formula step by step before computing anything:</p>
+<div class="demo-formula">P(H|E) = [P(E|H) × P(H)] / [P(E|H)×P(H) + P(E|¬H)×P(¬H)]</div>
+<div class="demo-step"><div class="demo-num">1</div><div class="demo-text"><strong>Left side P(H|E):</strong> This is our output — "probability of H given E." The vertical bar | means "given." H = hypothesis (patient has disease). E = evidence (test was positive). So we are computing: probability the patient truly has the disease, given a positive test result.</div></div>
+<div class="demo-step"><div class="demo-num">2</div><div class="demo-text"><strong>P(E|H) — top-left:</strong> Probability the test is positive GIVEN the patient truly has the disease. This is the test sensitivity. If sensitivity = 90%, P(E|H) = 0.90.</div></div>
+<div class="demo-step"><div class="demo-num">3</div><div class="demo-text"><strong>P(H) — the prior:</strong> Probability of having the disease BEFORE the test. If 20% of patients with this symptom have the disease, P(H) = 0.20.</div></div>
+<div class="demo-step"><div class="demo-num">4</div><div class="demo-text"><strong>P(E|¬H) — the false positive rate:</strong> The ¬ symbol means "NOT." P(E|¬H) = probability the test is positive when the patient does NOT have the disease. If specificity = 90%, then false positive rate = 1 − 0.90 = 0.10.</div></div>
+<div class="demo-step"><div class="demo-num">5</div><div class="demo-text"><strong>P(¬H) = 1 − P(H):</strong> If 20% have the disease, then 80% do not. P(¬H) = 1 − 0.20 = 0.80.</div></div>
+<div class="demo-step"><div class="demo-num">6</div><div class="demo-text"><strong>Whole formula decoded:</strong> Posterior = (sensitivity × prior) / [(sensitivity × prior) + (false_positive_rate × prior_of_not_having_it)]</div></div>
+</div>
+</details>
+
+<div class="fill-exercise">
+<div class="fill-ex-label">📝 Try It — Match the Symbol</div>
+<div class="fill-ex-prompt">Fill in each blank with the correct symbol or term. Use: Σ, Π, ε, Δ, subscript, left side, divide</div>
+<div class="fill-actions" style="margin-bottom:8px"><button class="pulse-link" onclick="toggleSolution('s2_hint')">💡 Hint</button></div>
+<div id="s2_hint" class="fill-solution">Review the Greek table above. Σ = summation (add). Π = product (multiply). ε = epsilon = privacy budget. Δ = delta = sensitivity = maximum change. A subscript is the small label below a variable.</div>
+<div class="fill-row">"Add all terms together" → <input class="fill-input" id="s2_f1" data-ans="Σ" placeholder="?"></div>
+<div class="fill-row">"Multiply all terms together" → <input class="fill-input" id="s2_f2" data-ans="Π" placeholder="?"></div>
+<div class="fill-row">Privacy budget (controls noise level) → <input class="fill-input" id="s2_f3" data-ans="ε" placeholder="?"></div>
+<div class="fill-row">Maximum change one person causes → <input class="fill-input" id="s2_f4" data-ans="Δ" placeholder="?"></div>
+<div class="fill-row">In kᵢ, the small letter i is called a <input class="fill-input wide" id="s2_f5" data-ans="subscript" placeholder="?"></div>
+<div class="fill-row">In "Journalist Risk = (k=1 count) / N", the "/" symbol means <input class="fill-input wide" id="s2_f6" data-ans="divide" placeholder="?"></div>
+<div class="fill-actions">
+<button class="btn" onclick="checkFill('s2_ex1',['s2_f1','s2_f2','s2_f3','s2_f4','s2_f5','s2_f6'])">Check</button>
+<button class="btn ghost" onclick="revealFill(['s2_f1','s2_f2','s2_f3','s2_f4','s2_f5','s2_f6'])">Show answers</button>
+</div>
+<div class="fill-fb" id="s2_ex1_fb"></div>
+</div>
+`,
+pulseChecks:[
+{question:'In the formula "Marketer Risk = (1/N) × Σ(1/kᵢ)", what does the Σ symbol instruct you to do?',options:[{key:'A',text:'Multiply 1/N by k for each record'},{key:'B',text:'Add up 1/kᵢ for every record i in the dataset'},{key:'C',text:'Find the maximum kᵢ value'},{key:'D',text:'Take the square root of the sum'}],correctKey:'B',feedback:{correct:'Σ (capital Sigma) means "add everything up." Σ(1/kᵢ) means: for every record i, compute 1 divided by its group size kᵢ, then add all those fractions together.',incorrect:'Σ is the summation symbol — it means add. Σ(1/kᵢ) means: compute 1/k for each record, then add all results together.'}},
+{question:'The formula for noise scale in differential privacy is: b = Δf / ε. If Δf = 1 and ε = 0.5, what is b?',options:[{key:'A',text:'0.5'},{key:'B',text:'0.05'},{key:'C',text:'2.0'},{key:'D',text:'1.5'}],correctKey:'C',feedback:{correct:'b = Δf / ε = 1 / 0.5 = 2.0. Remember: "/" means divide. 1 divided by 0.5 = 2. A smaller ε (stronger privacy) produces a larger b (more noise).',incorrect:'b = Δf / ε = 1 ÷ 0.5. Dividing by a number less than 1 produces a result larger than 1: 1 ÷ 0.5 = 2.0.'}}
+]}
+
+,
+// ─── SEGMENT 3: Privacy Fundamentals ───
+{id:3,icon:'🔐',title:'Why Privacy? The Fundamentals',subtitle:'De-identification, data classification, and the threat of re-identification',minutes:9,
+cards:['de_identification','direct_identifier','quasi_identifier','sensitive_attribute','generalization','suppression'],
+endGoal:'You can classify any patient data field as direct identifier, quasi-identifier, or sensitive attribute, and select the correct transformation (suppress or generalize) for each.',
+lecture:`
+<p>Alex has his math tools in hand. Now he opens the Meridian Cohort spreadsheet — six synthetic patients, each with a name, date of birth, SSN, ZIP code, primary diagnosis, and phone number. His task: transform this into something an external analytics team can use, without exposing any patient's identity.</p>
+<p>This is <button class="card-link" onclick="openCardModal('de_identification')">de-identification</button> — and the first step is understanding what type of threat each field poses.</p>
+
+<h3>Three categories of fields</h3>
+<p>Every field in a healthcare dataset falls into one of three categories, each requiring a different response:</p>
+
+<h4>Category 1 — Direct Identifiers</h4>
+<p>A <button class="card-link" onclick="openCardModal('direct_identifier')">direct identifier</button> is any field that, alone or nearly alone, identifies a specific person. <strong>Action: SUPPRESS</strong> (delete the value entirely).</p>
+<ul>
+<li><strong>Full name</strong> — "Margaret Chen" identifies exactly one person (or very few)</li>
+<li><strong>Social Security Number</strong> — uniquely assigned by design</li>
+<li><strong>Medical Record Number (MRN)</strong> — hospital's internal unique ID</li>
+<li><strong>Phone number, email, full street address</strong> — all directly linking</li>
+<li><strong>Date of birth combined with name</strong> — together they uniquely identify nearly anyone</li>
+</ul>
+<p>There is no "gentle" version of suppression — the value is deleted. You cannot "generalize" a name or an SSN into a safer form.</p>
+
+<h4>Category 2 — Quasi-Identifiers (QI)</h4>
+<p>A <button class="card-link" onclick="openCardModal('quasi_identifier')">quasi-identifier</button> is a field that looks harmless alone but becomes identifying in combination. <strong>Action: GENERALIZE</strong> (make the value less precise, not delete it).</p>
+<ul>
+<li><strong>Date of birth</strong> — generalize to birth year only (03/14/1952 → 1952)</li>
+<li><strong>ZIP code</strong> — generalize to 3-digit prefix (98032 → 980**)</li>
+<li><strong>Sex/gender</strong> — already a category; may be retained at this level</li>
+<li><strong>Race/ethnicity</strong> — retained but combined with other QI controls</li>
+<li><strong>Age</strong> — generalize to decade (72 → 70s)</li>
+</ul>
+<p>Why generalize instead of suppress? Because QI fields have analytical value — researchers studying hypertension outcomes need to know approximate age and geography. Removing birth year entirely would destroy the dataset's usefulness. Generalizing preserves the <em>shape</em> of the data while reducing its linking power.</p>
+
+<h4>Category 3 — Sensitive Attributes</h4>
+<p><button class="card-link" onclick="openCardModal('sensitive_attribute')">Sensitive attributes</button> are the clinical facts you need to analyze: diagnoses (ICD-10 codes), lab results, medications. <strong>Action: RETAIN</strong> — but only after the quasi-identifiers have been adequately protected via k-anonymity and l-diversity.</p>
+<p>A sensitive attribute like "Z21 — HIV/AIDS" must not be suppressed — that would destroy the research value. But it must be protected from <em>inference</em>: an attacker who cannot identify who a record belongs to must also be unable to determine what the diagnosis is simply from knowing the group.</p>
+
+<h3>Why simple removal is not enough: Sweeney's finding</h3>
+<p>In 1997, Harvard researcher Latanya Sweeney demonstrated that <strong>87% of the U.S. population</strong> could be uniquely identified using only three fields from public voter registration rolls: 5-digit ZIP code, full date of birth, and sex. No names, no SSNs — just three quasi-identifiers.</p>
+<p>This finding directly motivated HIPAA's de-identification rules. It proves that removing direct identifiers is necessary but not sufficient — the quasi-identifiers must also be carefully controlled.</p>
+
+<div class="callout">🔑 <strong>Key distinction:</strong> De-identification is NOT anonymization. "Anonymized" implies identity can never be recovered. "De-identified" means re-identification risk has been reduced to an acceptable level — typically below 9%. With sufficient auxiliary data, a determined attacker may still be able to re-identify some records in a de-identified dataset.</div>
+
+<details class="demo-block">
+<summary class="demo-summary">📊 Worked Example — Classifying and Transforming P4 (Thomas Nakamura)</summary>
+<div class="demo-body">
+<p style="font-size:14px;color:var(--text-muted);margin-bottom:12px;font-weight:600">Alex classifies every field in Thomas Nakamura's raw record and applies the correct transformation.</p>
+<div class="demo-step"><div class="demo-num">1</div><div class="demo-text"><strong>Full Name: "Thomas Nakamura"</strong> → Direct Identifier → SUPPRESS (delete). A name alone identifies an individual. No generalization is possible.</div></div>
+<div class="demo-step"><div class="demo-num">2</div><div class="demo-text"><strong>Date of Birth: "02/28/1981"</strong> → Quasi-Identifier → GENERALIZE to year only: <strong>1981</strong>. The month and day are removed; the year provides approximate age for analysis.</div></div>
+<div class="demo-step"><div class="demo-num">3</div><div class="demo-text"><strong>SSN: "453-67-8821"</strong> → Direct Identifier → SUPPRESS (delete). Uniquely assigned by design.</div></div>
+<div class="demo-step"><div class="demo-num">4</div><div class="demo-text"><strong>ZIP Code: "98102"</strong> → Quasi-Identifier → GENERALIZE to 3-digit prefix: <strong>981**</strong>. The 3-digit prefix covers ~85,000 residents — far less identifying than the 5-digit code.</div></div>
+<div class="demo-step"><div class="demo-num">5</div><div class="demo-text"><strong>Primary Diagnosis: "I10 — Hypertension"</strong> → Sensitive Attribute → RETAIN. This is the clinical fact the research team needs. It will be protected by k-anonymity controls in the next stations.</div></div>
+<div class="demo-step"><div class="demo-num">6</div><div class="demo-text"><strong>Phone: "206-555-0182"</strong> → Direct Identifier → SUPPRESS (delete). HIPAA Category 4.</div></div>
+</div>
+</details>
+
+<div class="fill-exercise">
+<div class="fill-ex-label">📝 Try It — Classify and Transform</div>
+<div class="fill-ex-prompt">Classify each field for James Whitfield (P6: Male, DOB 06/17/1989, SSN 781-22-5543, ZIP 98032, Diagnosis I25.10 CAD, Home Address: 412 Oak Ave, Renton WA). Write: "direct", "quasi", or "sensitive" and the correct action: "suppress", "generalize", or "retain".</div>
+<div class="fill-actions" style="margin-bottom:8px"><button class="pulse-link" onclick="toggleSolution('s3_hint')">💡 Hint</button></div>
+<div id="s3_hint" class="fill-solution">Names, SSNs, MRNs, phone numbers, and home addresses (street + city) are direct → suppress. Date of birth and ZIP codes are quasi → generalize. Diagnoses are sensitive → retain.</div>
+<div class="fill-row">SSN → Type: <input class="fill-input wide" id="s3_f1" data-ans="direct" placeholder="?"> → Action: <input class="fill-input wide" id="s3_f2" data-ans="suppress" placeholder="?"></div>
+<div class="fill-row">Date of Birth → Type: <input class="fill-input wide" id="s3_f3" data-ans="quasi" placeholder="?"> → Action: <input class="fill-input wide" id="s3_f4" data-ans="generalize" placeholder="?"></div>
+<div class="fill-row">Diagnosis I25.10 → Type: <input class="fill-input wide" id="s3_f5" data-ans="sensitive" placeholder="?"> → Action: <input class="fill-input wide" id="s3_f6" data-ans="retain" placeholder="?"></div>
+<div class="fill-row">Home Address → Type: <input class="fill-input wide" id="s3_f7" data-ans="direct" placeholder="?"> → Action: <input class="fill-input wide" id="s3_f8" data-ans="suppress" placeholder="?"></div>
+<div class="fill-actions">
+<button class="btn" onclick="checkFill('s3_ex1',['s3_f1','s3_f2','s3_f3','s3_f4','s3_f5','s3_f6','s3_f7','s3_f8'])">Check</button>
+<button class="btn ghost" onclick="revealFill(['s3_f1','s3_f2','s3_f3','s3_f4','s3_f5','s3_f6','s3_f7','s3_f8'])">Show answers</button>
+</div>
+<div class="fill-fb" id="s3_ex1_fb"></div>
+</div>
+`,
+pulseChecks:[
+{question:'A dataset field contains "03/14/1952" (full date of birth). Under HIPAA de-identification, what is the correct action?',options:[{key:'A',text:'Suppress — delete the field entirely because dates identify people'},{key:'B',text:'Retain — dates are clinical information needed for analysis'},{key:'C',text:'Generalize — reduce to year only: "1952"'},{key:'D',text:'Encrypt — replace with a coded value'}],correctKey:'C',feedback:{correct:'Full dates are quasi-identifiers — they should be generalized, not deleted. Reducing to birth year "1952" removes the month and day (the most identifying parts) while preserving the age information researchers need.',incorrect:'Full dates of birth are quasi-identifiers. The correct action for quasi-identifiers is generalization (make less precise), not suppression (delete). Birth year alone ("1952") retains analytical value while reducing identifying power.'}},
+{question:'Sweeney\'s 1997 study demonstrated that 87% of the U.S. population could be re-identified using which three fields from public records?',options:[{key:'A',text:'Name, date of birth, and SSN'},{key:'B',text:'ZIP code, full date of birth, and sex'},{key:'C',text:'Race, age, and ZIP code'},{key:'D',text:'Phone number, address, and employer'}],correctKey:'B',feedback:{correct:'ZIP code + full date of birth + sex — three quasi-identifiers, with no names or SSNs — was enough to uniquely identify 87% of the U.S. population using voter registration rolls. This is why de-identification must address quasi-identifiers, not just direct identifiers.',incorrect:'The three fields were ZIP code + full date of birth + sex. No direct identifiers (like SSN or name) were needed. This finding showed that seemingly innocuous quasi-identifiers can be devastatingly identifying in combination.'}}
+]},
+
+// ─── SEGMENT 4: Safe Harbor ───
+{id:4,icon:'🏷️',title:'HIPAA Safe Harbor — The 18-Identifier Checklist',subtitle:'Mechanical compliance, ZIP thresholds, date rules, and when Safe Harbor is enough',minutes:9,
+cards:['safe_harbor','expert_determination','zip_threshold','age_90_rule'],
+endGoal:'You can apply the Safe Harbor rules to a patient record, check the ZIP population threshold, apply the date year-only rule, identify Age 90+ cases, and explain when Expert Determination is needed instead.',
+lecture:`
+<p>Alex's compliance officer stops by. "Does this dataset qualify under HIPAA Safe Harbor?" she asks. Safe Harbor is HIPAA's mechanical de-identification pathway — a checklist of exactly 18 identifier categories. Remove all 18, and the dataset is legally de-identified without any statistical analysis.</p>
+<p>This segment covers the specific rules of <button class="card-link" onclick="openCardModal('safe_harbor')">Safe Harbor</button> and when you would need the more rigorous <button class="card-link" onclick="openCardModal('expert_determination')">Expert Determination</button> pathway instead.</p>
+
+<h3>The 18 identifier categories</h3>
+<p>HIPAA Safe Harbor requires removing all of the following:</p>
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:6px;margin:12px 0">
+<div style="background:var(--surface-inset);border-left:3px solid var(--red);border-radius:5px;padding:7px 11px;font-size:13px;color:var(--text-muted);font-weight:600"><span style="font-family:var(--mono);color:var(--red);font-size:10px;font-weight:700;display:block">01</span>Names</div>
+<div style="background:var(--surface-inset);border-left:3px solid var(--red);border-radius:5px;padding:7px 11px;font-size:13px;color:var(--text-muted);font-weight:600"><span style="font-family:var(--mono);color:var(--red);font-size:10px;font-weight:700;display:block">02</span>Geographic data smaller than state</div>
+<div style="background:var(--surface-inset);border-left:3px solid var(--red);border-radius:5px;padding:7px 11px;font-size:13px;color:var(--text-muted);font-weight:600"><span style="font-family:var(--mono);color:var(--red);font-size:10px;font-weight:700;display:block">03</span>Dates (except year) for ages ≤ 89</div>
+<div style="background:var(--surface-inset);border-left:3px solid var(--red);border-radius:5px;padding:7px 11px;font-size:13px;color:var(--text-muted);font-weight:600"><span style="font-family:var(--mono);color:var(--red);font-size:10px;font-weight:700;display:block">04</span>Phone numbers</div>
+<div style="background:var(--surface-inset);border-left:3px solid var(--red);border-radius:5px;padding:7px 11px;font-size:13px;color:var(--text-muted);font-weight:600"><span style="font-family:var(--mono);color:var(--red);font-size:10px;font-weight:700;display:block">05</span>Fax numbers</div>
+<div style="background:var(--surface-inset);border-left:3px solid var(--red);border-radius:5px;padding:7px 11px;font-size:13px;color:var(--text-muted);font-weight:600"><span style="font-family:var(--mono);color:var(--red);font-size:10px;font-weight:700;display:block">06</span>Email addresses</div>
+<div style="background:var(--surface-inset);border-left:3px solid var(--red);border-radius:5px;padding:7px 11px;font-size:13px;color:var(--text-muted);font-weight:600"><span style="font-family:var(--mono);color:var(--red);font-size:10px;font-weight:700;display:block">07</span>Social Security Numbers</div>
+<div style="background:var(--surface-inset);border-left:3px solid var(--red);border-radius:5px;padding:7px 11px;font-size:13px;color:var(--text-muted);font-weight:600"><span style="font-family:var(--mono);color:var(--red);font-size:10px;font-weight:700;display:block">08</span>Medical Record Numbers</div>
+<div style="background:var(--surface-inset);border-left:3px solid var(--red);border-radius:5px;padding:7px 11px;font-size:13px;color:var(--text-muted);font-weight:600"><span style="font-family:var(--mono);color:var(--red);font-size:10px;font-weight:700;display:block">09</span>Health plan beneficiary numbers</div>
+<div style="background:var(--surface-inset);border-left:3px solid var(--red);border-radius:5px;padding:7px 11px;font-size:13px;color:var(--text-muted);font-weight:600"><span style="font-family:var(--mono);color:var(--red);font-size:10px;font-weight:700;display:block">10</span>Account numbers</div>
+<div style="background:var(--surface-inset);border-left:3px solid var(--red);border-radius:5px;padding:7px 11px;font-size:13px;color:var(--text-muted);font-weight:600"><span style="font-family:var(--mono);color:var(--red);font-size:10px;font-weight:700;display:block">11</span>Certificate / license numbers</div>
+<div style="background:var(--surface-inset);border-left:3px solid var(--red);border-radius:5px;padding:7px 11px;font-size:13px;color:var(--text-muted);font-weight:600"><span style="font-family:var(--mono);color:var(--red);font-size:10px;font-weight:700;display:block">12</span>Vehicle identifiers &amp; serial numbers</div>
+<div style="background:var(--surface-inset);border-left:3px solid var(--red);border-radius:5px;padding:7px 11px;font-size:13px;color:var(--text-muted);font-weight:600"><span style="font-family:var(--mono);color:var(--red);font-size:10px;font-weight:700;display:block">13</span>Device identifiers &amp; serial numbers</div>
+<div style="background:var(--surface-inset);border-left:3px solid var(--red);border-radius:5px;padding:7px 11px;font-size:13px;color:var(--text-muted);font-weight:600"><span style="font-family:var(--mono);color:var(--red);font-size:10px;font-weight:700;display:block">14</span>URLs (web addresses)</div>
+<div style="background:var(--surface-inset);border-left:3px solid var(--red);border-radius:5px;padding:7px 11px;font-size:13px;color:var(--text-muted);font-weight:600"><span style="font-family:var(--mono);color:var(--red);font-size:10px;font-weight:700;display:block">15</span>IP addresses</div>
+<div style="background:var(--surface-inset);border-left:3px solid var(--red);border-radius:5px;padding:7px 11px;font-size:13px;color:var(--text-muted);font-weight:600"><span style="font-family:var(--mono);color:var(--red);font-size:10px;font-weight:700;display:block">16</span>Biometric identifiers</div>
+<div style="background:var(--surface-inset);border-left:3px solid var(--red);border-radius:5px;padding:7px 11px;font-size:13px;color:var(--text-muted);font-weight:600"><span style="font-family:var(--mono);color:var(--red);font-size:10px;font-weight:700;display:block">17</span>Full-face photographs</div>
+<div style="background:var(--surface-inset);border-left:3px solid var(--red);border-radius:5px;padding:7px 11px;font-size:13px;color:var(--text-muted);font-weight:600"><span style="font-family:var(--mono);color:var(--red);font-size:10px;font-weight:700;display:block">18</span>Any other unique identifying number or code</div>
+</div>
+
+<h3>Three critical nuanced rules</h3>
+<h4>Rule 1 — The ZIP Population Threshold</h4>
+<p>Under <button class="card-link" onclick="openCardModal('zip_threshold')">Safe Harbor</button>, a 3-digit ZIP prefix may be retained ONLY if the geographic area it represents contains <strong>≥ 20,000 residents</strong> according to U.S. Census data. If population &lt; 20,000, you must replace the entire ZIP with <code>000</code>.</p>
+<p><strong>Why?</strong> Very sparsely populated areas have so few residents that even a 3-digit prefix can narrow down an individual to a handful of people — making it nearly as identifying as the full 5-digit code.</p>
+<p><strong>In our cohort:</strong> ZIP prefix 980 covers ~420,000 residents ✓ safe. ZIP prefix 981 covers ~85,000 residents ✓ safe. Both prefixes can be retained.</p>
+
+<h4>Rule 2 — Dates Must Become Year Only</h4>
+<p>All patient-associated dates — date of birth, admission date, discharge date, death date, procedure dates — must be reduced to <strong>year only</strong>. The month and day are removed because combining a specific date (e.g., March 14) with a ZIP and age can be highly identifying.</p>
+
+<h4>Rule 3 — The <button class="card-link" onclick="openCardModal('age_90_rule')">Age 90+ Rule</button></h4>
+<p>Patients aged <strong>90 or older</strong> have an additional requirement: even their birth year must be removed and replaced with the label <strong>"Age 90+"</strong>. Why? Extremely long-lived individuals are statistically very rare. A birth year of 1929, combined with other QIs, could uniquely identify a small group of centenarians even after generalization. Collapsing all ages ≥ 90 into a single category prevents this.</p>
+
+<h3>Safe Harbor vs. Expert Determination</h3>
+<div class="ba-block">
+<div class="ba-panel ba-before">
+<div class="ba-label">Safe Harbor</div>
+<div class="ba-content">Remove all 18 categories mechanically. No statistician needed. Binary compliance. Does NOT measure residual risk. Simple, legally clear.<br><br><strong>Use when:</strong> data is straightforward, removing all 18 categories is acceptable, and no statistical proof of risk level is needed.</div>
+</div>
+<div class="ba-arrow">vs</div>
+<div class="ba-panel ba-after">
+<div class="ba-label">Expert Determination</div>
+<div class="ba-content">A qualified statistician uses the three attacker models (Segments 5-6) to certify that re-ID risk ≤ 0.09. More flexible — can retain fields Safe Harbor would require removing, with compensating controls.<br><br><strong>Use when:</strong> retaining more detail is needed for analytics quality, and a statistical justification can be documented.</div>
+</div>
+</div>
+
+<div class="fill-exercise">
+<div class="fill-ex-label">📝 Try It — Apply Safe Harbor Rules</div>
+<div class="fill-ex-prompt">Apply Safe Harbor rules to the following fields. Answer with the correct transformed value or "removed".</div>
+<div class="fill-actions" style="margin-bottom:8px"><button class="pulse-link" onclick="toggleSolution('s4_hint')">💡 Hint</button></div>
+<div id="s4_hint" class="fill-solution">All dates → year only. Full DOB "06/17/1989" → "1989". If age ≥ 90 → "Age 90+". ZIP 98032 → check if prefix 980 has ≥ 20,000 people → yes → "980**". SSN → always removed.</div>
+<div class="fill-row">DOB "06/17/1989" (age 36) → Safe Harbor value: <input class="fill-input wide" id="s4_f1" data-ans="1989" placeholder="?"></div>
+<div class="fill-row">DOB "03/14/1930" (age 95) → Safe Harbor value: <input class="fill-input wide" id="s4_f2" data-ans="Age 90+" placeholder="?"></div>
+<div class="fill-row">ZIP 98032 (prefix 980, pop 420,000) → Safe Harbor value: <input class="fill-input wide" id="s4_f3" data-ans="980**" placeholder="?"></div>
+<div class="fill-row">SSN 781-22-5543 → Safe Harbor value: <input class="fill-input wide" id="s4_f4" data-ans="removed" placeholder="?"></div>
+<div class="fill-row">How many identifier categories does Safe Harbor define? <input class="fill-input sm" id="s4_f5" data-ans="18" placeholder="?"></div>
+<div class="fill-actions">
+<button class="btn" onclick="checkFill('s4_ex1',['s4_f1','s4_f2','s4_f3','s4_f4','s4_f5'])">Check</button>
+<button class="btn ghost" onclick="revealFill(['s4_f1','s4_f2','s4_f3','s4_f4','s4_f5'])">Show answers</button>
+<button class="pulse-link" onclick="toggleSolution('s4_sol')">Show solution</button>
+</div>
+<div class="fill-fb" id="s4_ex1_fb"></div>
+<div id="s4_sol" class="fill-solution">
+DOB → year only → 1989. A 36-year-old is well under 90, so the Age 90+ rule does not apply.<br>
+DOB 1930, age 95 → patient is ≥ 90 → birth year is also removed → replace with "Age 90+".<br>
+ZIP 980 with 420,000 residents: 420,000 ≥ 20,000 → prefix is safe to retain → "980**".<br>
+SSN → Category 7 → always removed under Safe Harbor. No exceptions.<br>
+Safe Harbor defines exactly 18 identifier categories. This number is fixed by HIPAA regulation.
+</div>
+</div>
+`,
+pulseChecks:[
+{question:'Under HIPAA Safe Harbor, a 3-digit ZIP prefix may be retained only if the area it covers has a population of at least:',options:[{key:'A',text:'5,000 residents'},{key:'B',text:'10,000 residents'},{key:'C',text:'20,000 residents'},{key:'D',text:'50,000 residents'}],correctKey:'C',feedback:{correct:'The Safe Harbor threshold is 20,000 residents. If the 3-digit prefix area has fewer than 20,000 people, the ZIP must be replaced with "000" — the prefix itself becomes too identifying in a sparsely populated area.',incorrect:'The HIPAA Safe Harbor ZIP threshold is 20,000 residents for the 3-digit prefix area. If the population is below this, replace with "000".'}},
+{question:'Under Safe Harbor, what happens to a patient whose current age is 94?',options:[{key:'A',text:'Their birth year is retained — only the month and day are removed'},{key:'B',text:'Their entire date of birth is removed and replaced with "Age 90+"'},{key:'C',text:'Their record must be suppressed entirely'},{key:'D',text:'Their age is rounded to the nearest decade (90s)'}],correctKey:'B',feedback:{correct:'Patients aged 90 or older have their birth year also removed. The entire date of birth field becomes "Age 90+" — even the year. This is because very long-lived individuals are statistically rare enough that a birth year alone can identify them.',incorrect:'For patients aged ≥ 90: the birth year is also removed. The field becomes "Age 90+" — not just "1930" or "90s." The age 90+ rule goes beyond the normal "year only" generalization.'}}
+]},
+
+// ─── SEGMENT 5: Re-ID Risk ───
+{id:5,icon:'📊',title:'Measuring Re-Identification Risk',subtitle:'Three attacker models, three formulas, one threshold: ≤ 0.09',minutes:10,
+cards:['prosecutor_model','journalist_model','marketer_model'],
+endGoal:'You can compute all three re-identification risk metrics (Prosecutor, Journalist, Marketer) for a small dataset and determine whether each passes the ≤ 0.09 Expert Determination threshold.',
+lecture:`
+<p>Alex has applied Safe Harbor rules. But his research partner wants Expert Determination — a statistical certificate that the re-identification risk is "very small." HIPAA interprets "very small" as <strong>≤ 0.09 (9%)</strong> under the prosecutor model.</p>
+<p>This requires computing three different risk metrics, each representing a different type of attacker. Understanding which metric measures which threat is the key to interpreting the results.</p>
+
+<h3>The three attacker models</h3>
+<p>The models differ in what the attacker already knows and what they are trying to do:</p>
+
+<h4>Model 1 — The <button class="card-link" onclick="openCardModal('prosecutor_model')">Prosecutor Model</button></h4>
+<p><strong>Attacker profile:</strong> Already knows a specific named individual is in the dataset. Trying to find that person's record and confirm their diagnosis. Models: targeted litigation, insurance fraud investigation, domestic surveillance.</p>
+<div class="demo-formula">Prosecutor Risk = 1 / min(k)</div>
+<p>Where min(k) = the smallest equivalence class size in the dataset. <strong>Even a single record with k=1 drives prosecutor risk to 1.0 (100%).</strong> This is the most conservative of the three models.</p>
+<p><strong>Threshold:</strong> Prosecutor Risk ≤ 0.09 requires min(k) ≥ 12, because 1/12 ≈ 0.083 &lt; 0.09.</p>
+
+<h4>Model 2 — The <button class="card-link" onclick="openCardModal('journalist_model')">Journalist Model</button></h4>
+<p><strong>Attacker profile:</strong> Picks a random record from the dataset and tries to identify whoever it belongs to. Models: investigative journalism, spot-check attacks, random sampling attacks.</p>
+<div class="demo-formula">Journalist Risk = (number of records with k = 1) / N</div>
+<p>This measures what fraction of the dataset is trivially re-identifiable. A record with k=1 is a singleton — the only record in its equivalence class. Anyone who lands on that record by random selection immediately knows which specific person it is.</p>
+
+<h4>Model 3 — The <button class="card-link" onclick="openCardModal('marketer_model')">Marketer Model</button></h4>
+<p><strong>Attacker profile:</strong> Purchases the dataset and runs a bulk linkage attack against a commercial auxiliary database, trying to re-identify as many records as possible. Models: data brokers, commercial surveillance.</p>
+<div class="demo-formula">Marketer Risk = (1/N) × Σ(1/kᵢ)  [sum over all records i]</div>
+<p>This is the <em>average expected re-identification rate</em>. For each record, compute the probability of correctly identifying that individual (= 1/kᵢ). Add all those probabilities together. Divide by N to get the average.</p>
+
+<h3>Connecting k to the threshold</h3>
+<p>The variable <strong>k</strong> (equivalence class size) is the common thread across all three models. Larger k → more people share the same QI combination → harder to identify anyone → lower risk.</p>
+<ul>
+<li>k = 1 → prosecutor risk = 1.0 (fails immediately)</li>
+<li>k = 5 → prosecutor risk = 1/5 = 0.20 (fails)</li>
+<li>k = 10 → prosecutor risk = 1/10 = 0.10 (fails — just above threshold)</li>
+<li>k = 12 → prosecutor risk = 1/12 ≈ 0.083 ✓ (passes)</li>
+<li>k = 20 → prosecutor risk = 1/20 = 0.05 ✓ (passes comfortably)</li>
+</ul>
+
+<details class="demo-block">
+<summary class="demo-summary">📊 Worked Example — All Three Risks for a 10-Patient Dataset</summary>
+<div class="demo-body">
+<p style="font-size:14px;color:var(--text-muted);margin-bottom:12px;font-weight:600"><strong>Scenario:</strong> A dataset of N=10 records. After generalization: 1 record has k=1, 4 records have k=2, 5 records have k=5. Compute all three risks.</p>
+<div class="demo-step"><div class="demo-num">1</div><div class="demo-text"><strong>Prosecutor Risk = 1 / min(k)</strong><br>The smallest k is 1 (that one unique record). min(k) = 1.<br>Prosecutor Risk = 1/1 = <strong>1.00 → FAIL</strong> ✗ (threshold is ≤ 0.09)</div></div>
+<div class="demo-step"><div class="demo-num">2</div><div class="demo-text"><strong>Journalist Risk = (k=1 records) / N</strong><br>Records with k=1: just 1 record. N = 10.<br>Journalist Risk = 1/10 = <strong>0.10 → FAIL</strong> ✗ (just above 0.09)</div></div>
+<div class="demo-step"><div class="demo-num">3</div><div class="demo-text"><strong>Marketer Risk = (1/N) × Σ(1/kᵢ)</strong><br>Compute 1/k for each record: 1 record contributes 1/1 = 1.0; 4 records each contribute 1/2 = 0.5; 5 records each contribute 1/5 = 0.2<br>Σ(1/kᵢ) = 1.0 + (4 × 0.5) + (5 × 0.2) = 1.0 + 2.0 + 1.0 = 4.0<br>Marketer Risk = (1/10) × 4.0 = <strong>0.40 → FAIL</strong> ✗</div></div>
+<div class="demo-step"><div class="demo-num">4</div><div class="demo-text"><strong>Conclusion:</strong> All three models fail. The k=1 record is the primary cause. Suppressing it removes it from the dataset: new N=9, all records have k ≥ 2. Recompute to verify the dataset then passes.</div></div>
+</div>
+</details>
+
+<div class="fill-exercise">
+<div class="fill-ex-label">📝 Try It — Compute Three Risk Metrics</div>
+<div class="fill-ex-prompt">A dataset has N=15 records: 2 records with k=1, 6 records with k=3, 7 records with k=7. Compute Prosecutor, Journalist, and Marketer risks. Assume the sum Σ(1/kᵢ) = 2 + 2 + 1 = 5.</div>
+<div class="fill-actions" style="margin-bottom:8px"><button class="pulse-link" onclick="toggleSolution('s5_hint')">💡 Hint</button></div>
+<div id="s5_hint" class="fill-solution">Prosecutor: 1 ÷ min(k) = 1 ÷ 1 = 1.0. Journalist: (records with k=1) ÷ N = 2 ÷ 15. Marketer: (1/N) × Σ = (1/15) × 5. Compare each to 0.09.</div>
+<div class="fill-row">min(k) = <input class="fill-input sm" id="s5_f1" data-ans="1" placeholder="?"> → Prosecutor Risk = 1 / <input class="fill-input sm" id="s5_f2" data-ans="1" placeholder="?"> = <input class="fill-input" id="s5_f3" data-ans="1.0" data-tol="0.01" placeholder="?"> → Passes? <input class="fill-input sm" id="s5_f4" data-ans="no" placeholder="?"></div>
+<div class="fill-row">k=1 records = <input class="fill-input sm" id="s5_f5" data-ans="2" placeholder="?"> → Journalist = <input class="fill-input sm" id="s5_f6" data-ans="2" placeholder="?"> / 15 = <input class="fill-input" id="s5_f7" data-ans="0.133" data-tol="0.015" placeholder="?"> → Passes? <input class="fill-input sm" id="s5_f8" data-ans="no" placeholder="?"></div>
+<div class="fill-row">Marketer = (1/15) × 5 = <input class="fill-input" id="s5_f9" data-ans="0.333" data-tol="0.015" placeholder="?"> → Passes? <input class="fill-input sm" id="s5_f10" data-ans="no" placeholder="?"></div>
+<div class="fill-actions">
+<button class="btn" onclick="checkFill('s5_ex1',['s5_f1','s5_f2','s5_f3','s5_f4','s5_f5','s5_f6','s5_f7','s5_f8','s5_f9','s5_f10'])">Check</button>
+<button class="btn ghost" onclick="revealFill(['s5_f1','s5_f2','s5_f3','s5_f4','s5_f5','s5_f6','s5_f7','s5_f8','s5_f9','s5_f10'])">Show answers</button>
+<button class="pulse-link" onclick="toggleSolution('s5_sol')">Show solution</button>
+</div>
+<div class="fill-fb" id="s5_ex1_fb"></div>
+<div id="s5_sol" class="fill-solution">
+<strong>Prosecutor:</strong> min(k) = 1 (two records have k=1). 1 ÷ 1 = 1.00. Fails badly — the presence of ANY k=1 record drives prosecutor risk to maximum.<br>
+<strong>Journalist:</strong> 2 records with k=1, N=15. Risk = 2/15 ≈ 0.133. Fails (> 0.09). Those 2 records represent 13.3% of the dataset — too high a fraction of trivially exposable records.<br>
+<strong>Marketer:</strong> Σ(1/kᵢ) = 2×(1/1) + 6×(1/3) + 7×(1/7) = 2 + 2 + 1 = 5. Marketer = (1/15) × 5 = 0.333. Fails significantly.<br>
+<strong>Fix:</strong> Suppress the 2 k=1 records. New N=13, min(k)=3. Prosecutor = 1/3 ≈ 0.333 — still fails! The dataset needs k ≥ 12 for prosecutor to pass. More generalization (or a much larger source dataset) is required.
+</div>
+</div>
+`,
+pulseChecks:[
+{question:'A dataset has 8 records in groups of k=4, and 2 records with k=1. N=10. What is the Prosecutor Risk?',options:[{key:'A',text:'0.25 (1/4, based on the largest group)'},{key:'B',text:'0.20 (2/10, counting the k=1 records)'},{key:'C',text:'1.00 (1/1, based on the smallest group)'},{key:'D',text:'0.10 (1/10)'}],correctKey:'C',feedback:{correct:'Prosecutor Risk = 1 / min(k). The minimum k is 1 (there are k=1 records). 1/1 = 1.00. The prosecutor model uses the MINIMUM group size, not the average or the majority. Even one singleton record drives the prosecutor metric to 100%.',incorrect:'Prosecutor Risk = 1 / min(k). The min(k) is 1 because some records have k=1. 1 divided by 1 = 1.00. The prosecutor model cares only about the most vulnerable record — the smallest group.'}},
+{question:'After suppressing the 2 k=1 records (now N=8, all with k=4), what is the Journalist Risk?',options:[{key:'A',text:'0.25 (1/4)'},{key:'B',text:'0.00 (0/8) — no k=1 records remain'},{key:'C',text:'0.50 (4/8)'},{key:'D',text:'0.125 (1/8)'}],correctKey:'B',feedback:{correct:'After suppressing the k=1 records, zero records remain with k=1. Journalist Risk = 0/8 = 0.00. The journalist model only counts k=1 records — if there are none, the risk is zero. This is why journalist risk is the easiest of the three to satisfy.',incorrect:'Journalist Risk = (records with k=1) / N. After suppression, no records have k=1. Numerator = 0. 0/8 = 0.00. The journalist metric only counts singleton records.'}}
+]}
+
+,
+// ─── SEGMENT 6: k-Anonymity & l-Diversity ───
+{id:6,icon:'👥',title:'k-Anonymity and l-Diversity',subtitle:'Forming equivalence classes, suppression decisions, and attribute protection',minutes:10,
+cards:['k_anonymity','equivalence_class','l_diversity','homogeneity_attack'],
+endGoal:'You can form equivalence classes from a small dataset, decide which records require suppression, compute both k and l for each class, and identify homogeneity attack failures.',
+lecture:`
+<p>Alex now knows how to <em>measure</em> re-identification risk. Now he needs to know how to <em>achieve</em> low risk — specifically, how to organize the dataset into groups where no individual can be singled out, and where the groups themselves do not reveal sensitive diagnoses.</p>
+
+<h3>k-Anonymity — hiding in a crowd</h3>
+<p><button class="card-link" onclick="openCardModal('k_anonymity')">k-Anonymity</button> provides a formal guarantee: every record in the dataset is indistinguishable from at least <strong>k-1 other records</strong> on all quasi-identifier fields.</p>
+<p>Think of it like this: if your QI combination is "Female, age 50s, ZIP 980," you cannot be identified unless the attacker can narrow it down to one specific person. If 4 other records share that exact combination, the attacker faces 1-in-5 uncertainty — they know you are one of those 5 people, but not which one.</p>
+<p>The group of records sharing identical QI values is called an <button class="card-link" onclick="openCardModal('equivalence_class')">equivalence class</button>.</p>
+
+<h3>How to form equivalence classes: step by step</h3>
+<p>Given a small dataset, the process is:</p>
+<ul>
+<li><strong>Step 1:</strong> Apply generalization to all QI fields (DOB → year, ZIP → 3-digit prefix)</li>
+<li><strong>Step 2:</strong> Group records with identical generalized QI values — each group is one equivalence class</li>
+<li><strong>Step 3:</strong> Count the size of each group — that is the k value for those records</li>
+<li><strong>Step 4:</strong> Any record whose group size &lt; required k must either be further generalized (merge it into a larger group) or suppressed (deleted)</li>
+</ul>
+
+<h3>The suppression decision rule</h3>
+<p>When a record cannot be grouped (it is the only record with its QI combination after generalization): <strong>suppress it</strong> (delete from the released dataset). This is the record's "cost" — it is removed to protect the remaining records' privacy guarantees.</p>
+<p><button class="card-link" onclick="openCardModal('suppression')">Suppression</button> rate = (records suppressed) ÷ N. A high suppression rate reduces the dataset's analytical value. Larger datasets typically achieve lower suppression rates because natural groupings are more common.</p>
+
+<h3>l-Diversity — protecting the diagnosis</h3>
+<p>k-Anonymity protects <em>identity</em>. It does not protect <em>what the attacker can infer about a person</em>. This is where <button class="card-link" onclick="openCardModal('l_diversity')">l-diversity</button> comes in.</p>
+<p>Suppose a k=5 equivalence class contains 5 records — all with the same diagnosis: HIV. An attacker who successfully links a person to this class immediately knows their diagnosis with 100% certainty, despite having no idea which of the 5 people it is. This is called the <button class="card-link" onclick="openCardModal('homogeneity_attack')">homogeneity attack</button>.</p>
+<p><strong>l-Diversity rule:</strong> Within each equivalence class, there must be at least <strong>l distinct values</strong> of every sensitive attribute.</p>
+<div class="demo-formula">l = number of distinct sensitive attribute values within one equivalence class</div>
+<ul>
+<li>l = 1 → all records share the same sensitive value → 100% inference certainty → <strong>FAIL</strong></li>
+<li>l = 2 → at least 2 distinct values → attacker has at most 50% certainty → meets minimum standard</li>
+<li>l = 3 → at least 3 distinct values → attacker has at most 33% certainty → stronger protection</li>
+</ul>
+
+<details class="demo-block">
+<summary class="demo-summary">📊 Worked Example — Meridian Cohort: Forming Groups and Checking l</summary>
+<div class="demo-body">
+<p style="font-size:14px;color:var(--text-muted);margin-bottom:12px;font-weight:600"><strong>Scenario:</strong> After applying DOB → year and ZIP → 3-digit prefix, Alex groups the Meridian Cohort records by their generalized QI values: {Sex, Birth Year Decade, ZIP prefix}. Target: k = 2.</p>
+<div class="demo-step"><div class="demo-num">1</div><div class="demo-text"><strong>Assign generalized QI values:</strong><br>P1 Margaret: {F, 70s, 980} — P2 David: {M, 40s, 981} — P3 Yolanda: {F, 50s, 980}<br>P4 Thomas: {M, 40s, 981} — P5 Priya: {F, 50s, 980} — P6 James: {M, 30s, 980}</div></div>
+<div class="demo-step"><div class="demo-num">2</div><div class="demo-text"><strong>Group by identical QI values:</strong><br>Group α: P2 David {M, 40s, 981} + P4 Thomas {M, 40s, 981} → k = 2 ✓<br>Group β: P3 Yolanda {F, 50s, 980} + P5 Priya {F, 50s, 980} → k = 2 ✓<br>P1 Margaret {F, 70s, 980} → alone → k = 1 → must suppress<br>P6 James {M, 30s, 980} → alone → k = 1 → must suppress</div></div>
+<div class="demo-step"><div class="demo-num">3</div><div class="demo-text"><strong>Check l-diversity for each group:</strong><br>Group α: David has OUD (F11.20), Thomas has Hypertension (I10) → 2 distinct values → l = 2 ✓<br>Group β: Yolanda has T2DM (E11.9), Priya has Bipolar (F31.9) → 2 distinct values → l = 2 ✓</div></div>
+<div class="demo-step"><div class="demo-num">4</div><div class="demo-text"><strong>Suppression rate:</strong> 2 records suppressed (P1, P6) out of N=6 total. Suppression rate = 2/6 ≈ 33%. High, but unavoidable in this small cohort. In a 2,000-patient dataset, this same combination would produce &lt;1% suppression.</div></div>
+</div>
+</details>
+
+<div class="fill-exercise">
+<div class="fill-ex-label">📝 Try It — Compute k and l</div>
+<div class="fill-ex-prompt">A dataset has 3 equivalence classes after generalization. Class X: 2 records, both with diagnosis T2DM. Class Y: 3 records with diagnoses T2DM, HTN, OUD. Class Z: 4 records with diagnoses HTN, HTN, Bipolar, CAD. Compute k and l for each class, and identify any l-diversity failures.</div>
+<div class="fill-actions" style="margin-bottom:8px"><button class="pulse-link" onclick="toggleSolution('s6_hint')">💡 Hint</button></div>
+<div id="s6_hint" class="fill-solution">k = number of records in the class. l = number of DISTINCT diagnosis values (count T2DM+T2DM as just 1). Class X has 2 records, both T2DM → k=2, l=1 (only one distinct value → fails). Class Y has 3 records, 3 different diagnoses → k=3, l=3. Class Z has 4 records; diagnoses include 2 HTN, 1 Bipolar, 1 CAD → distinct values = 3 (HTN, Bipolar, CAD) → k=4, l=3.</div>
+<div class="fill-row">Class X: k = <input class="fill-input sm" id="s6_f1" data-ans="2" placeholder="?"> l = <input class="fill-input sm" id="s6_f2" data-ans="1" placeholder="?"> → l-diversity passes (l≥2)? <input class="fill-input sm" id="s6_f3" data-ans="no" placeholder="?"></div>
+<div class="fill-row">Class Y: k = <input class="fill-input sm" id="s6_f4" data-ans="3" placeholder="?"> l = <input class="fill-input sm" id="s6_f5" data-ans="3" placeholder="?"> → l-diversity passes? <input class="fill-input sm" id="s6_f6" data-ans="yes" placeholder="?"></div>
+<div class="fill-row">Class Z: k = <input class="fill-input sm" id="s6_f7" data-ans="4" placeholder="?"> l = <input class="fill-input sm" id="s6_f8" data-ans="3" placeholder="?"> → l-diversity passes? <input class="fill-input sm" id="s6_f9" data-ans="yes" placeholder="?"></div>
+<div class="fill-row">Class X fails because an attacker linking to it can infer the diagnosis with <input class="fill-input sm" id="s6_f10" data-ans="100" placeholder="?"> % certainty.</div>
+<div class="fill-actions">
+<button class="btn" onclick="checkFill('s6_ex1',['s6_f1','s6_f2','s6_f3','s6_f4','s6_f5','s6_f6','s6_f7','s6_f8','s6_f9','s6_f10'])">Check</button>
+<button class="btn ghost" onclick="revealFill(['s6_f1','s6_f2','s6_f3','s6_f4','s6_f5','s6_f6','s6_f7','s6_f8','s6_f9','s6_f10'])">Show answers</button>
+</div>
+<div class="fill-fb" id="s6_ex1_fb"></div>
+</div>
+`,
+pulseChecks:[
+{question:'An equivalence class has 4 records. Three of them have diagnosis "HTN" and one has "Bipolar." What is the l-diversity value for this class?',options:[{key:'A',text:'l = 4 (four records in the class)'},{key:'B',text:'l = 2 (two distinct diagnoses: HTN and Bipolar)'},{key:'C',text:'l = 1 (HTN appears most — only one dominant value)'},{key:'D',text:'l = 0.75 (3 out of 4 are HTN)'}],correctKey:'B',feedback:{correct:'l = number of DISTINCT sensitive attribute values. HTN and Bipolar are 2 distinct diagnoses → l = 2. The fact that HTN appears 3 times does not change the count of distinct values. l = 2 technically passes the l ≥ 2 requirement, but the class is still vulnerable to a skewness attack (75% probability of HTN).',incorrect:'l counts distinct values, not total records. HTN and Bipolar are 2 distinct diagnoses → l = 2. The k of the class is 4 (four records), but that is k, not l. Do not confuse k and l.'}},
+{question:'k-Anonymity guarantees that an attacker cannot single out a specific individual. What additional threat does l-Diversity protect against?',options:[{key:'A',text:'The attacker using the wrong QI field values'},{key:'B',text:'The homogeneity attack — inferring a sensitive attribute when all class members share the same value'},{key:'C',text:'The attacker accessing the dataset without authorization'},{key:'D',text:'Records being suppressed at too high a rate'}],correctKey:'B',feedback:{correct:'l-Diversity protects against the homogeneity attack: when all records in a k-anonymous class share the same sensitive attribute, an attacker who links to the class learns the attribute with 100% certainty even without identifying the specific person. k-Anonymity alone does not prevent this.',incorrect:'The homogeneity attack is the specific threat l-Diversity addresses. When all class members share the same diagnosis, the attacker can infer the diagnosis with certainty even when they cannot single out which record belongs to their target. l-Diversity requires at least l distinct sensitive values per class.'}}
+]},
+
+// ─── SEGMENT 7: Probability Chains and Unicity ───
+{id:7,icon:'🎲',title:'Probability Chains and Unicity',subtitle:'Anonymity sets, QI intersection, and how generalization restores safety',minutes:9,
+cards:['conditional_probability','anonymity_set','unicity'],
+endGoal:'You can compute an anonymity set size by applying population fractions, calculate re-identification probability as 1/set size, and compute unicity before and after generalization.',
+lecture:`
+<p>Alex's research partner asks a direct question: "For any record in the de-identified dataset, what is the probability that we can identify the individual using only the published QI fields?" This requires computing the <button class="card-link" onclick="openCardModal('anonymity_set')">anonymity set</button> — the number of real people sharing those QI values in the external population.</p>
+
+<h3>Conditional probability — filtering down to the right group</h3>
+<p><button class="card-link" onclick="openCardModal('conditional_probability')">Conditional probability</button> P(A | B) means "probability of A, given that B is already known to be true." In privacy:</p>
+<p><em>"Given that the person in this record is Female, born in 1972, and lives in ZIP prefix 980, how many real people share all of those characteristics?"</em></p>
+<p>Each quasi-identifier field <em>filters</em> the population. Start with everyone in the geographic area, then apply each QI as a filter:</p>
+<ul>
+<li>Start: 420,000 people in the ZIP 980 area</li>
+<li>Filter 1 (Female, ~52%): 420,000 × 0.52 = 218,400 females</li>
+<li>Filter 2 (born in 1972, ~1 in 70 birth years): 218,400 ÷ 70 ≈ 3,120 females born in 1972</li>
+<li>Anonymity set = <strong>3,120 people</strong></li>
+<li>Re-ID probability = 1 ÷ 3,120 ≈ <strong>0.032%</strong> — very safe</li>
+</ul>
+<p>Now add a 4th QI (suppose the attacker also knows Priya's diagnosis: Bipolar Disorder, prevalence ~0.5% in this demographic):</p>
+<ul>
+<li>Filter 3: 3,120 × 0.005 = <strong>~16 people</strong></li>
+<li>Re-ID probability = 1 ÷ 16 = <strong>6.25%</strong> — approaching the 9% threshold!</li>
+</ul>
+<p>This is the QI intersection collapse effect: each additional field multiplies risk. Four fields that each seem innocuous can combine explosively.</p>
+
+<h3>Unicity — how singleton-heavy is the dataset?</h3>
+<p><button class="card-link" onclick="openCardModal('unicity')">Unicity</button> measures, on average, how many records fall into each unique QI combination cell:</p>
+<div class="demo-formula">u = N / (S₁ × S₂ × ... × Sₖ)</div>
+<p>Where N = total records, and each Sᵢ = number of distinct values for QI field i.</p>
+<ul>
+<li><strong>u &gt;&gt; 1</strong> (say, u = 50): each QI cell contains many records on average → low unicity → good privacy</li>
+<li><strong>u ≈ 1</strong>: each cell contains about one record on average → critical boundary</li>
+<li><strong>u &lt;&lt; 1</strong> (say, u = 0.1): most cells contain zero records; occupied cells contain exactly one → nearly every record is a unique fingerprint → high unicity → dangerous</li>
+</ul>
+<p><strong>Why generalization helps:</strong> Reducing S₃ from 50 (distinct 5-digit ZIPs) to 8 (distinct 3-digit prefixes) reduces the total cell count by a factor of 50/8 = 6.25, multiplying unicity by the same factor.</p>
+
+<details class="demo-block">
+<summary class="demo-summary">📊 Worked Example — Unicity Before and After Generalization</summary>
+<div class="demo-body">
+<p style="font-size:14px;color:var(--text-muted);margin-bottom:12px;font-weight:600"><strong>Scenario:</strong> A hospital has N=500 records with QI fields: Sex (2 values), Age Decade (8 values), 5-digit ZIP (50 distinct ZIPs in dataset).</p>
+<div class="demo-step"><div class="demo-num">1</div><div class="demo-text"><strong>Before generalization — 5-digit ZIP:</strong><br>Total cells = S_Sex × S_Age × S_ZIP = 2 × 8 × 50 = 800 cells<br>Unicity u = N / cells = 500 / 800 = <strong>0.625</strong><br>Interpretation: u = 0.625 &lt; 1. More cells exist than records. Most occupied cells contain exactly one record — nearly every patient is uniquely identifiable by their QI combination.</div></div>
+<div class="demo-step"><div class="demo-num">2</div><div class="demo-text"><strong>After generalization — 3-digit ZIP prefix (50 → 8 distinct):</strong><br>New total cells = 2 × 8 × 8 = 128 cells<br>Unicity u = 500 / 128 = <strong>3.91</strong><br>Interpretation: u = 3.91 &gt; 1. Each occupied cell now contains about 4 records on average — much better privacy.</div></div>
+<div class="demo-step"><div class="demo-num">3</div><div class="demo-text"><strong>The improvement:</strong> Simply changing ZIP-5 to ZIP-3 boosted unicity by a factor of 6.25 (3.91 / 0.625 ≈ 6.25). No records were deleted. The dataset's size and richness are unchanged — only the QI precision changed.</div></div>
+</div>
+</details>
+
+<div class="fill-exercise">
+<div class="fill-ex-label">📝 Try It — Compute Unicity Before and After</div>
+<div class="fill-ex-prompt">A dataset has N=600 records with 3 QI fields: Sex (2 values), 5-digit ZIP (60 distinct values), Age Group (6 values). After ZIP generalization, the 60 ZIPs reduce to 10 distinct 3-digit prefixes. Compute unicity before and after.</div>
+<div class="fill-actions" style="margin-bottom:8px"><button class="pulse-link" onclick="toggleSolution('s7_hint')">💡 Hint</button></div>
+<div id="s7_hint" class="fill-solution">Total cells = S₁ × S₂ × S₃. Before: 2 × 60 × 6. After: 2 × 10 × 6. Unicity = N ÷ total cells. Compare each to 1.0 to assess safety.</div>
+<div class="fill-row">BEFORE: Total cells = 2 × 60 × 6 = <input class="fill-input" id="s7_f1" data-ans="720" placeholder="?"></div>
+<div class="fill-row">Unicity BEFORE = 600 / <input class="fill-input" id="s7_f2" data-ans="720" placeholder="?"> = <input class="fill-input" id="s7_f3" data-ans="0.833" data-tol="0.02" placeholder="?"> → Safe (u≥1)? <input class="fill-input sm" id="s7_f4" data-ans="no" placeholder="?"></div>
+<div class="fill-row">AFTER: Total cells = 2 × 10 × 6 = <input class="fill-input" id="s7_f5" data-ans="120" placeholder="?"></div>
+<div class="fill-row">Unicity AFTER = 600 / <input class="fill-input" id="s7_f6" data-ans="120" placeholder="?"> = <input class="fill-input sm" id="s7_f7" data-ans="5.0" data-tol="0.1" placeholder="?"> → Safe (u≥1)? <input class="fill-input sm" id="s7_f8" data-ans="yes" placeholder="?"></div>
+<div class="fill-actions">
+<button class="btn" onclick="checkFill('s7_ex1',['s7_f1','s7_f2','s7_f3','s7_f4','s7_f5','s7_f6','s7_f7','s7_f8'])">Check</button>
+<button class="btn ghost" onclick="revealFill(['s7_f1','s7_f2','s7_f3','s7_f4','s7_f5','s7_f6','s7_f7','s7_f8'])">Show answers</button>
+<button class="pulse-link" onclick="toggleSolution('s7_sol')">Show solution</button>
+</div>
+<div class="fill-fb" id="s7_ex1_fb"></div>
+<div id="s7_sol" class="fill-solution">
+<strong>Before:</strong> 2 × 60 × 6 = 720 cells. u = 600/720 ≈ 0.833. Dangerous — u &lt; 1 means most occupied cells contain only one record.<br>
+<strong>After ZIP generalization:</strong> 2 × 10 × 6 = 120 cells. u = 600/120 = 5.0. Safe — each cell contains about 5 records on average.<br>
+<strong>Improvement factor:</strong> 5.0 / 0.833 = 6.0x improvement from one generalization step — matching the ratio of distinct ZIPs reduced: 60/10 = 6.
+</div>
+</div>
+`,
+pulseChecks:[
+{question:'A dataset has N=100 records, Sex (2 values), Age (10 values), ZIP-3 (5 values). Unicity u = 100 / (2×10×5) = ?',options:[{key:'A',text:'u = 0.1 (very high unicity — dangerous)'},{key:'B',text:'u = 1.0 (exactly at the critical threshold)'},{key:'C',text:'u = 1.0 (exactly one record per cell on average)'},{key:'D',text:'u = 100 (100 records per cell on average)'}],correctKey:'C',feedback:{correct:'u = 100 / (2 × 10 × 5) = 100 / 100 = 1.0. This is exactly at the critical boundary — on average, each cell contains one record. This means roughly half the occupied cells are singletons. This is an unsafe dataset — you need u significantly above 1 for comfort.',incorrect:'Total cells = 2 × 10 × 5 = 100. u = N / cells = 100 / 100 = 1.0. This is exactly the critical boundary — u = 1 means on average one record per occupied cell, which means many singleton records.'}},
+{question:'When one QI field is generalized (reducing its distinct values from 50 to 5), what happens to unicity?',options:[{key:'A',text:'Unicity decreases by a factor of 10 (becomes 10× more dangerous)'},{key:'B',text:'Unicity increases by a factor of 10 (becomes 10× safer)'},{key:'C',text:'Unicity stays the same — it depends on N, not the fields'},{key:'D',text:'Unicity drops to zero'}],correctKey:'B',feedback:{correct:'Reducing one field from 50 to 5 distinct values reduces total cells by a factor of 50/5 = 10. Fewer cells means N records are packed into a smaller number of cells → more records per cell → higher u → safer. Unicity increases by exactly the same factor as the field reduction.',incorrect:'Generalization reduces the number of distinct values in a field, reducing total cells. Fewer cells with the same N records means more records per cell — unicity INCREASES (becomes safer). The improvement factor = (old distinct values) / (new distinct values).'}}
+]},
+
+// ─── SEGMENT 8: Bayesian Thinking ───
+{id:8,icon:'🧠',title:'Bayesian Thinking — Updating Beliefs with Evidence',subtitle:'Prior, likelihood, false positives, and the posterior — built piece by piece',minutes:12,
+cards:['prior_probability','likelihood','false_positive_rate','bayes_theorem'],
+endGoal:'You can identify the prior, likelihood, and false positive rate in a clinical scenario, compute the Bayes denominator using the law of total probability, and calculate the posterior probability.',
+lecture:`
+<p>The hospital's ED physician has ordered a rapid sepsis test for a patient with fever. The test came back positive. She asks Alex: "Statistically, how likely is it that this patient actually has sepsis, given the positive result?" Alex recognizes this as a Bayesian question — updating a prior belief with new evidence.</p>
+<p>This same mathematical structure appears in privacy: an attacker's certainty about a person's identity updates each time a new quasi-identifier field matches.</p>
+
+<h3>Building Bayes from scratch — four components</h3>
+<p>Before writing the formula, let's understand each piece:</p>
+
+<h4>Component 1 — The Prior: P(H)</h4>
+<p>The <button class="card-link" onclick="openCardModal('prior_probability')">prior</button> is your belief <em>before</em> seeing any evidence. It answers: "In general, how likely is this hypothesis?"</p>
+<p><strong>Clinical example:</strong> Among patients who present to the ED with fever, roughly 20% turn out to have sepsis. So P(sepsis) = 0.20 — the prior.</p>
+<p><strong>Privacy example:</strong> Among all records in a dataset, before observing any QI field, any specific person could be the subject of any record: P(it is Margaret) = 1/N.</p>
+
+<h4>Component 2 — The Likelihood: P(E | H)</h4>
+<p>The <button class="card-link" onclick="openCardModal('likelihood')">likelihood</button> answers: "If the hypothesis is true, how likely is it that we would see this evidence?" This is the test's <em>sensitivity</em>.</p>
+<p><strong>Example:</strong> The rapid sepsis test correctly identifies 90% of true sepsis cases. P(positive test | patient has sepsis) = 0.90.</p>
+
+<h4>Component 3 — The False Positive Rate: P(E | ¬H)</h4>
+<p>The <button class="card-link" onclick="openCardModal('false_positive_rate')">false positive rate</button> answers: "If the hypothesis is FALSE, how often would we still see this evidence?" The ¬ symbol means "NOT."</p>
+<p><strong>Example:</strong> The test returns positive for 10% of patients who do NOT have sepsis. P(positive test | no sepsis) = 0.10. This is 1 − specificity.</p>
+
+<h4>Component 4 — The Complement: P(¬H)</h4>
+<p>Simple arithmetic: if P(H) = 0.20, then P(NOT H) = 1 − 0.20 = 0.80. If 20% have sepsis, 80% do not.</p>
+
+<h3>Assembling Bayes' Theorem</h3>
+<p>Now we can put it together. <button class="card-link" onclick="openCardModal('bayes_theorem')">Bayes' Theorem</button>:</p>
+<div class="demo-formula">P(H|E) = [P(E|H) × P(H)] / [P(E|H)×P(H) + P(E|¬H)×P(¬H)]</div>
+<p>The denominator is called the <strong>Law of Total Probability</strong> — it computes the total probability of seeing a positive test result, regardless of the true disease state. It has two parts:</p>
+<ul>
+<li><strong>True positive contribution:</strong> P(E|H) × P(H) — positive tests from patients who truly have the disease</li>
+<li><strong>False positive contribution:</strong> P(E|¬H) × P(¬H) — positive tests from patients who do NOT have the disease</li>
+</ul>
+<p>Adding these gives the total probability that any randomly selected patient would have a positive test. The posterior (P(H|E)) is the fraction of that total contributed by true cases.</p>
+
+<details class="demo-block">
+<summary class="demo-summary">📊 Worked Example — Sepsis Test (Step by Step)</summary>
+<div class="demo-body">
+<p style="font-size:14px;color:var(--text-muted);margin-bottom:12px;font-weight:600">P(H)=0.20 (prior), P(E|H)=0.90 (sensitivity), P(E|¬H)=0.10 (false positive rate)</p>
+<div class="demo-step"><div class="demo-num">1</div><div class="demo-text"><strong>Compute P(¬H):</strong> 1 − P(H) = 1 − 0.20 = <strong>0.80</strong></div></div>
+<div class="demo-step"><div class="demo-num">2</div><div class="demo-text"><strong>Compute the numerator:</strong> P(E|H) × P(H) = 0.90 × 0.20 = <strong>0.18</strong><br>(This is the true positive contribution)</div></div>
+<div class="demo-step"><div class="demo-num">3</div><div class="demo-text"><strong>Compute the false alarm term:</strong> P(E|¬H) × P(¬H) = 0.10 × 0.80 = <strong>0.08</strong><br>(This is the false positive contribution)</div></div>
+<div class="demo-step"><div class="demo-num">4</div><div class="demo-text"><strong>Compute the denominator:</strong> 0.18 + 0.08 = <strong>0.26</strong><br>(Total probability of a positive test from any patient)</div></div>
+<div class="demo-step"><div class="demo-num">5</div><div class="demo-text"><strong>Compute the posterior:</strong> P(H|E) = 0.18 / 0.26 = <strong>0.692 ≈ 69.2%</strong></div></div>
+<div class="demo-step"><div class="demo-num">6</div><div class="demo-text"><strong>Interpretation:</strong> Before the test, the physician estimated 20% probability of sepsis. After a positive result, that estimate rises to 69.2%. The test is informative but not definitive — a ~31% chance remains that the positive is a false alarm. Clinical confirmation (blood culture, additional markers) is warranted before committing to full sepsis treatment.</div></div>
+</div>
+</details>
+
+<div class="fill-exercise">
+<div class="fill-ex-label">📝 Try It — HIV Test with Low Prevalence</div>
+<div class="fill-ex-prompt">A low-risk patient tests positive on an HIV antibody test. Prior P(H) = 0.05 (5% prevalence in this low-risk population). Sensitivity P(E|H) = 0.98. Specificity = 0.95, so false positive rate P(E|¬H) = 1 − 0.95 = 0.05. Compute the posterior probability P(H|E).</div>
+<div class="fill-actions" style="margin-bottom:8px"><button class="pulse-link" onclick="toggleSolution('s8_hint')">💡 Hint</button></div>
+<div id="s8_hint" class="fill-solution">P(¬H) = 1 − 0.05 = 0.95. Numerator = P(E|H) × P(H) = 0.98 × 0.05. False alarm = P(E|¬H) × P(¬H) = 0.05 × 0.95. Denominator = numerator + false alarm. Posterior = numerator / denominator.</div>
+<div class="fill-row">P(¬H) = 1 − 0.05 = <input class="fill-input" id="s8_f1" data-ans="0.95" data-tol="0.01" placeholder="?"></div>
+<div class="fill-row">Numerator = 0.98 × 0.05 = <input class="fill-input" id="s8_f2" data-ans="0.049" data-tol="0.002" placeholder="?"></div>
+<div class="fill-row">False alarm = 0.05 × 0.95 = <input class="fill-input" id="s8_f3" data-ans="0.0475" data-tol="0.002" placeholder="?"></div>
+<div class="fill-row">Denominator = 0.049 + 0.0475 = <input class="fill-input" id="s8_f4" data-ans="0.0965" data-tol="0.005" placeholder="?"></div>
+<div class="fill-row">Posterior P(H|E) = 0.049 / 0.0965 ≈ <input class="fill-input" id="s8_f5" data-ans="0.508" data-tol="0.02" placeholder="?"> ≈ <input class="fill-input sm" id="s8_f6" data-ans="51" data-tol="3" placeholder="?"> %</div>
+<div class="fill-actions">
+<button class="btn" onclick="checkFill('s8_ex1',['s8_f1','s8_f2','s8_f3','s8_f4','s8_f5','s8_f6'])">Check</button>
+<button class="btn ghost" onclick="revealFill(['s8_f1','s8_f2','s8_f3','s8_f4','s8_f5','s8_f6'])">Show answers</button>
+<button class="pulse-link" onclick="toggleSolution('s8_sol')">Show solution</button>
+</div>
+<div class="fill-fb" id="s8_ex1_fb"></div>
+<div id="s8_sol" class="fill-solution">
+<strong>The surprising result:</strong> Even with a 98% sensitive and 95% specific test, a positive result in a 5% prevalence population only raises the posterior to ~51%. This is NOT an error — it is a genuine consequence of the low prior.<br><br>
+<strong>Why?</strong> The false alarm term (0.05 × 0.95 = 0.0475) is almost as large as the numerator (0.098 × 0.05 = 0.049) because there are 19× more non-infected people than infected people. Most of the positive tests come from false alarms among the majority (uninfected) group.<br><br>
+<strong>Clinical implication:</strong> A positive result on a screening test in a low-risk population always requires a more specific confirmatory test (e.g., Western blot or antigen/antibody differentiation assay). This is exactly why clinical protocols require confirmation of positive screens.
+</div>
+</div>
+`,
+pulseChecks:[
+{question:'In Bayes\' Theorem, P(E|¬H) = 0.10. What does this mean in a clinical test scenario?',options:[{key:'A',text:'10% of patients with the disease test negative'},{key:'B',text:'10% of patients without the disease still test positive (false positive rate)'},{key:'C',text:'The test has 10% sensitivity'},{key:'D',text:'There is a 10% prior probability of having the disease'}],correctKey:'B',feedback:{correct:'P(E|¬H) is the probability of the evidence (positive test) given that the hypothesis (disease) is FALSE. When a patient does not have the disease and still tests positive, that is a false positive. P(E|¬H) = 1 − specificity.',incorrect:'P(E|¬H) = probability of positive test GIVEN that the patient does NOT have the disease. The ¬ symbol means "NOT." This is the false positive rate = 1 − specificity.'}},
+{question:'Before a test, a physician estimates P(H) = 0.40 for a condition. A positive test result updates this to P(H|E) = 0.75. What happened to the physician\'s belief?',options:[{key:'A',text:'It decreased — positive tests always lower the probability'},{key:'B',text:'It stayed the same — tests do not change prior beliefs'},{key:'C',text:'It increased — the positive test provided evidence for the hypothesis'},{key:'D',text:'It became certain (1.0) because a positive test confirms the disease'}],correctKey:'C',feedback:{correct:'The posterior P(H|E) = 0.75 is higher than the prior P(H) = 0.40. A positive test updated the physician\'s belief upward — from 40% to 75%. Bayes\' theorem formalizes this belief update. The posterior rarely reaches 1.0 because false positives prevent certainty.',incorrect:'The posterior (0.75) is higher than the prior (0.40). A positive test provides evidence FOR the hypothesis, updating the prior upward. This is the fundamental purpose of Bayes\' theorem — formalizing how evidence should update beliefs.'}}
+]}
+
+,
+// ─── SEGMENT 9: Record Linkage & PPRL ───
+{id:9,icon:'🔗',title:'Record Linkage and Privacy-Preserving Linkage',subtitle:'Fellegi-Sunter weights, Bloom filters, bigrams, and Dice similarity',minutes:11,
+cards:['record_linkage','m_rate','u_rate','bloom_filter','bigram','dice_similarity'],
+endGoal:'You can compute a Fellegi-Sunter field weight using log₂(m/u), explain why Bloom filters enable PPRL, and calculate Dice similarity between two name bigram sets.',
+lecture:`
+<p>Riverside Medical Center and Central Valley Health both have records for David Okafor — but neither system uses the same patient identifier. Alex needs to link David's records across the two systems for a care-coordination initiative. The challenge: both organizations have signed data use agreements prohibiting them from sharing patient names with the other institution. How do you link records without sharing the PII that would enable linking?</p>
+<p>This is the <button class="card-link" onclick="openCardModal('record_linkage')">record linkage</button> problem, and it has two solutions: deterministic linkage (when a shared unique identifier exists) and probabilistic linkage (when it does not). In healthcare, shared IDs are rare — probabilistic linkage is the norm.</p>
+
+<h3>Fellegi-Sunter: evidence-based linking</h3>
+<p>The Fellegi-Sunter framework treats each field comparison as a piece of evidence: agreement on a rare field (like last name) is strong evidence for a true match; agreement on a common field (like sex) is weak evidence.</p>
+<p>For each field i, two rates are estimated:</p>
+<ul>
+<li><strong><button class="card-link" onclick="openCardModal('m_rate')">m-rate (mᵢ)</button></strong> — probability that field i agrees when the two records ARE a true match. High m-rate = field is reliably consistent in true matches.</li>
+<li><strong><button class="card-link" onclick="openCardModal('u_rate')">u-rate (uᵢ)</button></strong> — probability that field i agrees when the records are NOT a true match (pure coincidence). Low u-rate = field agreement is rare by chance = strong evidence.</li>
+</ul>
+<p>The weight for each field is:</p>
+<div class="demo-formula">wᵢ = log₂(mᵢ / uᵢ)</div>
+<p>The total linkage score is W = w₁ + w₂ + w₃ + ... (sum weights for every field that AGREES). Compare W to thresholds: above the upper threshold → definite match; below the lower → definite non-match; in between → human review.</p>
+
+<h3>Interpreting log₂(m/u) intuitively</h3>
+<p>The weight measures "how many bits of evidence does agreement on this field provide?"</p>
+<ul>
+<li><strong>Date of birth:</strong> m = 0.97, u = 0.003 → w = log₂(0.97/0.003) = log₂(323) ≈ <strong>8.3 bits</strong> — very strong evidence. Random non-matching records rarely share a DOB (3 in 1,000).</li>
+<li><strong>Sex:</strong> m = 0.99, u = 0.50 → w = log₂(0.99/0.50) = log₂(1.98) ≈ <strong>0.98 bits</strong> — weak evidence. Half of random pairs share the same sex by chance.</li>
+<li><strong>Last name:</strong> m = 0.95, u = 0.004 → w = log₂(0.95/0.004) = log₂(237.5) ≈ <strong>7.9 bits</strong> — very strong. Only 4 in 1,000 random pairs share a last name.</li>
+</ul>
+<p>A total score above ~15–20 bits is typically a confident match. Below 0 bits (m &lt; u — field disagrees more in true matches than by chance) indicates evidence AGAINST a match.</p>
+
+<h3>Privacy-Preserving Record Linkage (PPRL) — linking without sharing PII</h3>
+<p>Standard Fellegi-Sunter requires comparing the actual field values (names, DOBs) across the two systems. PPRL solves the case where neither system may share the raw values.</p>
+<p>The solution uses <button class="card-link" onclick="openCardModal('bloom_filter')">Bloom filters</button>: a compact bit array that encodes whether specific elements are present, without revealing the elements themselves.</p>
+
+<h4>Step 1 — Extract bigrams</h4>
+<p>A <button class="card-link" onclick="openCardModal('bigram')">bigram</button> is a two-character pair extracted from a name. For "DAVID": add padding characters at start and end → "_DAVID_" → bigrams: {_D, DA, AV, VI, ID, D_}.</p>
+
+<h4>Step 2 — Hash bigrams into a bit array</h4>
+<p>Each bigram is passed through 2-3 hash functions, each of which returns a bit position in the array. That bit is set to 1. The result is a bit array with specific positions lit, representing the name without storing it.</p>
+
+<h4>Step 3 — Compute Dice similarity</h4>
+<p>Each organization computes Bloom filters for their version of the name. They exchange only the bit arrays. Similarity between the two arrays is measured by the <button class="card-link" onclick="openCardModal('dice_similarity')">Dice coefficient</button>:</p>
+<div class="demo-formula">Dice = 2 × |shared bits| / (|bits in A| + |bits in B|)</div>
+<p>Range: 0 (no overlap) to 1 (identical). Threshold ≥ 0.75 → probable match.</p>
+
+<details class="demo-block">
+<summary class="demo-summary">📊 Worked Example — Dice Similarity for "DAVID" vs "DAVID"</summary>
+<div class="demo-body">
+<p style="font-size:14px;color:var(--text-muted);margin-bottom:12px;font-weight:600">Hospital A has "DAVID OKAFOR", Central Valley has "DAVID OKAFOR" (same spelling). We compute bigrams for the first name only, then check Dice similarity.</p>
+<div class="demo-step"><div class="demo-num">1</div><div class="demo-text"><strong>Add padding and extract bigrams for "DAVID":</strong><br>Padded: _DAVID_ → bigrams: {_D, DA, AV, VI, ID, D_} → 6 bigrams total</div></div>
+<div class="demo-step"><div class="demo-num">2</div><div class="demo-text"><strong>Both systems encode identical names → identical bit arrays.</strong><br>Bits set in A: {_D, DA, AV, VI, ID, D_} = 6 positions<br>Bits set in B: {_D, DA, AV, VI, ID, D_} = 6 positions<br>Shared bits = 6 (all of them match)</div></div>
+<div class="demo-step"><div class="demo-num">3</div><div class="demo-text"><strong>Compute Dice:</strong><br>Dice = 2 × 6 / (6 + 6) = 12 / 12 = <strong>1.00</strong><br>Perfect match — as expected for identical names.</div></div>
+<div class="demo-step"><div class="demo-num">4</div><div class="demo-text"><strong>Variation test — "DAVID" vs "DAVYD" (typo):</strong><br>DAVID: {_D, DA, AV, VI, ID, D_}<br>DAVYD: {_D, DA, AV, VY, YD, D_}<br>Shared: {_D, DA, AV, D_} = 4 bits<br>Dice = 2×4 / (6+6) = 8/12 ≈ <strong>0.667</strong> → human review zone (0.5–0.74)</div></div>
+</div>
+</details>
+
+<div class="fill-exercise">
+<div class="fill-ex-label">📝 Try It — Dice Similarity for Two Names</div>
+<div class="fill-ex-prompt">Compute Dice similarity for "PRIYA" (Hospital A) vs "PREYA" (Central Valley — transcription variant). Extract bigrams for each (add _ padding at start and end), find shared bigrams, compute Dice.</div>
+<div class="fill-actions" style="margin-bottom:8px"><button class="pulse-link" onclick="toggleSolution('s9_hint')">💡 Hint</button></div>
+<div id="s9_hint" class="fill-solution">PRIYA padded: _PRIYA_ → bigrams: {_P, PR, RI, IY, YA, A_}. PREYA padded: _PREYA_ → bigrams: {_P, PR, RE, EY, YA, A_}. Shared = bigrams appearing in BOTH sets. Count shared, apply formula: Dice = 2 × shared / (|A| + |B|).</div>
+<div class="fill-row">PRIYA bigrams (count): <input class="fill-input sm" id="s9_f1" data-ans="6" placeholder="?"> &nbsp; PREYA bigrams (count): <input class="fill-input sm" id="s9_f2" data-ans="6" placeholder="?"></div>
+<div class="fill-row">Shared bigrams ({_P, PR, YA, A_}): count = <input class="fill-input sm" id="s9_f3" data-ans="4" placeholder="?"></div>
+<div class="fill-row">Dice = 2 × <input class="fill-input sm" id="s9_f4" data-ans="4" placeholder="?"> / (<input class="fill-input sm" id="s9_f5" data-ans="6" placeholder="?"> + <input class="fill-input sm" id="s9_f6" data-ans="6" placeholder="?">) = <input class="fill-input" id="s9_f7" data-ans="0.667" data-tol="0.02" placeholder="?"></div>
+<div class="fill-row">Decision (≥0.75 match, 0.5–0.74 review, &lt;0.5 non-match): <input class="fill-input wide" id="s9_f8" data-ans="review" placeholder="?"></div>
+<div class="fill-actions">
+<button class="btn" onclick="checkFill('s9_ex1',['s9_f1','s9_f2','s9_f3','s9_f4','s9_f5','s9_f6','s9_f7','s9_f8'])">Check</button>
+<button class="btn ghost" onclick="revealFill(['s9_f1','s9_f2','s9_f3','s9_f4','s9_f5','s9_f6','s9_f7','s9_f8'])">Show answers</button>
+<button class="pulse-link" onclick="toggleSolution('s9_sol')">Show solution</button>
+</div>
+<div class="fill-fb" id="s9_ex1_fb"></div>
+<div id="s9_sol" class="fill-solution">
+<strong>PRIYA bigrams:</strong> _P, PR, RI, IY, YA, A_ → 6 total<br>
+<strong>PREYA bigrams:</strong> _P, PR, RE, EY, YA, A_ → 6 total<br>
+<strong>Shared bigrams:</strong> {_P, PR, YA, A_} → 4 shared. (RI, IY are in PRIYA but not PREYA; RE, EY are in PREYA but not PRIYA.)<br>
+<strong>Dice = 2×4 / (6+6) = 8/12 ≈ 0.667</strong><br>
+<strong>Decision: Human review zone</strong> (0.5 ≤ Dice &lt; 0.75). A reviewer would compare additional fields (DOB, ZIP) before deciding. In practice, if DOB and sex also match strongly, the record pair would be accepted as a match despite the name variation.
+</div>
+</div>
+`,
+pulseChecks:[
+{question:'In Fellegi-Sunter linkage, a field has m=0.98, u=0.02. What is the approximate weight wᵢ = log₂(m/u)?',options:[{key:'A',text:'≈ 1 (very weak evidence)'},{key:'B',text:'≈ 5.6 (moderate evidence)'},{key:'C',text:'≈ 49 (ratio is 49, but log₂ is smaller)'},{key:'D',text:'≈ 0 (neutral — m and u cancel)'}],correctKey:'B',feedback:{correct:'m/u = 0.98/0.02 = 49. log₂(49) ≈ 5.6 bits of evidence. This is moderately strong — agreement on this field is 49× more likely in true matches than in random pairs. Common for fields like race/ethnicity (matches often, but so does random chance to some degree).',incorrect:'w = log₂(m/u) = log₂(0.98/0.02) = log₂(49) ≈ 5.6. The ratio m/u = 49, but we take the log₂ of the ratio — log₂(49) ≈ 5.6 bits. Remember: log₂(32) = 5, log₂(64) = 6, so 49 falls around 5.6.'}},
+{question:'What is the key privacy advantage of Bloom filter PPRL compared to standard Fellegi-Sunter linkage?',options:[{key:'A',text:'Bloom filters always produce higher Dice scores than raw name comparisons'},{key:'B',text:'The original PII (names, DOBs) is never shared — only the bit arrays are exchanged'},{key:'C',text:'Bloom filters can only be used for exact name matches, not approximate'},{key:'D',text:'Bloom filters eliminate the need for m-rates and u-rates entirely'}],correctKey:'B',feedback:{correct:'The core advantage of PPRL: neither organization ever reveals the raw names or dates — only the encoded bit arrays are exchanged. An attacker seeing the bit arrays cannot recover the original PII (as long as the hash salt is kept secret). This enables linking records across organizations that are prohibited from sharing patient names.',incorrect:'The privacy advantage is that raw PII is never shared — each organization encodes their names into bit arrays, exchanges only the arrays, and compares arrays using Dice similarity. The original names remain local and are never transmitted.'}}
+]},
+
+// ─── SEGMENT 10: Differential Privacy ───
+{id:10,icon:'🛡️',title:'Differential Privacy — Adding Protective Noise',subtitle:'Membership inference, the Laplace mechanism, epsilon, and sensitivity',minutes:11,
+cards:['differential_privacy','membership_inference','sensitivity_delta','epsilon_budget','laplace_mechanism'],
+endGoal:'You can compute the Laplace noise scale b = Δf/ε for a count query, explain what ε controls, and describe how differential privacy protects against membership inference attacks.',
+lecture:`
+<p>Alex has de-identified the Meridian Cohort and formed equivalence classes meeting k=2, l=2. Now his research partner makes one more request: "We need aggregate counts published on your hospital's data portal — number of patients with mental health diagnoses, by age group and ZIP prefix. Can you release those?"</p>
+<p>Alex realizes this is a new kind of privacy problem. The aggregates themselves are not patient-level records — but they could still reveal whether a specific person is in the dataset. This is the <button class="card-link" onclick="openCardModal('membership_inference')">membership inference attack</button>.</p>
+
+<h3>The problem: aggregate statistics still leak</h3>
+<p>Suppose the hospital published "342 patients with mental health diagnoses" in March. In April, after adding one new patient (whose admission was publicly reported in a local newspaper), the count becomes 343. An adversary who knows both counts and knows who was admitted can infer that this specific patient has a mental health diagnosis — a serious HIPAA violation, even though only aggregate counts were published.</p>
+<p><button class="card-link" onclick="openCardModal('differential_privacy')">Differential Privacy (DP)</button> is the solution. It adds precisely calibrated random noise to the published statistic before release, making it mathematically impossible to determine with confidence whether any specific individual's data was included.</p>
+
+<h3>The formal guarantee</h3>
+<p>DP guarantees that the probability of any specific output is nearly identical whether or not a specific person's data is included. The formal criterion:</p>
+<div class="demo-formula">|P(output WITH person X) − P(output WITHOUT person X)| ≤ ε</div>
+<p>The smaller the <button class="card-link" onclick="openCardModal('epsilon_budget')">epsilon (ε)</button>, the closer these two probabilities are — the stronger the privacy guarantee. ε = 0 would mean perfect indistinguishability (complete privacy but the output is pure noise). In practice, ε between 0.1 and 10 is used depending on the sensitivity of the data and acceptable utility loss.</p>
+
+<h3>Sensitivity — how much can one person change the answer?</h3>
+<p><button class="card-link" onclick="openCardModal('sensitivity_delta')">Sensitivity (Δf)</button> measures the maximum amount by which any single person's data can change the query result.</p>
+<p><strong>For a count query</strong> ("How many patients have condition X?"): adding or removing one patient changes the count by at most 1. Therefore:</p>
+<div class="demo-formula">Δf = 1 (for any count query, always)</div>
+<p>This is independent of N. Whether the dataset has 50 patients or 500,000, adding one person to a count changes it by exactly ±1.</p>
+<p><strong>For an average query</strong> (mean of a value): the sensitivity depends on the range of the value and N, making count queries preferred for DP releases.</p>
+
+<h3>The Laplace mechanism — adding noise</h3>
+<p>The <button class="card-link" onclick="openCardModal('laplace_mechanism')">Laplace mechanism</button> releases:</p>
+<div class="demo-formula">Published value = true_count + Laplace(0, b) &nbsp; where b = Δf / ε</div>
+<p>Laplace(0, b) is random noise drawn from a Laplace distribution centered at 0 with scale parameter b. The noise can be positive or negative. On average, the noise has magnitude ≈ b.</p>
+
+<h4>The ε–b relationship: smaller ε → larger b → more noise → stronger privacy</h4>
+<ul>
+<li>ε = 10 → b = 1/10 = 0.1 → tiny noise (~±0.1) → near-useless privacy, very accurate count</li>
+<li>ε = 1 → b = 1/1 = 1.0 → moderate noise (~±1) → reasonable trade-off</li>
+<li>ε = 0.5 → b = 1/0.5 = 2.0 → noticeable noise (~±2) → stronger privacy</li>
+<li>ε = 0.1 → b = 1/0.1 = 10.0 → large noise (~±10) → very strong privacy, reduced accuracy</li>
+</ul>
+
+<div class="callout">🔑 <strong>Why it works:</strong> An attacker seeing a published count of "343 ± noise" cannot determine whether the true count is 342 (person X not included) or 343 (person X included) because the noise makes both equally plausible. The stronger the privacy (smaller ε), the larger the noise, and the larger the uncertainty gap the attacker faces.</div>
+
+<h3>Post-processing: cleaning up the noisy result</h3>
+<p>The raw Laplace noise may produce nonsensical results: a negative count, or a non-integer. Standard practice:</p>
+<ul>
+<li>Clamp to ≥ 0: if the published value is negative, replace with 0</li>
+<li>Round to nearest integer if the count should be a whole number</li>
+<li>These post-processing steps do NOT weaken the DP guarantee — they only improve interpretability</li>
+</ul>
+
+<details class="demo-block">
+<summary class="demo-summary">📊 Worked Example — Releasing a Mental Health Count with DP</summary>
+<div class="demo-body">
+<p style="font-size:14px;color:var(--text-muted);margin-bottom:12px;font-weight:600"><strong>Scenario:</strong> True count of mental health patients = 342. Alex's DUA specifies ε = 0.5 for this release. Δf = 1 (count query).</p>
+<div class="demo-step"><div class="demo-num">1</div><div class="demo-text"><strong>Compute noise scale b:</strong><br>b = Δf / ε = 1 / 0.5 = <strong>2.0</strong><br>The Laplace distribution from which noise is drawn has scale 2.0.</div></div>
+<div class="demo-step"><div class="demo-num">2</div><div class="demo-text"><strong>Sample noise from Laplace(0, 2.0):</strong><br>In this example, the random draw produces noise = +3. (In a real release, this is sampled from the distribution — different each time.)</div></div>
+<div class="demo-step"><div class="demo-num">3</div><div class="demo-text"><strong>Compute published value:</strong><br>Published count = 342 + 3 = <strong>345</strong></div></div>
+<div class="demo-step"><div class="demo-num">4</div><div class="demo-text"><strong>What the attacker sees:</strong> "345 patients." They suspect the true count might be 342 (someone they are tracking is in the dataset) or 343 (a different scenario). But the noise range makes values from ~336 to ~354 all plausible. They cannot tell whether the true count is 342 or 343 — membership inference fails.</div></div>
+<div class="demo-step"><div class="demo-num">5</div><div class="demo-text"><strong>Accuracy trade-off:</strong> The true count is 342; the published count is 345 — an error of 3 (about 0.9%). At ε = 0.5 and b = 2.0, expected absolute error ≈ 2 counts. For a large aggregate like mental health prevalence across thousands of patients, ±2 is acceptable. For a count of 5 patients in a very small subgroup, ±2 would be a 40% error — a much more significant trade-off.</div></div>
+</div>
+</details>
+
+<div class="fill-exercise">
+<div class="fill-ex-label">📝 Try It — Computing Noise Scale for Two ε Values</div>
+<div class="fill-ex-prompt">Alex's team needs to release two aggregate statistics. Release A uses ε = 1.0 for a less sensitive count. Release B uses ε = 0.2 for a more sensitive statistic. Both are count queries (Δf = 1). Compute the noise scale b for each and explain the privacy/utility trade-off.</div>
+<div class="fill-actions" style="margin-bottom:8px"><button class="pulse-link" onclick="toggleSolution('s10_hint')">💡 Hint</button></div>
+<div id="s10_hint" class="fill-solution">b = Δf / ε = 1 / ε. Release A: b = 1 / 1.0. Release B: b = 1 / 0.2. Larger b → larger expected noise → stronger privacy but lower accuracy. Compare the two b values to see the trade-off.</div>
+<div class="fill-row">Release A: b = 1 / <input class="fill-input sm" id="s10_f1" data-ans="1.0" data-tol="0.05" placeholder="?"> = <input class="fill-input sm" id="s10_f2" data-ans="1.0" data-tol="0.05" placeholder="?"> → expected noise magnitude ≈ <input class="fill-input sm" id="s10_f3" data-ans="1" placeholder="?"> count(s)</div>
+<div class="fill-row">Release B: b = 1 / <input class="fill-input sm" id="s10_f4" data-ans="0.2" data-tol="0.01" placeholder="?"> = <input class="fill-input sm" id="s10_f5" data-ans="5.0" data-tol="0.1" placeholder="?"> → expected noise magnitude ≈ <input class="fill-input sm" id="s10_f6" data-ans="5" placeholder="?"> count(s)</div>
+<div class="fill-row">Which release has stronger privacy protection? <input class="fill-input sm" id="s10_f7" data-ans="B" placeholder="?"></div>
+<div class="fill-row">Which release has better data accuracy? <input class="fill-input sm" id="s10_f8" data-ans="A" placeholder="?"></div>
+<div class="fill-actions">
+<button class="btn" onclick="checkFill('s10_ex1',['s10_f1','s10_f2','s10_f3','s10_f4','s10_f5','s10_f6','s10_f7','s10_f8'])">Check</button>
+<button class="btn ghost" onclick="revealFill(['s10_f1','s10_f2','s10_f3','s10_f4','s10_f5','s10_f6','s10_f7','s10_f8'])">Show answers</button>
+<button class="pulse-link" onclick="toggleSolution('s10_sol')">Show solution</button>
+</div>
+<div class="fill-fb" id="s10_ex1_fb"></div>
+<div id="s10_sol" class="fill-solution">
+<strong>Release A (ε=1.0):</strong> b = 1/1.0 = 1.0. Expected absolute noise ≈ ±1 count. Moderate privacy. If the true count is 500, the published value might be 499 or 501 — about 0.2% error. Very usable.<br>
+<strong>Release B (ε=0.2):</strong> b = 1/0.2 = 5.0. Expected absolute noise ≈ ±5 counts. Much stronger privacy. If the true count is 500, the published value might be 495 or 505 — about 1% error. Still quite usable for large counts.<br>
+<strong>Privacy vs. utility:</strong> B has stronger privacy (smaller ε → attacker faces more uncertainty). A has better accuracy (smaller noise). For sensitive statistics (mental health, substance use diagnoses), a smaller ε (like 0.2 or 0.5) is preferred despite the accuracy cost. For less sensitive counts (total ED visits), a larger ε (1.0 or 2.0) may be acceptable.<br>
+<strong>The key insight:</strong> ε and noise scale b are inversely related. You cannot have both high privacy AND high accuracy — every DP system involves this fundamental trade-off.
+</div>
+</div>
+`,
+pulseChecks:[
+{question:'A count query has Δf = 1 and ε = 0.25. What is the Laplace noise scale b?',options:[{key:'A',text:'b = 0.25'},{key:'B',text:'b = 1.0'},{key:'C',text:'b = 4.0'},{key:'D',text:'b = 0.025'}],correctKey:'C',feedback:{correct:'b = Δf / ε = 1 / 0.25 = 4.0. Dividing 1 by a small number (0.25) gives a large result. This reflects the rule: smaller ε = stronger privacy = larger noise scale. An expected noise of ±4 counts means the published value can deviate significantly from the true count.',incorrect:'b = Δf / ε = 1 ÷ 0.25. Dividing 1 by 0.25 is the same as multiplying 1 by 4: the answer is 4.0. Remember: "/" means divide. 1 ÷ 0.25 = 4.'}},
+{question:'An analyst publishes a differentially private count of 147. The true count was 150, and the noise drawn was −3. Which statement best describes the membership inference protection?',options:[{key:'A',text:'The attacker now knows the true count is 150, defeating the protection'},{key:'B',text:'The attacker cannot determine if the true count is 147, 148, 149, 150, 151, or 152 — making individual membership inference unreliable'},{key:'C',text:'A difference of only 3 provides no meaningful protection'},{key:'D',text:'The noise must always be positive to provide protection'}],correctKey:'B',feedback:{correct:'The published value is 147. The attacker cannot distinguish whether the true value is 144, 147, 150, or 153 — all are plausible given the noise distribution. An individual being in or out of the dataset changes the true count by ±1, which is indistinguishable from noise. This is exactly the protection DP provides.',incorrect:'The attacker sees 147 and cannot work backwards to determine the true count. Values of 140, 145, 150, 155 are all plausible published values from this noise distribution. When an individual is added or removed, the true count changes by 1 — but the noise makes this change undetectable.'}}
+]}
+]; // ←─ end of SEGMENTS array
+
+// ═══════════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════════
+const STATE_KEY = 'privacyPrimer_v1';
+let state = {};
+
+function defaultState(){
+  return {currentSegment:1,completed:[],pulseAnswers:{},pulseRevealed:[],pulseRetries:{},lastVisited:Date.now(),welcomeBackShown:false};
+}
+function loadState(){
+  try{
+    const raw = localStorage.getItem(STATE_KEY);
+    if(raw){ const s = JSON.parse(raw); return Object.assign(defaultState(), s); }
+  }catch(e){}
+  return defaultState();
+}
+function saveState(){
+  state.lastVisited = Date.now();
+  try{ localStorage.setItem(STATE_KEY, JSON.stringify(state)); }catch(e){}
+}
+function resetProgress(){
+  if(!confirm('Reset all progress? Your segment completion, pulse check answers, and fill-in history will be cleared.')) return;
+  localStorage.removeItem(STATE_KEY);
+  state = defaultState();
+  fullRender();
+  scrollToTop();
+}
+function isSegmentUnlocked(id){ return id === 1 || state.completed.includes(id-1) || state.completed.includes(id); }
+function isSegmentComplete(id){ return state.completed.includes(id); }
+function totalRemainingMinutes(){ return SEGMENTS.filter(s => !state.completed.includes(s.id)).reduce((sum,s) => sum + s.minutes, 0); }
+function formatRelativeTime(ts){
+  const ms = Date.now() - ts;
+  const h = Math.floor(ms/3600000);
+  const d = Math.floor(h/24);
+  if(d >= 2) return d + ' days ago';
+  if(d === 1) return 'yesterday';
+  if(h >= 2) return h + ' hours ago';
+  if(h === 1) return '1 hour ago';
+  return 'recently';
+}
+
+// ═══════════════════════════════════════════════════
+//  FILL-IN ENGINE
+// ═══════════════════════════════════════════════════
+function checkFill(exId, ids){
+  let allOk = true;
+  ids.forEach(function(id){
+    const el = document.getElementById(id);
+    if(!el) return;
+    const ans = (el.dataset.ans || '').toLowerCase().trim();
+    const tol = parseFloat(el.dataset.tol || '0');
+    const val = el.value.trim().toLowerCase();
+    let ok;
+    if(tol > 0){
+      const num = parseFloat(val);
+      ok = !isNaN(num) && Math.abs(num - parseFloat(ans)) <= tol;
+    } else {
+      const numAns = parseFloat(ans), numVal = parseFloat(val);
+      ok = val === ans || (!isNaN(numAns) && !isNaN(numVal) && Math.abs(numVal - numAns) < 0.0001);
+    }
+    el.classList.toggle('ok', ok);
+    el.classList.toggle('no', !ok);
+    if(!ok) allOk = false;
+  });
+  const fb = document.getElementById(exId + '_fb');
+  if(fb){
+    fb.className = 'fill-fb ' + (allOk ? 'ok' : 'no');
+    fb.textContent = allOk ? '✓ Correct! Well done.' : '✗ One or more answers need review — try again or click Show answers.';
+  }
+}
+function revealFill(ids){
+  ids.forEach(function(id){
+    const el = document.getElementById(id);
+    if(!el) return;
+    el.value = el.dataset.ans || '';
+    el.classList.remove('no');
+    el.classList.add('ok');
+  });
+}
+function toggleSolution(id){
+  const el = document.getElementById(id);
+  if(el){ el.style.display = (el.style.display === 'none' || el.style.display === '') ? 'block' : 'none'; }
+}
+
+// ═══════════════════════════════════════════════════
+//  RENDERING
+// ═══════════════════════════════════════════════════
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+
+function renderProgressBar(){
+  const bar = document.getElementById('progressBar');
+  let html = '';
+  SEGMENTS.forEach(function(seg){
+    const unlocked = isSegmentUnlocked(seg.id);
+    const done = isSegmentComplete(seg.id);
+    const active = state.currentSegment === seg.id;
+    let cls = 'seg-pill';
+    if(active) cls += ' active';
+    else if(done) cls += ' done';
+    else if(!unlocked) cls += ' locked';
+    const onclick = unlocked ? ('goToSegment('+seg.id+')') : '';
+    html += '<button class="'+cls+'" '+(onclick?'onclick="'+onclick+'"':'disabled')+' title="'+esc(seg.title)+'">'
+      + '<span class="seg-num">'+seg.id+'</span>'
+      + '<span class="seg-icon">'+seg.icon+'</span>'
+      + '</button>';
+  });
+  const rem = totalRemainingMinutes();
+  if(rem > 0) html += '<span class="time-remaining">~'+rem+' min remaining</span>';
+  bar.innerHTML = html;
+}
+
+function renderHero(){
+  const hero = document.getElementById('heroSection');
+  if(state.currentSegment === 1 && state.completed.length === 0){
+    hero.innerHTML = '<section class="hero">'
+      + '<div class="hero-sub">Before you begin &middot; Foundation</div>'
+      + '<h1>Healthcare Privacy Primer</h1>'
+      + '<p>This primer is your starting point before the Healthcare Privacy &amp; De-Identification Tutorial. Over 10 segments — about 100 minutes total — we build every mathematical and conceptual tool you need, from basic probability to differential privacy noise calculations.</p>'
+      + '<p>You will follow <strong>Alex Chen</strong>, a data analyst at Riverside Medical Center, as he prepares the Meridian Cohort dataset for external research. Every privacy technique is introduced through Alex\'s real challenges: classifying fields, forming equivalence classes, computing risk metrics, and deciding how much noise to add to an aggregate statistic.</p>'
+      + '<p>No prior statistics course is assumed — only basic arithmetic and a willingness to work through the formulas step by step. Each station introduces concepts at a comfortable pace and ends with a worked example and a practice problem before moving on.</p>'
+      + '<div class="hero-cta"><button class="btn" onclick="goToSegment(1);scrollToTop();">Start Segment 1 &#8594;</button></div>'
+      + '</section>';
+  } else {
+    hero.innerHTML = '';
+  }
+}
+
+function renderActionBar(){
+  const bar = document.getElementById('actionBar');
+  bar.innerHTML = '<div class="action-bar">'
+    + '<div class="left-actions">'
+    + '<button class="btn ghost" onclick="openCardLibrary()">&#128218; Card library</button>'
+    + '<button class="btn ghost" onclick="replaySegment('+state.currentSegment+')">&#8635; Replay segment</button>'
+    + '</div>'
+    + '<div class="right-actions">'
+    + '<button class="btn ghost" onclick="goToPrevSegment()" '+(state.currentSegment===1?'disabled':'')+'>&#8592; Previous</button>'
+    + '</div>'
+    + '</div>';
+}
+
+function renderPulseCheckHTML(segId, idx, pc){
+  const key = 's'+segId+'_p'+idx;
+  const userAnswer = state.pulseAnswers[key];
+  const wasRevealed = state.pulseRevealed.includes(key);
+  const answered = userAnswer !== undefined;
+  const isCorrect = userAnswer === pc.correctKey;
+  let optionsHTML = '';
+  pc.options.forEach(function(opt){
+    let cls = 'pulse-option';
+    let clickAttr = 'onclick="handlePulseAnswer('+segId+','+idx+',\''+opt.key+'\')"';
+    if(answered || wasRevealed){
+      cls += ' disabled'; clickAttr = '';
+      if(opt.key === pc.correctKey) cls += ' correct';
+      else if(opt.key === userAnswer && !isCorrect) cls += ' wrong';
+    }
+    optionsHTML += '<button class="'+cls+'" '+clickAttr+'><span class="pulse-key">'+opt.key+'</span><span>'+opt.text+'</span></button>';
+  });
+  let feedbackHTML = '';
+  if(answered || wasRevealed){
+    let fbCls = 'pulse-feedback visible';
+    let fbContent = '';
+    if(wasRevealed && !answered){ fbCls += ' revealed'; fbContent = '<strong>Answer revealed:</strong> '+pc.feedback.incorrect; }
+    else if(isCorrect){ fbCls += ' correct'; fbContent = '<strong>&#10003; Correct.</strong> '+pc.feedback.correct; }
+    else { fbCls += ' incorrect'; fbContent = '<strong>Not quite.</strong> '+pc.feedback.incorrect; }
+    feedbackHTML = '<div class="'+fbCls+'">'+fbContent+'</div>';
+  }
+  let actionsHTML = (!answered && !wasRevealed)
+    ? '<div class="pulse-actions"><button class="pulse-link" onclick="revealPulseAnswer('+segId+','+idx+')">Reveal answer</button></div>'
+    : '<div class="pulse-actions"><button class="pulse-link" onclick="retryPulseCheck('+segId+','+idx+')">&#8635; Try again</button></div>';
+  return '<div class="pulse-check">'
+    + '<div class="pulse-header"><span class="pulse-icon">&#128173;</span><span class="pulse-label">Pulse check</span></div>'
+    + '<div class="pulse-question">'+pc.question+'</div>'
+    + '<div class="pulse-options">'+optionsHTML+'</div>'
+    + feedbackHTML + actionsHTML
+    + '</div>';
+}
+
+function renderSegment(id){
+  const seg = SEGMENTS.find(function(s){ return s.id === id; });
+  if(!seg) return;
+  const container = document.getElementById('segmentContainer');
+  const done = isSegmentComplete(seg.id);
+  const isLast = seg.id === SEGMENTS.length;
+  let html = '<section class="segment">'
+    + '<div class="segment-header">'
+    + '<div class="segment-meta"><span class="seg-step">Segment '+seg.id+' of '+SEGMENTS.length+'</span><span>~'+seg.minutes+' min</span>'
+    + (done ? '<span style="color:var(--green);font-weight:700">&#10003; Completed</span>' : '')
+    + '</div>'
+    + '<div class="segment-title"><span style="font-size:28px">'+seg.icon+'</span>'+esc(seg.title)+'</div>'
+    + '<div class="segment-subtitle">'+esc(seg.subtitle)+'</div>'
+    + '<div class="end-goal"><div class="end-goal-label">End goal</div><div class="end-goal-text">'+esc(seg.endGoal)+'</div></div>'
+    + '</div>'
+    + '<div class="lecture">'+seg.lecture+'</div>';
+  seg.pulseChecks.forEach(function(pc, idx){ html += renderPulseCheckHTML(seg.id, idx, pc); });
+  html += '<div class="seg-nav">'
+    + '<div>'+(seg.id > 1 ? '<button class="btn ghost" onclick="goToPrevSegment()">&#8592; Previous segment</button>' : '')+'</div>'
+    + '<div>'+(
+        !isLast
+        ? '<button class="btn" onclick="markCompleteAndContinue('+seg.id+')">'+(done ? 'Continue to' : 'Mark complete &amp; continue to')+' segment '+(seg.id+1)+' &#8594;</button>'
+        : '<button class="btn" onclick="markCompleteAndContinue('+seg.id+')">'+(done ? 'Finish primer &#8594;' : 'Mark complete &amp; finish primer &#8594;')+'</button>'
+      )+'</div>'
+    + '</div></section>';
+  container.innerHTML = html;
+}
+
+function renderCardsSidebar(){
+  const sidebar = document.getElementById('cardsSidebar');
+  const seg = SEGMENTS.find(function(s){ return s.id === state.currentSegment; });
+  if(!seg || !seg.cards || seg.cards.length === 0){ sidebar.innerHTML = ''; return; }
+  let html = '<div class="cards-panel"><h3>Cards &middot; Segment '+seg.id+'</h3><div class="cards-sub">Tap any term for a full definition and deep explanation.</div>';
+  seg.cards.forEach(function(cid){
+    const card = CARDS[cid];
+    if(!card) return;
+    html += '<div class="card-item" onclick="openCardModal(\''+cid+'\')">'
+      + '<span class="card-item-term">'+esc(card.term)+'</span>'
+      + '<span class="card-item-expand">&#8250;</span>'
+      + '</div>';
+  });
+  html += '</div>';
+  sidebar.innerHTML = html;
+}
+
+// ═══════════════════════════════════════════════════
+//  MODALS
+// ═══════════════════════════════════════════════════
+function openCardModal(cardId){
+  const card = CARDS[cardId];
+  if(!card) return;
+  document.getElementById('modalTitle').textContent = card.term;
+  let html = '<div class="card-modal-term">'+esc(card.term)+'</div>';
+  html += '<div class="card-modal-def">'+esc(card.def)+'</div>';
+  if(card.long) html += '<div class="card-modal-long">'+esc(card.long)+'</div>';
+  document.getElementById('modalBody').innerHTML = html;
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+function openCardLibrary(){
+  const visibleIds = new Set([state.currentSegment].concat(state.completed));
+  const visibleSegs = SEGMENTS.filter(function(s){ return visibleIds.has(s.id); }).sort(function(a,b){ return a.id-b.id; });
+  document.getElementById('modalTitle').textContent = '&#128218; Card library';
+  let html = '<div style="font-size:13px;color:var(--text-muted);margin-bottom:12px;font-weight:600">Definitions from segments you have visited. More cards unlock as you progress.</div>'
+    + '<div class="modal-search"><input type="text" id="cardSearch" placeholder="Search terms..." oninput="filterCards()"></div>'
+    + '<div id="cardLibBody">';
+  let total = 0;
+  visibleSegs.forEach(function(seg){
+    if(!seg.cards || seg.cards.length === 0) return;
+    html += '<div class="lib-segment-group" data-seg="'+seg.id+'"><div class="lib-segment-header">'+seg.icon+' Segment '+seg.id+': '+esc(seg.title)+'</div>';
+    seg.cards.forEach(function(cid){
+      const card = CARDS[cid];
+      if(!card) return;
+      total++;
+      html += '<div class="lib-card" data-term="'+esc(card.term.toLowerCase())+'" data-def="'+esc(card.def.toLowerCase())+'">'
+        + '<div class="lib-card-term">'+esc(card.term)+'</div>'
+        + '<div class="lib-card-def">'+esc(card.def)+'</div>'
+        + '</div>';
+    });
+    html += '</div>';
+  });
+  if(total === 0) html += '<div style="text-align:center;color:var(--text-dim);padding:30px 0;font-size:13px">Complete Segment 1 to start building your card library.</div>';
+  html += '</div>';
+  document.getElementById('modalBody').innerHTML = html;
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+function filterCards(){
+  const q = (document.getElementById('cardSearch').value || '').toLowerCase().trim();
+  document.querySelectorAll('.lib-card').forEach(function(card){
+    const match = !q || (card.dataset.term||'').includes(q) || (card.dataset.def||'').includes(q);
+    card.style.display = match ? '' : 'none';
+  });
+  document.querySelectorAll('.lib-segment-group').forEach(function(group){
+    const vis = group.querySelectorAll('.lib-card:not([style*="display: none"])').length;
+    group.style.display = vis > 0 ? '' : 'none';
+  });
+}
+
+function closeModal(){ document.getElementById('modalOverlay').classList.remove('open'); }
+
+// ═══════════════════════════════════════════════════
+//  PULSE CHECK HANDLERS
+// ═══════════════════════════════════════════════════
+function handlePulseAnswer(segId, idx, key){
+  const k = 's'+segId+'_p'+idx;
+  state.pulseAnswers[k] = key;
+  saveState(); renderSegment(segId);
+}
+function revealPulseAnswer(segId, idx){
+  const k = 's'+segId+'_p'+idx;
+  if(!state.pulseRevealed.includes(k)) state.pulseRevealed.push(k);
+  saveState(); renderSegment(segId);
+}
+function retryPulseCheck(segId, idx){
+  const k = 's'+segId+'_p'+idx;
+  delete state.pulseAnswers[k];
+  state.pulseRevealed = state.pulseRevealed.filter(function(x){ return x !== k; });
+  state.pulseRetries[k] = (state.pulseRetries[k] || 0) + 1;
+  saveState(); renderSegment(segId);
+}
+
+// ═══════════════════════════════════════════════════
+//  NAVIGATION
+// ═══════════════════════════════════════════════════
+function markCompleteAndContinue(segId){
+  if(!state.completed.includes(segId)) state.completed.push(segId);
+  saveState();
+  if(segId < SEGMENTS.length){
+    state.currentSegment = segId + 1;
+    saveState(); fullRender(); scrollToTop();
+  } else {
+    fullRender();
+  }
+}
+function goToSegment(id){
+  if(!isSegmentUnlocked(id)) return;
+  state.currentSegment = id;
+  saveState(); fullRender(); scrollToTop();
+}
+function goToPrevSegment(){ if(state.currentSegment > 1) goToSegment(state.currentSegment - 1); }
+function replaySegment(segId){
+  if(!confirm('Replay this segment? Pulse check answers for this segment will be reset. Overall progress is preserved.')) return;
+  Object.keys(state.pulseAnswers).forEach(function(k){ if(k.startsWith('s'+segId+'_p')) delete state.pulseAnswers[k]; });
+  state.pulseRevealed = state.pulseRevealed.filter(function(k){ return !k.startsWith('s'+segId+'_p'); });
+  saveState(); renderSegment(segId); scrollToTop();
+}
+
+// ═══════════════════════════════════════════════════
+//  WELCOME-BACK BANNER
+// ═══════════════════════════════════════════════════
+function maybeShowWelcomeBack(){
+  const hoursAway = (Date.now() - state.lastVisited) / 3600000;
+  if(hoursAway > 4 && state.completed.length > 0 && !state.welcomeBackShown){
+    const seg = SEGMENTS.find(function(s){ return s.id === state.currentSegment; });
+    const banner = document.getElementById('welcomeBackBanner');
+    banner.style.display = 'block';
+    banner.innerHTML = '<div class="welcome-back">'
+      + '<div class="welcome-back-text">Welcome back. You were on <strong>Segment '+seg.id+': '+esc(seg.title)+'</strong> '+formatRelativeTime(state.lastVisited)+'.</div>'
+      + '<button class="btn" onclick="dismissWelcomeBack()">Continue &#8594;</button>'
+      + '</div>';
+    state.welcomeBackShown = true; saveState();
+  }
+}
+function dismissWelcomeBack(){ document.getElementById('welcomeBackBanner').style.display = 'none'; scrollToTop(); }
+
+// ═══════════════════════════════════════════════════
+//  FULL RENDER + INIT
+// ═══════════════════════════════════════════════════
+function fullRender(){
+  renderProgressBar();
+  renderHero();
+  renderActionBar();
+  renderSegment(state.currentSegment);
+  renderCardsSidebar();
+  const btn = document.getElementById('beginTutBtn');
+  const allDone = state.completed.length >= SEGMENTS.length;
+  btn.disabled = !allDone;
+  btn.style.opacity = allDone ? '1' : '.38';
+  btn.style.cursor = allDone ? 'pointer' : 'not-allowed';
+}
+function scrollToTop(){ window.scrollTo({top:0,behavior:'smooth'}); }
+
+function init(){
+  state = loadState();
+  if(Date.now() - state.lastVisited > 1800000) state.welcomeBackShown = false;
+  fullRender();
+  maybeShowWelcomeBack();
+  document.addEventListener('keydown', function(e){ if(e.key === 'Escape') closeModal(); });
+}
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
