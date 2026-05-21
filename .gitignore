@@ -1,0 +1,4 @@
+*.localStorage
+*-localStorage.json
+.env
+.env.local
